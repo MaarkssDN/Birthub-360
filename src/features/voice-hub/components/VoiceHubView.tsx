@@ -1,6 +1,5 @@
 import {
   AlertCircle,
-  CheckCircle2,
   Layers,
   Mic,
   Phone,
@@ -16,6 +15,7 @@ import { Badge } from '../../../components/ui/Badge.js';
 import { Button } from '../../../components/ui/Button.js';
 import { Card } from '../../../components/ui/Card.js';
 import { SoundFX } from '../../../lib/soundEffects.js';
+import { toast } from '../../../lib/toast.js';
 import {
   type ColdCallStatusData,
   type SuppressionItem,
@@ -24,6 +24,7 @@ import {
   type VoiceHubConnectionSummary,
   voiceHubApi,
 } from '../api/voiceHub.api.js';
+import { logger } from '../../../lib/logger.js';
 
 export function VoiceHubView() {
   const [connections, setConnections] = useState<VoiceHubConnectionSummary[]>([]);
@@ -31,17 +32,14 @@ export function VoiceHubView() {
   const [coldCallStatus, setColdCallStatus] = useState<ColdCallStatusData | null>(null);
   const [suppressions, setSuppressions] = useState<SuppressionItem[]>([]);
   const [voiceCadences, setVoiceCadences] = useState<VoiceCadenceRunSummary[]>([]);
-  const [_loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Quick dialer state
   const [leadIdToCall, setLeadIdToCall] = useState('');
   const [agentType, setAgentType] = useState<'sdr' | 'nps' | 'reactivation'>('sdr');
   const [dialing, setDialing] = useState(false);
-  const [dialFeedback, setDialFeedback] = useState<{
-    type: 'success' | 'error' | 'warning';
-    message: string;
-  } | null>(null);
 
   // Add suppression modal state
   const [showAddSuppression, setShowAddSuppression] = useState(false);
@@ -50,26 +48,39 @@ export function VoiceHubView() {
   const [savingSuppression, setSavingSuppression] = useState(false);
 
   const loadData = useCallback(async () => {
-    try {
-      const [conns, threeCx, coldCall, supps, cadences] = await Promise.all([
-        voiceHubApi.getConnections(),
-        voiceHubApi.get3CXConnections(),
-        voiceHubApi.getColdCallStatus(),
-        voiceHubApi.getSuppressions(),
-        voiceHubApi.getActiveVoiceCadences(),
-      ]);
+    // allSettled: uma fonte fora do ar não pode derrubar as demais nem ser
+    // apresentada como "sem dados" — falhas viram banner de erro com retry.
+    const [conns, threeCx, coldCall, supps, cadences] = await Promise.allSettled([
+      voiceHubApi.getConnections(),
+      voiceHubApi.get3CXConnections(),
+      voiceHubApi.getColdCallStatus(),
+      voiceHubApi.getSuppressions(),
+      voiceHubApi.getActiveVoiceCadences(),
+    ]);
 
-      setConnections(conns);
-      setThreeCxConns(threeCx);
-      setColdCallStatus(coldCall);
-      setSuppressions(supps);
-      setVoiceCadences(cadences);
-    } catch (err) {
-      console.warn('[VoiceHubView] Erro ao carregar dados de telefonia:', err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+    const failures: string[] = [];
+    const apply = <T,>(result: PromiseSettledResult<T>, set: (v: T) => void, label: string) => {
+      if (result.status === 'fulfilled') {
+        set(result.value);
+      } else {
+        failures.push(label);
+        logger.warn({ err: result.reason, label }, '[VoiceHubView] Falha ao carregar fonte');
+      }
+    };
+
+    apply(conns, setConnections, 'conexões Voice Hub');
+    apply(threeCx, setThreeCxConns, 'conexões 3CX');
+    apply(coldCall, setColdCallStatus, 'status de cold call');
+    apply(supps, setSuppressions, 'lista de supressão');
+    apply(cadences, setVoiceCadences, 'cadências de voz');
+
+    setLoadError(
+      failures.length > 0
+        ? `Não foi possível carregar: ${failures.join(', ')}. Os demais dados seguem atualizados.`
+        : null,
+    );
+    setLoading(false);
+    setRefreshing(false);
   }, []);
 
   useEffect(() => {
@@ -87,27 +98,21 @@ export function VoiceHubView() {
     if (!leadIdToCall.trim()) return;
 
     setDialing(true);
-    setDialFeedback(null);
     SoundFX.play('click');
 
     try {
       const result = await voiceHubApi.callLead(leadIdToCall.trim(), agentType);
-      SoundFX.play('success');
-      setDialFeedback({
-        type: 'success',
-        message: `Ligação iniciada com sucesso via SDR de voz (Status: ${result.status}${
+      // toast.* já dispara o SoundFX correspondente — não duplicar aqui.
+      toast.success(
+        `Ligação iniciada com sucesso via SDR de voz (Status: ${result.status}${
           result.callSid ? `, SID: ${result.callSid}` : ''
         }).`,
-      });
+      );
       setLeadIdToCall('');
       loadData();
     } catch (err: any) {
-      SoundFX.play('error');
       const msg = err?.response?.data?.error || err?.message || 'Falha ao disparar ligação de voz.';
-      setDialFeedback({
-        type: 'error',
-        message: msg,
-      });
+      toast.error(msg);
     } finally {
       setDialing(false);
     }
@@ -123,14 +128,15 @@ export function VoiceHubView() {
         phone: suppressPhone.trim(),
         reason: suppressReason.trim() || undefined,
       });
-      SoundFX.play('confirm');
+      toast.success(`Telefone ${suppressPhone.trim()} adicionado à lista de supressão.`);
       setShowAddSuppression(false);
       setSuppressPhone('');
       setSuppressReason('');
       loadData();
     } catch (err: any) {
-      SoundFX.play('error');
-      alert(err?.response?.data?.error || err?.message || 'Falha ao registrar bloqueio.');
+      toast.error(
+        err?.response?.data?.error || err?.message || 'Falha ao registrar bloqueio.',
+      );
     } finally {
       setSavingSuppression(false);
     }
@@ -187,6 +193,40 @@ export function VoiceHubView() {
             </Button>
           </div>
         </div>
+
+        {/* Estado de erro de carregamento — nunca confundir falha de API com "sem dados" */}
+        {loadError && (
+          <div
+            role="alert"
+            className="flex items-center justify-between gap-3 p-3 rounded-lg border border-amber-800/60 bg-amber-950/40 text-amber-300 text-xs"
+          >
+            <span className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+              {loadError}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="border-amber-700/60 text-amber-200 hover:bg-amber-900/40 h-7 text-xs"
+            >
+              Tentar novamente
+            </Button>
+          </div>
+        )}
+
+        {/* Indicador de carregamento inicial/em atualização */}
+        {loading && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="flex items-center gap-2 text-xs text-slate-400"
+          >
+            <RefreshCw className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+            Carregando dados de telefonia…
+          </div>
+        )}
 
         {/* Status de Conexões de Telefonia */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -357,25 +397,6 @@ export function VoiceHubView() {
                     </select>
                   </div>
                 </div>
-
-                {dialFeedback && (
-                  <div
-                    className={`p-3 rounded-lg border text-xs flex items-center gap-2 ${
-                      dialFeedback.type === 'success'
-                        ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-300'
-                        : dialFeedback.type === 'warning'
-                          ? 'bg-amber-950/40 border-amber-800/60 text-amber-300'
-                          : 'bg-rose-950/40 border-rose-800/60 text-rose-300'
-                    }`}
-                  >
-                    {dialFeedback.type === 'success' ? (
-                      <CheckCircle2 className="h-4 w-4 shrink-0" />
-                    ) : (
-                      <AlertCircle className="h-4 w-4 shrink-0" />
-                    )}
-                    <span>{dialFeedback.message}</span>
-                  </div>
-                )}
 
                 <div className="flex items-center justify-between pt-2">
                   <div className="text-xs text-slate-500 flex items-center gap-1.5">

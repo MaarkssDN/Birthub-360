@@ -43,14 +43,38 @@ export async function queueLeadPushToBitrix(organizationId: string, leadId: stri
     return;
   }
 
-  await bitrixOutboundQueue.add(
-    'push-lead',
-    { organizationId, leadId },
-    {
-      jobId: `bitrix-push-${organizationId}-${leadId}`,
-    },
-  );
+  const jobId = `bitrix-push-${organizationId}-${leadId}`;
+  await removeTerminalJob(bitrixOutboundQueue, jobId);
+  await bitrixOutboundQueue.add('push-lead', { organizationId, leadId }, { jobId });
   logger.info({ organizationId, leadId }, '[bitrix] Push enfileirado com sucesso');
+}
+
+/**
+ * ONDA3-23 (dedup jobId vs. retenção): um job `completed`/`failed` continua ocupando o `jobId`
+ * enquanto `removeOnComplete`/`removeOnFail` (24h/7d) não o expurgam — e `Queue.add` deduplica
+ * contra QUALQUER job com o mesmo id, não só os pendentes. Sem esta remoção, uma segunda mudança
+ * de etapa dentro da janela de retenção era engolida silenciosamente e o Bitrix ficava com o
+ * estado antigo para sempre. O worker relê o lead do banco na execução, então descartar o registro
+ * terminal e re-enfileirar é seguro; jobs ainda `waiting`/`delayed`/`active` são mantidos (o `add`
+ * abaixo deduplica contra eles, e um job pendente já empurra o estado mais recente do lead).
+ */
+async function removeTerminalJob(
+  queue: NonNullable<typeof bitrixOutboundQueue>,
+  jobId: string,
+): Promise<void> {
+  const existing = await queue.getJob(jobId);
+  if (!existing) return;
+  const state = await existing.getState();
+  if (state === 'completed' || state === 'failed') {
+    await existing
+      .remove()
+      .catch((err) =>
+        logger.warn(
+          { err, jobId },
+          '[bitrix] Falha ao remover job terminal antes de re-enfileirar push',
+        ),
+      );
+  }
 }
 
 export function createBitrixOutboundWorker() {

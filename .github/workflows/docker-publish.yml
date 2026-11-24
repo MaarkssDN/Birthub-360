@@ -26,6 +26,8 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
+permissions: {}
+
 concurrency:
   # Só um publish por vez (Onda 10.2, secao 18) — evita duas execuções empurrando tags
   # conflitantes para o mesmo registry ao mesmo tempo.

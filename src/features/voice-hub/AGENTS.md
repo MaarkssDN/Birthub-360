@@ -2,7 +2,14 @@
 
 ## Dono
 
-**Agente 12 — Voz e Telefonia (Birthub Voices)**
+Squad 60 conforme `.agents/MATRIZ_PROPRIEDADE.md` (revisão 2026-11-24): este arquivo
+declarava "Agente 12" como dono exclusivo de todo `src/features/voice-hub/**`
+(numeração legada). A divisão oficial é: 60 (coordenação + `index.ts`/`types.ts`),
+61 (`voip/`, `sip/`, serviços de telefonia), 62 (`recording/`, `infra/`,
+`callRecord.service.ts`), 63 (`transcription/`, `realtimeTranscription.service.ts`),
+64 (`commands/`), 65 (`ui/`, `components/`, `pages/`, `store/`, `hooks/`, `lib/`,
+`api/`). O backend legado `src/lib/voice-hub/**` pertence ao Agente 60 até
+deliberação de decommission (ordem humana 2026-11-24: preservar temporariamente).
 
 ## Escopo
 

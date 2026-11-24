@@ -28,6 +28,10 @@ RUN npx prisma generate
 # por volta de 800 MB (exit 134). O runner não herda esta variável.
 ENV NODE_OPTIONS="--max-old-space-size=2048"
 RUN npm run build
+# P0-07: falha o build da imagem se ativos protegidos (/tools, /design-lab) vazarem para dist/
+# ou entrarem no precache de dist/sw.js, ou se a regra NetworkOnly/denylist sumir do SW.
+RUN test ! -e dist/tools && test ! -e dist/design-lab \
+ && node -e "const fs=require('fs'); const sw=fs.readFileSync('dist/sw.js','utf8'); const m=sw.match(/precacheAndRoute\((\[[\s\S]*?\])/); if(!m){console.error('precacheAndRoute ausente em dist/sw.js'); process.exit(1);} const entries=new Function('return ('+m[1]+');')(); const leaked=entries.filter((e)=>e&&typeof e.url==='string'&&/^(?:\/)?(?:tools|design-lab)(?:\/|$)/i.test(e.url)); if(leaked.length){console.error('P0-07: ativo protegido no precache de dist/sw.js', leaked); process.exit(1);} if(!/NetworkOnly/.test(sw)||!/tools\|design-lab/.test(sw)){console.error('P0-07: regra NetworkOnly/denylist ausente em dist/sw.js'); process.exit(1);} console.log('P0-07 build gate ok:', entries.length, 'precache entries');"
 RUN npm run build:worker
 
 # Remove devDependencies (typescript, eslint, vitest, prisma CLI, etc.) antes de copiar
@@ -94,6 +98,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/public/tools ./public/tools
+COPY --from=builder /app/public/design-lab ./public/design-lab
 COPY --from=builder /app/prisma ./prisma
 # prisma.config.ts fica na raiz do projeto (fora de prisma/) e o Prisma CLI (usado abaixo por
 # `prisma migrate deploy`, ver comentário mais adiante) depende dele pra resolver `datasource.url`

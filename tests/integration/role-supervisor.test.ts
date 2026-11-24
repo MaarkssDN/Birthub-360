@@ -62,7 +62,7 @@ describe('Supervisores de Cargo (PROMPT 5)', () => {
     await runMultiCargoSeed();
     await runAgentCatalogImport();
     await runCapabilityEngineSeed();
-  });
+  }, 120_000);
 
   afterAll(async () => {
     await prisma.agentExecution.deleteMany({ where: { organizationId: ORG_ID } });

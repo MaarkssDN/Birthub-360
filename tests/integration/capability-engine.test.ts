@@ -52,7 +52,7 @@ describe('Capability & Permission Engine (PROMPT 3 + hardening PROMPT 3B)', () =
     await runMultiCargoSeed();
     await runAgentCatalogImport();
     await runCapabilityEngineSeed();
-  });
+  }, 120_000);
 
   afterAll(async () => {
     await prisma.userJobRole.deleteMany({ where: { organizationId: ORG_ID } });

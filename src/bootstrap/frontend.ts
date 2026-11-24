@@ -35,46 +35,81 @@ const toolsLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+const protectedStaticOptions: NonNullable<Parameters<typeof express.static>[1]> = {
+  setHeaders(response) {
+    response.setHeader('Cache-Control', 'private, no-store');
+  },
+};
+
 /**
- * Predicado puro da guarda anti-bypass do design-lab — extraído para teste unitário.
- * Recebe o path cru (req.path); devolve true quando o path toca um asset do design-lab
- * por um alias não autorizado (encoding, /public/, /@fs/, etc.).
+ * Decide se um path cru (req.path) alcança um diretório estático protegido (`tools`,
+ * `design-lab`) por fora do mount autenticado. O path é canonicalizado como o
+ * express.static/send (decode, `\` → `/`, colapso de `//`, resolução de `.`/`..`) e a decisão
+ * é sobre a forma canônica — as isenções de `isExempt` só valem nela.
+ *
+ * Paths ambíguos (cuja forma canônica difere da decodificada, ou com separador codificado) que
+ * mencionem o diretório são sempre bloqueados: send, Vite e proxies normalizam em ordens
+ * diferentes (decode→normalize vs. normalize→decode; `\` só é separador no Windows), então
+ * nenhuma forma canônica única representa o arquivo que cada um serviria. Nenhum cliente legítimo
+ * emite esses paths — o navegador resolve `..` antes de enviar.
  */
-export function isBlockedDesignLabPath(rawPath: string): boolean {
+function bypassesProtectedStatic(
+  rawPath: string,
+  dir: 'design-lab' | 'tools',
+  isExempt: (canonicalPath: string) => boolean,
+): boolean {
   let decodedPath = rawPath;
   try {
     decodedPath = decodeURIComponent(rawPath);
   } catch {
     // Path malformado: mantém o raw — o static downstream já rejeita encoding inválido.
   }
-  const touchesLabAsset = /(?:^|\/)design-lab(?:\/|$)/i.test(decodedPath);
-  const isLegitStaticPrefix = /^\/design-lab(?:\/|$)/i.test(rawPath);
-  const isSourceModule = /^\/src\/features\/design-lab\//i.test(rawPath);
-  return touchesLabAsset && !isLegitStaticPrefix && !isSourceModule;
+  const unifiedPath = decodedPath.replace(/\\/g, '/');
+  // Nome curto 8.3 do Windows (`DESIGN~1`).
+  if (new RegExp(`(?:^|/)${dir.slice(0, 6)}~[0-9]`, 'i').test(unifiedPath)) return true;
+  // `u` + `i`: case folding Unicode (`ſ` = `s`), como em filesystems case-insensitive.
+  if (!new RegExp(`(?:^|/)${dir}(?:[/:]|$)`, 'iu').test(unifiedPath)) return false;
+
+  const canonicalPath = path.posix.normalize(`/${unifiedPath}`);
+  if (canonicalPath !== decodedPath || /%(?:2f|5c)/i.test(rawPath)) return true;
+  // `tools::$INDEX_ALLOCATION` abre o próprio diretório em NTFS (stream alternativo).
+  if (new RegExp(`/${dir}:`, 'iu').test(canonicalPath)) return true;
+
+  // Prefixo legítimo é o que o mount autenticado casa: literal e sem decode (`/%74ools` não casa).
+  return !new RegExp(`^/${dir}(?:/|$)`, 'i').test(rawPath) && !isExempt(canonicalPath);
 }
 
 /**
- * Predicado puro da guarda anti-bypass de /tools — extraído para teste unitário.
- * Recebe o path cru (req.path); devolve true quando o path toca um asset de /tools
- * por um alias não autorizado (encoding como /tools%2F... ou /%74ools/..., /public/tools/...,
- * /@fs/.../public/tools/..., /foo/tools/..., etc.), preservando o prefixo legítimo /tools
- * (que segue para o mount autenticado) e os módulos de código-fonte sob /src/
- * (ex.: /src/features/intelligence/tools/*, /src/features/prospecting/.../tools/*, /src/lib/ai/tools/*).
+ * Predicado puro da guarda anti-bypass do design-lab — extraído para teste unitário.
+ * Qualquer segmento `design-lab` fora do prefixo `/design-lab` é bloqueado, exceto o código-fonte
+ * servido pelo Vite em dev (`/src/features/design-lab/`).
+ */
+export function isBlockedDesignLabPath(rawPath: string): boolean {
+  return bypassesProtectedStatic(rawPath, 'design-lab', (canonicalPath) =>
+    /^\/src\/features\/design-lab\//iu.test(canonicalPath),
+  );
+}
+
+/**
+ * Predicado puro da guarda anti-bypass dos estáticos de /tools — mesma classe de
+ * vulnerabilidade P0 do design-lab (DEM-20261114-001/003, guarda do PR #415). Cobre aliases como
+ * `/%74ools/...`, `/tools%2F...`, `//tools/...`, `/x/..%2Ftools/...`, `/public/tools/...` e
+ * `/@fs/<abs>/public|dist/tools/...` (dev).
+ *
+ * Diferente do design-lab, `tools` é segmento comum fora dos ativos. Na forma canônica são
+ * legítimos, desde que não passem por `public|dist/tools`: `tools` como último segmento (rota SPA
+ * `/dashboard/tools`) e qualquer coisa sob `/api/`, `/app/` (rotas SPA), `/design-lab/` (mount
+ * próprio autenticado), `/src/`, `/node_modules/` ou `/@…/` (módulos servidos pelo Vite em dev).
  */
 export function isBlockedToolsPath(rawPath: string): boolean {
-  let decodedPath = rawPath;
-  try {
-    decodedPath = decodeURIComponent(rawPath);
-  } catch {
-    // Path malformado: mantém o raw — o static downstream já rejeita encoding inválido.
-  }
-  const touchesToolsAsset = /(?:^|\/)tools(?:\/|$)/i.test(decodedPath);
-  const isLegitStaticPrefix = /^\/tools(?:\/|$)/i.test(rawPath);
-  const isSourceModule =
-    /^\/src\//i.test(rawPath) &&
-    !decodedPath.includes('..') &&
-    !/(?:^|\/)public(?:\/|$)/i.test(decodedPath);
-  return touchesToolsAsset && !isLegitStaticPrefix && !isSourceModule;
+  return bypassesProtectedStatic(
+    rawPath,
+    'tools',
+    (canonicalPath) =>
+      !/^\/tools(?:\/|$)|\/(?:public|dist)\/tools(?:\/|$)/iu.test(canonicalPath) &&
+      (!/\/tools\/./iu.test(canonicalPath) ||
+        /^\/(?:api|app|src|node_modules|design-lab|@[^/]+)\//iu.test(canonicalPath)),
+  );
 }
 
 /**
@@ -91,9 +126,8 @@ export async function mountFrontend(app: Express): Promise<void> {
   // `/design-lab%2Fassets%2Flab.css`, `/tools%2F...`, `/%74ools/...`, `/public/tools/...` ou
   // `/@fs/<abs>/public/tools/...` (aliases que o Vite dev ou express.static servem fora do mount)
   // não casa o prefixo, mas os middlewares estáticos decodificam e servem o MESMO arquivo
-  // sem autenticação. Aqui o path é decodificado e qualquer segmento "design-lab" ou "tools" que não
-  // seja (a) o prefixo legítimo `/design-lab` ou `/tools` — que segue para o mount autenticado — ou
-  // (b) código-fonte legítimo sob `/src/` é bloqueado com 404 antes de qualquer static.
+  // sem autenticação. Aqui o path é canonicalizado como o static faz e o que alcançar esses
+  // diretórios fora do prefixo legítimo é bloqueado com 404 antes de qualquer static.
   app.use((req, res, next) => {
     if (isBlockedDesignLabPath(req.path) || isBlockedToolsPath(req.path)) {
       res.status(404).end();
@@ -116,7 +150,7 @@ export async function mountFrontend(app: Express): Promise<void> {
       '/tools',
       toolsLimiter,
       authenticateToken,
-      express.static(path.join(process.cwd(), 'public', 'tools')),
+      express.static(path.join(process.cwd(), 'public', 'tools'), protectedStaticOptions),
     );
 
     // Protege arquivos estáticos do design-lab com autenticação em desenvolvimento
@@ -124,7 +158,7 @@ export async function mountFrontend(app: Express): Promise<void> {
       '/design-lab',
       toolsLimiter,
       authenticateToken,
-      express.static(path.join(process.cwd(), 'public', 'design-lab')),
+      express.static(path.join(process.cwd(), 'public', 'design-lab'), protectedStaticOptions),
     );
 
     const vite = await createViteServer({
@@ -160,7 +194,7 @@ export async function mountFrontend(app: Express): Promise<void> {
       '/tools',
       toolsLimiter,
       authenticateToken,
-      express.static(path.join(distPath, 'tools')),
+      express.static(path.join(process.cwd(), 'public', 'tools'), protectedStaticOptions),
     );
 
     // Protege arquivos estáticos do design-lab com autenticação
@@ -168,7 +202,7 @@ export async function mountFrontend(app: Express): Promise<void> {
       '/design-lab',
       toolsLimiter,
       authenticateToken,
-      express.static(path.join(distPath, 'design-lab')),
+      express.static(path.join(process.cwd(), 'public', 'design-lab'), protectedStaticOptions),
     );
 
     app.use(express.static(distPath));

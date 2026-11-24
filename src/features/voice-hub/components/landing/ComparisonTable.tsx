@@ -74,16 +74,25 @@ export function ComparisonTable(): React.ReactElement {
           <table className="w-full text-left border-collapse min-w-[720px]">
             <thead>
               <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-100/60 dark:bg-white/[0.04]">
-                <th className="py-4 px-6 text-sm font-semibold text-slate-900 dark:text-white">
+                <th scope="col" className="py-4 px-6 text-sm font-semibold text-slate-900 dark:text-white">
                   Capacidade / Recurso
                 </th>
-                <th className="py-4 px-6 text-sm font-bold text-brand bg-brand/5 border-x border-brand/20">
+                <th
+                  scope="col"
+                  className="py-4 px-6 text-sm font-bold text-brand bg-brand/5 border-x border-brand/20"
+                >
                   Birth Hub 360°
                 </th>
-                <th className="py-4 px-6 text-sm font-semibold text-slate-600 dark:text-white/70">
+                <th
+                  scope="col"
+                  className="py-4 px-6 text-sm font-semibold text-slate-600 dark:text-white/70"
+                >
                   CRMs Tradicionais
                 </th>
-                <th className="py-4 px-6 text-sm font-semibold text-slate-600 dark:text-white/70">
+                <th
+                  scope="col"
+                  className="py-4 px-6 text-sm font-semibold text-slate-600 dark:text-white/70"
+                >
                   Ferramentas de IA Avulsas
                 </th>
               </tr>
@@ -99,10 +108,18 @@ export function ComparisonTable(): React.ReactElement {
                   </td>
                   <td className="py-4 px-6 font-bold text-slate-900 dark:text-white bg-brand/5 border-x border-brand/20">
                     {typeof row.birthHub === 'boolean' ? (
-                      <Check className="w-5 h-5 text-emerald-500" />
+                      row.birthHub ? (
+                        <Check
+                          className="w-5 h-5 text-emerald-500"
+                          role="img"
+                          aria-label="Sim"
+                        />
+                      ) : (
+                        <X className="w-5 h-5 text-rose-500/70" role="img" aria-label="Não" />
+                      )
                     ) : (
                       <div className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-brand shrink-0" />
+                        <Check className="w-4 h-4 text-brand shrink-0" aria-hidden="true" />
                         <span>{row.birthHub}</span>
                       </div>
                     )}
@@ -110,9 +127,13 @@ export function ComparisonTable(): React.ReactElement {
                   <td className="py-4 px-6 text-slate-500 dark:text-white/50">
                     {typeof row.traditionalCrm === 'boolean' ? (
                       row.traditionalCrm ? (
-                        <Check className="w-5 h-5 text-emerald-500" />
+                        <Check
+                          className="w-5 h-5 text-emerald-500"
+                          role="img"
+                          aria-label="Sim"
+                        />
                       ) : (
-                        <X className="w-5 h-5 text-rose-500/70" />
+                        <X className="w-5 h-5 text-rose-500/70" role="img" aria-label="Não" />
                       )
                     ) : (
                       row.traditionalCrm
@@ -121,9 +142,13 @@ export function ComparisonTable(): React.ReactElement {
                   <td className="py-4 px-6 text-slate-500 dark:text-white/50">
                     {typeof row.fragmentedAi === 'boolean' ? (
                       row.fragmentedAi ? (
-                        <Check className="w-5 h-5 text-emerald-500" />
+                        <Check
+                          className="w-5 h-5 text-emerald-500"
+                          role="img"
+                          aria-label="Sim"
+                        />
                       ) : (
-                        <X className="w-5 h-5 text-rose-500/70" />
+                        <X className="w-5 h-5 text-rose-500/70" role="img" aria-label="Não" />
                       )
                     ) : (
                       row.fragmentedAi

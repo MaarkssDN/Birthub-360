@@ -188,6 +188,16 @@ export interface BlockerSignal {
   text: string;
 }
 
+export interface NextBestActionDTO {
+  leadId: string;
+  action: string;
+  priority: 'ALTA' | 'MEDIA' | 'BAIXA';
+  reason: string;
+  suggestedChannel: 'WHATSAPP' | 'EMAIL' | 'CALL' | 'REUNIAO';
+  dealHealthScore: number | null;
+  responseTimeSlaStatus: 'OK' | 'ALERTA' | 'CRITICO';
+}
+
 /** `valueJson` do insight `type: 'resumo'` (`src/shared/contracts/meetingSynthesis.contract.ts`). */
 export interface MeetingSynthesisOutput {
   executiveSummary: string;
@@ -307,6 +317,8 @@ export const copilotoIaApi = {
     api.get<CopilotoDealHealthSnapshotDTO[]>(`${BASE}/leads/${leadId}/deal-health`),
   getLeadWhatsAppResponseTime: (leadId: string) =>
     api.get<WhatsAppResponseTimeStats>(`${BASE}/leads/${leadId}/whatsapp-response-time`),
+  getNextBestAction: (leadId: string) =>
+    api.get<NextBestActionDTO>(`${BASE}/leads/${leadId}/next-best-action`),
 
   listBitrixFieldMappings: () =>
     api.get<CopilotoBitrixFieldMappingDTO[]>(`${BASE}/bitrix-field-mappings`),

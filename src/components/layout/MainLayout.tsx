@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar.js';
 import { AppTopbar } from './AppTopbar.js';
 import { OfflineBanner } from './OfflineBanner.js';
+import { SkipLink } from '../a11y/index.js';
 import { DataFlowLines } from '../ui/DataFlowLines.js';
 import { VoiceCommandWidget } from '../ui/VoiceCommandWidget.js';
 import { ModuleAgentWidget } from '../ui/ModuleAgentWidget.js';
@@ -14,6 +15,8 @@ import { Toaster } from '../ui/Toaster.js';
 import { PageTransition } from './PageTransition.js';
 import { deriveActiveTabFromPath } from './settingsPillarNav.js';
 import type { TabType } from './tabMeta.js';
+import { getActiveModuleId } from './moduleRegistry.js';
+import { getModuleTheme } from './moduleThemes.js';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -29,6 +32,8 @@ export function MainLayout({ children, activeTab: activeTabProp }: MainLayoutPro
   // (topbar, breadcrumbs, widget de agente) tratava o pilar como "Ajustes Globais".
   const { pathname } = useLocation();
   const activeTab = activeTabProp ?? deriveActiveTabFromPath(pathname);
+  const activeModuleId = getActiveModuleId(pathname);
+  const activeModuleTheme = getModuleTheme(activeModuleId);
   const domainAccent =
     /forecast|revenue|dashboard|analytics|pipeline|performance|metas|predictability/.test(activeTab)
       ? 'gold'
@@ -44,6 +49,7 @@ export function MainLayout({ children, activeTab: activeTabProp }: MainLayoutPro
 
   return (
     <div className="relative flex flex-col h-screen h-[100dvh] w-full overflow-hidden bg-bg font-sans text-ink antialiased selection:bg-brand selection:text-on-brand">
+      <SkipLink />
       <OfflineBanner />
 
       <div className="relative flex flex-1 min-h-0 w-full overflow-hidden">
@@ -61,11 +67,26 @@ export function MainLayout({ children, activeTab: activeTabProp }: MainLayoutPro
         <div className="flex flex-1 flex-col min-w-0 h-full overflow-hidden">
           <AppTopbar onOpenMobileNav={toggleMobileNav} activeTab={activeTab as TabType} />
 
+          {/* id="main-content" + tabIndex={-1}: alvo do SkipLink (WCAG 2.4.1) entregue pelo
+              Agente 34 em src/components/a11y/SkipLink.tsx (branch agente/34-accessibility-onda3,
+              pendente de merge). Declarativo aqui para que, após o merge, o componente funcione
+              sem nova alteração neste arquivo — ver handoff 31→00 sobre ordem de integração. */}
           <main
-            className="relative flex-1 overflow-y-auto"
+            id="main-content"
+            tabIndex={-1}
+            className="relative flex-1 overflow-y-auto outline-none"
+            data-module={activeModuleId}
             data-accent={domainAccent}
             data-page-accent={domainAccent}
-            style={{ '--page-accent': `var(--color-heading-${domainAccent})` } as CSSProperties}
+            style={
+              {
+                '--page-accent': `var(--color-heading-${domainAccent})`,
+                '--module-primary': activeModuleTheme.primaryColor,
+                '--module-accent': activeModuleTheme.accentColor,
+                '--module-gradient': activeModuleTheme.gradient,
+                '--module-glow': activeModuleTheme.hoverGlow,
+              } as CSSProperties
+            }
           >
             <DataFlowLines />
             <PageTransition id={pathname}>{children}</PageTransition>

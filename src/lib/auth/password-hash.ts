@@ -25,6 +25,19 @@ const DEFAULT_PARALLELISM = 1;
 const DEFAULT_KEY_LEN = 32;
 const SALT_BYTES = 16;
 
+// Limites superiores dos parâmetros Argon2 aceitos na VERIFICAÇÃO. Os parâmetros vêm do próprio
+// hash persistido (Account.password), então um hash corrompido/adulterado no banco poderia pedir
+// m=TBs de memória e derrubar o processo por OOM durante um simples login — defense-in-depth:
+// mesmo que a escrita no banco esteja comprometida, a verificação nunca aloca além do razoável.
+// Os pisos (m>=8, t>=1, p>=1, salt>=8B, hash>=16B) já existiam; faltavam os tetos.
+const MAX_ARGON2_MEMORY_KIB = 1_048_576; // 1 GiB — muito acima de qualquer configuração realista
+const MAX_ARGON2_TIME_COST = 10;
+const MAX_ARGON2_PARALLELISM = 8;
+const MIN_ARGON2_VERSION = 16; // 0x10 — única outra versão histórica do Argon2
+const MAX_ARGON2_VERSION = 19; // 0x13 — RFC 9106
+const MAX_SALT_BYTES = 64;
+const MAX_HASH_BYTES = 64;
+
 function toBase64NoPad(bytes: Uint8Array): string {
   return Buffer.from(bytes).toString('base64').replace(/=+$/, '');
 }
@@ -78,23 +91,46 @@ export async function verifyPasswordHash(data: {
     const saltB64 = parts[4] ?? '';
     const expectedHashB64 = parts[5] ?? '';
 
-    if (!saltB64 || !expectedHashB64 || m < 8 || t < 1 || p < 1) {
+    if (
+      !saltB64 ||
+      !expectedHashB64 ||
+      m < 8 ||
+      m > MAX_ARGON2_MEMORY_KIB ||
+      t < 1 ||
+      t > MAX_ARGON2_TIME_COST ||
+      p < 1 ||
+      p > MAX_ARGON2_PARALLELISM ||
+      version < MIN_ARGON2_VERSION ||
+      version > MAX_ARGON2_VERSION
+    ) {
       return false;
     }
 
     const salt = fromBase64NoPad(saltB64);
     const expectedHash = fromBase64NoPad(expectedHashB64);
-    if (salt.byteLength < 8 || expectedHash.byteLength < 16) {
+    if (
+      salt.byteLength < 8 ||
+      salt.byteLength > MAX_SALT_BYTES ||
+      expectedHash.byteLength < 16 ||
+      expectedHash.byteLength > MAX_HASH_BYTES
+    ) {
       return false;
     }
 
-    const derived = await argon2idAsync(password.normalize('NFKC'), salt, {
-      m,
-      t,
-      p,
-      dkLen: expectedHash.byteLength,
-      version,
-    });
+    // Hash malformado/adulterado no banco não pode derrubar o login com exceção: qualquer erro
+    // do Argon2 (parâmetros, alocação, base64 residual) vira simplesmente "senha não confere".
+    let derived: Uint8Array;
+    try {
+      derived = await argon2idAsync(password.normalize('NFKC'), salt, {
+        m,
+        t,
+        p,
+        dkLen: expectedHash.byteLength,
+        version,
+      });
+    } catch {
+      return false;
+    }
 
     if (derived.byteLength !== expectedHash.byteLength) {
       return false;

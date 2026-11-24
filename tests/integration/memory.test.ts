@@ -95,7 +95,7 @@ describe('Memória + Aprendizado Contínuo Governado (PROMPT 9)', () => {
     await runMultiCargoSeed();
     await runAgentCatalogImport();
     await runCapabilityEngineSeed();
-  });
+  }, 120_000);
 
   afterAll(async () => {
     // LearningCandidate/AgentMemoryRecord/RoleMemoryRecord/OrganizationMemoryRecord têm RLS

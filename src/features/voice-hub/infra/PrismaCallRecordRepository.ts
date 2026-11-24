@@ -5,6 +5,13 @@
 
 import { randomUUID } from 'node:crypto';
 
+export interface DiarizedTurn {
+  speaker: 'SELLER' | 'CUSTOMER';
+  text: string;
+  startMs?: number;
+  endMs?: number;
+}
+
 export interface CallRecordData {
   id: string;
   organizationId: string;
@@ -16,6 +23,9 @@ export interface CallRecordData {
   redactedTranscript: string;
   talkRatioSeller: number;
   talkRatioCustomer: number;
+  sentiment?: 'POSITIVO' | 'NEUTRO' | 'NEGATIVO';
+  sentimentScore?: number;
+  diarizedTurns?: DiarizedTurn[];
   createdAt: Date;
 }
 

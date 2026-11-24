@@ -167,7 +167,9 @@ describe('API LDR — autenticação, autorização e origem do tenant', () => {
     service.getIntelligence.mockRejectedValueOnce(new AppError('Conta não encontrada.', 404));
 
     const response = await request(buildApp({ authenticatedAs: session('org-a') }))
-      .get('/api/market-intelligence/accounts/company-from-org-b/intelligence')
+      // Id opaco na URL: o RFC 7807 `instance` ecoa o path pedido pelo próprio chamador, então um
+      // id contendo o nome do tenant faria a asserção abaixo acusar o eco, não um vazamento.
+      .get('/api/market-intelligence/accounts/company-foreign-7f3a/intelligence')
       .set('x-organization-id', 'org-b');
 
     expect(response.status).toBe(404);
@@ -182,6 +184,33 @@ describe('API LDR — autenticação, autorização e origem do tenant', () => {
     });
     expect(JSON.stringify(response.body)).not.toContain('org-b');
     expect(getTenantPrismaMock).toHaveBeenCalledWith('org-a');
+  });
+
+  it('404 de empresa de outro tenant é indistinguível do 404 de empresa inexistente', async () => {
+    // O service filtra por tenant e lança o mesmo AppError nos dois casos; o que se fixa aqui é que
+    // nada na borda HTTP (header de organização forjado incluso) os torna distinguíveis.
+    service.getIntelligence.mockRejectedValue(new AppError('Conta não encontrada.', 404));
+    const app = buildApp({ authenticatedAs: session('org-a') });
+
+    const foreign = await request(app)
+      .get('/api/market-intelligence/accounts/company-foreign-7f3a/intelligence')
+      .set('x-organization-id', 'org-b');
+    const missing = await request(app).get(
+      '/api/market-intelligence/accounts/company-missing/intelligence',
+    );
+
+    const { instance: foreignInstance, ...foreignBody } = foreign.body;
+    const { instance: missingInstance, ...missingBody } = missing.body;
+
+    expect(foreign.status).toBe(404);
+    expect(missing.status).toBe(404);
+    expect(foreign.headers['content-type']).toBe(missing.headers['content-type']);
+    expect(foreignBody).toEqual(missingBody);
+    // `instance` só ecoa o path que o próprio chamador enviou.
+    expect(foreignInstance).toBe(
+      '/api/market-intelligence/accounts/company-foreign-7f3a/intelligence',
+    );
+    expect(missingInstance).toBe('/api/market-intelligence/accounts/company-missing/intelligence');
   });
 
   it('responde o mesmo 404 seguro para empresa inexistente', async () => {

@@ -31,6 +31,8 @@ export interface VoiceCommandExecutionResult {
   committedAt?: string;
   data?: unknown;
   error?: string;
+  /** true quando o executor é uma simulação — NUNCA confirmado como execução real */
+  simulated?: boolean;
 }
 
 export class VoiceCommandCommitError extends Error {
@@ -47,17 +49,40 @@ export class VoiceCommandCommitError extends Error {
 
 export interface DatabaseMutationRunner {
   mutate(organizationId: string, command: VoiceCommandPayload): Promise<unknown>;
+  /**
+   * true = executor de simulação/dry-run. Um runner simulado NUNCA pode
+   * produzir confirmed: true — resposta honesta exige commit real.
+   */
+  readonly simulation?: boolean;
 }
 
 /**
  * Processador central de comandos de voz com garantia de confirmação atômica pós-commit.
  * REGRA INVIOLÁVEL: A UI/Voz NUNCA receberá confirmed: true se a mutação no banco falhar ou for revertida.
+ * REGRA B-07 (simulação): executores marcados como simulation retornam falha honesta,
+ * pois anunciar execução sem commit real é exatamente o bloqueador histórico.
  */
 export async function executeVoiceCommandWithCommit(
   command: VoiceCommandPayload,
   dbRunner: DatabaseMutationRunner,
 ): Promise<VoiceCommandExecutionResult> {
   const commandId = command.commandId ?? randomUUID();
+
+  if (dbRunner.simulation === true) {
+    logger.warn(
+      { commandId, type: command.type, organizationId: command.organizationId },
+      'VoiceHub [B-07]: executor SIMULADO rejeitado — confirmação positiva exige commit real no banco.',
+    );
+    return {
+      commandId,
+      type: command.type,
+      organizationId: command.organizationId,
+      success: false,
+      confirmed: false,
+      simulated: true,
+      error: 'EXECUTOR_SIMULATION_NOT_ALLOWED: comando de voz exige executor real com commit no banco.',
+    };
+  }
 
   logger.info(
     {

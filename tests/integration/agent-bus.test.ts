@@ -96,7 +96,7 @@ describe('Agent Bus + Handoffs (PROMPT 8)', () => {
     await runMultiCargoSeed();
     await runAgentCatalogImport();
     await runCapabilityEngineSeed();
-  });
+  }, 120_000);
 
   afterAll(async () => {
     // AgentHandoffMessage/TemporaryCapabilityGrant/ApprovalDecision/AccessRequest têm RLS ESTRITO

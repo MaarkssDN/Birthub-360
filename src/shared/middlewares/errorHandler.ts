@@ -86,6 +86,7 @@ function isRestrictedEnvironment(): boolean {
   const nodeEnv = (process.env.NODE_ENV || env.NODE_ENV || '').toLowerCase();
   const appEnv = (process.env.APP_ENV || '').toLowerCase();
   return (
+    env.NODE_ENV === 'production' ||
     nodeEnv === 'production' ||
     nodeEnv === 'staging' ||
     appEnv === 'production' ||
@@ -186,7 +187,8 @@ function sendError(
 ): void {
   const code = options?.code ?? codeForStatus(status);
   const codeSlug = code.toLowerCase().replace(/_/g, '-');
-  const instance = req.originalUrl || req.url || '/';
+  const rawInstance = req.originalUrl || req.url || '/';
+  const instance = rawInstance.split('?')[0] || '/';
 
   const body: ApiResponse = {
     success: false,
@@ -204,7 +206,8 @@ function sendError(
   };
   if (options?.details !== undefined) body.details = options.details;
 
-  const acceptsProblemJson = req.header('accept')?.includes('application/problem+json');
+  const accept = req.header?.('accept') ?? req.headers?.accept;
+  const acceptsProblemJson = accept?.includes('application/problem+json');
   if (acceptsProblemJson) {
     res.setHeader('Content-Type', 'application/problem+json; charset=utf-8');
   }

@@ -2,6 +2,7 @@ import '@testing-library/jest-dom/vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { api } from '../../../../src/lib/api.js';
+import { toast } from '../../../../src/lib/toast.js';
 import { voiceHubApi } from '../../../../src/features/voice-hub/api/voiceHub.api.js';
 import { VoiceHubView } from '../../../../src/features/voice-hub/components/VoiceHubView.js';
 
@@ -135,6 +136,53 @@ describe('Capacidade 5 — VoiceHub & Telefonia (Unit & Flow)', () => {
         phone: '11988887777',
         reason: 'Opt-out via WhatsApp',
       });
+    });
+
+    it('deve listar chamadas de voz do endpoint canônico birth-voice/calls', async () => {
+      const mockCalls = {
+        calls: [
+          {
+            id: 'call_1',
+            leadId: 'lead_1',
+            leadTitle: 'Padaria Pão Quente',
+            outcome: 'completed',
+            durationSeconds: 95,
+            summary: 'Lead demonstrou interesse.',
+            recordingUrl: 'https://cdn.example.com/rec.wav',
+            createdAt: '2026-10-16T15:00:00Z',
+          },
+        ],
+        nextCursor: null,
+      };
+
+      vi.spyOn(api, 'get').mockResolvedValueOnce(mockCalls);
+
+      const page = await voiceHubApi.getVoiceCalls();
+      expect(api.get).toHaveBeenCalledWith('/api/integrations/birth-voice/calls?limit=50');
+      expect(page.calls).toHaveLength(1);
+      expect(page.calls[0].outcome).toBe('completed');
+      expect(page.calls[0].leadTitle).toBe('Padaria Pão Quente');
+      expect(page.nextCursor).toBeNull();
+    });
+
+    it('deve retornar detalhe de chamada com transcrição via endpoint canônico', async () => {
+      const mockDetail = {
+        id: 'call_1',
+        leadId: 'lead_1',
+        leadTitle: null,
+        outcome: 'no-answer',
+        durationSeconds: 4,
+        summary: null,
+        transcript: 'Agente: Alô?\nUsuário: ...',
+        recordingUrl: null,
+        createdAt: '2026-10-16T15:00:00Z',
+      };
+
+      vi.spyOn(api, 'get').mockResolvedValueOnce(mockDetail);
+
+      const detail = await voiceHubApi.getVoiceCall('call_1');
+      expect(api.get).toHaveBeenCalledWith('/api/integrations/birth-voice/calls/call_1');
+      expect(detail?.transcript).toContain('Agente:');
     });
 
     it('deve listar conexões ativas do PABX 3CX', async () => {
@@ -272,6 +320,7 @@ describe('Capacidade 5 — VoiceHub & Telefonia (Unit & Flow)', () => {
         status: 'queued',
         callSid: 'CA_test_success_123',
       });
+      const toastSuccess = vi.spyOn(toast, 'success');
 
       render(<VoiceHubView />);
 
@@ -283,9 +332,10 @@ describe('Capacidade 5 — VoiceHub & Telefonia (Unit & Flow)', () => {
 
       await waitFor(() => {
         expect(voiceHubApi.callLead).toHaveBeenCalledWith('lead_abc_456', 'sdr');
-        expect(
-          screen.getByText(/Ligação iniciada com sucesso via SDR de voz/i),
-        ).toBeInTheDocument();
+        // Feedback transitório vai para o toast global (padrão do app), não para um alert inline.
+        expect(toastSuccess).toHaveBeenCalledWith(
+          expect.stringContaining('Ligação iniciada com sucesso via SDR de voz'),
+        );
       });
     });
 
@@ -303,6 +353,7 @@ describe('Capacidade 5 — VoiceHub & Telefonia (Unit & Flow)', () => {
           },
         },
       });
+      const toastError = vi.spyOn(toast, 'error');
 
       render(<VoiceHubView />);
 
@@ -313,9 +364,9 @@ describe('Capacidade 5 — VoiceHub & Telefonia (Unit & Flow)', () => {
       fireEvent.click(submitBtn);
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/Número na lista interna de bloqueio \(opt-out\)/i),
-        ).toBeInTheDocument();
+        expect(toastError).toHaveBeenCalledWith(
+          expect.stringContaining('Número na lista interna de bloqueio (opt-out)'),
+        );
       });
     });
   });

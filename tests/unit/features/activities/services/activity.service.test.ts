@@ -18,12 +18,16 @@ vi.mock('@/lib/prisma', () => ({
     },
     $transaction: vi.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
     automation: { findMany: vi.fn().mockResolvedValue([]) },
+    // assertActivityLeadInTenant (Agente 41, ONDA3) valida leadId contra organizationId.
+    lead: { findFirst: vi.fn() },
   },
 }));
 
 describe('ActivityService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Lead existe no tenant por padrão — os testes de create/update assumem vínculo válido.
+    vi.mocked(prisma.lead.findFirst).mockResolvedValue({ id: 'lead-1' } as never);
   });
 
   const mockActivity = {
@@ -40,7 +44,7 @@ describe('ActivityService', () => {
     vi.mocked(prisma.activity.count).mockResolvedValue(1);
     const result = await activityService.findAll('test-org-id');
     expect(prisma.activity.findMany).toHaveBeenCalledWith({
-      where: { organizationId: 'test-org-id' },
+      where: { organizationId: 'test-org-id', deletedAt: null },
       include: { lead: { include: { company: true, contact: true } } },
       orderBy: { date: 'asc' },
       skip: 0,
@@ -59,7 +63,7 @@ describe('ActivityService', () => {
     const result = await activityService.findAll('test-org-id', dateStr);
     expect(prisma.activity.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { date: expect.any(Object), organizationId: 'test-org-id' },
+        where: { date: expect.any(Object), organizationId: 'test-org-id', deletedAt: null },
       }),
     );
     expect(result.data).toEqual([mockActivity]);
@@ -154,11 +158,13 @@ describe('ActivityService', () => {
     ).rejects.toThrow('Activity not found');
   });
 
-  it('should delete an activity', async () => {
+  it('should soft-delete an activity (mesmo comportamento do PrismaActivityRepository)', async () => {
     vi.mocked(prisma.activity.findFirst).mockResolvedValue(mockActivity as never);
     await activityService.delete('test-org-id', '1');
-    expect(prisma.activity.delete).toHaveBeenCalledWith({
-      where: { id: '1', organizationId: 'test-org-id' },
+    expect(prisma.activity.update).toHaveBeenCalledWith({
+      where: { id: '1' },
+      data: { deletedAt: expect.any(Date) },
     });
+    expect(prisma.activity.delete).not.toHaveBeenCalled();
   });
 });

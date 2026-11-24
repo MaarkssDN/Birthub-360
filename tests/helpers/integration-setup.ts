@@ -96,19 +96,32 @@ async function deleteOrganizationsAsOwner(args?: {
     // Permite bypass de RLS na conexão do owner para operações administrativas de teste
     await client.query(`SELECT set_config('app.bypass_rls', 'on', false)`).catch(() => {});
 
-    // Se nenhum filtro foi fornecido, descobre todos os IDs de Organization existentes
+    // Se nenhum filtro foi fornecido, descobre todos os IDs de Organization existentes,
+    // preservando deterministicamente a organização de baseline de compliance (BT360-DT-0071).
     if (targetIds.length === 0) {
-      const res = await client.query<{ id: string }>('SELECT id FROM "Organization"');
+      const res = await client.query<{ id: string }>(
+        `SELECT id FROM "Organization" WHERE id != 'compliance-baseline-org'`,
+      );
       targetIds = res.rows.map((r) => r.id);
+    } else {
+      // Mesmo com filtro explícito, nunca deleta compliance-baseline-org no harness padrão
+      targetIds = targetIds.filter((id) => id !== 'compliance-baseline-org');
     }
 
     if (targetIds.length === 0) return { count: 0 };
 
     // Para cada organização, limpa as tabelas com FK RESTRICT ou triggers de retenção.
-    // As 22 tabelas abaixo têm FK organizationId → Organization ON DELETE RESTRICT desde a
-    // migração 20261112000000_tenant_fk_cascade_to_restrict (TAREFA-SANEAMENTO-014): sem
-    // deletar os filhos antes, o DELETE da Organization falha com violação de FK.
+    // As tabelas abaixo têm FK organizationId → Organization ON DELETE RESTRICT (TAREFA-SANEAMENTO-014)
+    // ou relações filhas (ex.: AccountSignal, DecisionMaker, IntelligenceEvidence) que referenciam
+    // snapshots com ON DELETE RESTRICT: sem deletar os filhos em ordem reversa, o DELETE falha com FK violation.
     const RESTRICT_FK_TABLES = [
+      'AccountSignal',
+      'DecisionMaker',
+      'IntelligenceEvidence',
+      'AccountScore',
+      'AccountRecommendation',
+      'EconomicRelationship',
+      'AccountIntelligenceSnapshot',
       'AIGuardrailEvent',
       'AgentExecution',
       'AgentMemoryRecord',
@@ -117,7 +130,6 @@ async function deleteOrganizationsAsOwner(args?: {
       'LeadStageHistory',
       'DealClosureEvent',
       'ForecastSnapshot',
-      'AccountIntelligenceSnapshot',
       'CopilotoDealHealthSnapshot',
       'CopilotoConsentRecord',
       'OrganizationAiConsent',

@@ -1,5 +1,10 @@
 import type { z } from 'zod';
 import { activitySchema } from '../../../lib/zod.js';
+import {
+  ACTIVITY_DEFAULT_TIME_ZONE,
+  civilDateInZone,
+  wallTimeInZoneToUtcIso,
+} from '../domain/activityDate.js';
 import type { ActivityListFilters, ActivityRepository } from '../domain/Activity.js';
 import { assertRealOwner } from '../domain/ownerGuard.js';
 
@@ -147,11 +152,16 @@ export class ActivityUseCases {
     ];
 
     for (const act of filtered) {
-      const startDate = new Date(act.date);
-      if (act.time) {
-        const [hh, mm] = act.time.split(':').map(Number);
-        startDate.setHours(hh || 9, mm || 0, 0, 0);
-      }
+      // Bug de fuso (handoff 45, item 1): `act.date` é um instante e `act.time` é horário de
+      // parede. O código anterior fazia `startDate.setHours(hh,mm)` no fuso DO SERVIDOR (UTC em
+      // produção) e exportava com sufixo `Z` — o evento aparecia 3h adiantado/errado no
+      // calendário do assinante. Correto: reconstruir o dia civil no fuso do produto + o
+      // horário de parede e converter para o instante UTC real.
+      const actInstant = new Date(act.date);
+      const civilDay = civilDateInZone(actInstant, ACTIVITY_DEFAULT_TIME_ZONE);
+      const startDate = new Date(
+        wallTimeInZoneToUtcIso(civilDay, act.time || undefined, ACTIVITY_DEFAULT_TIME_ZONE),
+      );
       const endDate = new Date(startDate.getTime() + 45 * 60 * 1000);
 
       const leadObj = (

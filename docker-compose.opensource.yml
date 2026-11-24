@@ -248,6 +248,17 @@ services:
       BASE_URL: http://host.docker.internal:3000
     extra_hosts: ['host.docker.internal:host-gateway']
 
+  # Cenario de carga para rotas de ANALYTICS e COMMERCIAL INTELLIGENCE (Handoff P04/P05).
+  # `npm run load:k6:analytics` monta este servico.
+  k6-analytics:
+    image: grafana/k6:latest
+    profiles: [tools]
+    command: ['run', '/tests/k6-analytics-commercial-intelligence.js']
+    volumes: ['./tests/load/k6-analytics-commercial-intelligence.js:/tests/k6-analytics-commercial-intelligence.js:ro']
+    environment:
+      BASE_URL: http://host.docker.internal:3000
+    extra_hosts: ['host.docker.internal:host-gateway']
+
   zap:
     image: ghcr.io/zaproxy/zaproxy:stable
     profiles: [tools]

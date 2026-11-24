@@ -14,6 +14,15 @@ info:
     lib, mas o contrato completo (inclusive `/api/auth/sign-in/social`,
     `/api/auth/sign-out`, `/api/auth/get-session`, etc.) é o padrão do Better Auth.
 
+    **Exceções de autenticação**: operações marcadas com `security: []` não exigem
+    cookie de sessão. Isso cobre (a) webhooks de entrada de integrações
+    (`/webhooks/*`, `/integrations/*/webhook*`), cuja autenticidade é provada por
+    assinatura HMAC ou segredo por conexão — montados antes do `express.json()`
+    global em `src/bootstrap/webhooks.ts` — e (b) endpoints públicos de
+    captação/agendamento/DSR (`/public/*`, `/calendar/book/{slug}`,
+    `/public/proposals/{token}/view`), protegidos por rate limit e/ou token
+    opaco na URL, montados sem `authenticateToken`/`requireTenant`.
+
     **Multi-tenant**: toda rota autenticada (exceto `/api/auth/*`) roda sob
     `requireTenant`, que resolve o `organizationId` da sessão. Recursos operacionais
     são filtrados pelo tenant. O catálogo público oficial de Market Intelligence é
@@ -154,6 +163,15 @@ tags:
   - name: Módulos da Organização
     description: >-
       Gerenciamento de módulos de produto ativos e conclusão do onboarding da organização (/setup)
+  - name: Settings por Pilar
+    description: >-
+      Preferências operacionais por pilar da aba "Ferramentas & Regras"
+      (`PillarSettingsPlaceholder`), persistidas em `Setting` por organização
+      (`key = settings.pilar.<slug>`, `userId = null`). GET para qualquer usuário
+      autenticado do tenant; PUT restrito a ADMIN (`requireRole`). As abas
+      Permissões, Gatilhos e Integrações da UI são placeholders visuais e não
+      têm contrato HTTP aqui.
+
   - name: Webhooks
     description: >-
       Endpoints de entrada de provedores externos, montados ANTES do `express.json()` global —
@@ -262,6 +280,106 @@ paths:
         '401': { description: Não autenticado }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+  /settings/pillars/{pillar}:
+    parameters:
+      - name: pillar
+        in: path
+        required: true
+        description: >-
+          Slug do pilar (`PILLAR_SLUGS` em `src/features/settings/domain/pillarSettings.ts`,
+          linhas 12–21). Valor fora desse conjunto responde 404 com a mensagem
+          `Pilar de settings desconhecido: {pillar}` (`assertSlug` em
+          `pillarSettings.routes.ts`, linhas 48–52).
+        schema:
+          $ref: '#/components/schemas/PillarSlug'
+    get:
+      tags: [Settings por Pilar]
+      summary: Lê as configurações operacionais de um pilar do tenant
+      description: >-
+        Montado em `/api/settings/pillars` com `authenticateToken` + `requireTenant`
+        (`src/bootstrap/routes.ts`, linha 228). Qualquer usuário autenticado do
+        tenant pode ler. Devolve `PillarSettingsView`: defaults do pilar mesclados
+        com o persistido (`mergePillarValues`), `configured=false` e `updatedAt=null`
+        quando a organização ainda não gravou o pilar
+        (`pillarSettings.service.ts`, linhas 46–56). Envelope
+        `{ success: true, data }` emitido por `handle` em `pillarSettings.routes.ts`
+        (linhas 27–31 e 55–59).
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200':
+          description: Configurações do pilar (defaults mesclados com o persistido)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PillarSettingsEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: >-
+            Pilar desconhecido. Corpo emitido por `handle` via
+            `PillarSettingsServiceError` (`pillarSettings.routes.ts`, linhas 49–50 e 37–40):
+            `{ success: false, error: "Pilar de settings desconhecido: {pillar}" }`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags: [Settings por Pilar]
+      summary: Atualiza parcialmente as configurações de um pilar (somente ADMIN)
+      description: >-
+        Mesmo mount de autenticação/tenant do GET, mais `requireRole(['ADMIN'])`
+        no próprio router (`pillarSettings.routes.ts`, linhas 62–72). O corpo é
+        `{ values: <patch> }`; só as chaves enviadas são validadas e mescladas
+        sobre defaults + persistido (`validatePillarPatch` + `mergePillarValues`).
+        Chaves fora de `PILLAR_FIELDS` do pilar, tipo ou faixa inválidos respondem
+        400. Não concede permissão real — RBAC continua no backend.
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PillarSettingsUpdateRequest'
+      responses:
+        '200':
+          description: Configurações atualizadas (`configured=true`, `updatedAt` ISO-8601)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PillarSettingsEnvelope'
+        '400':
+          description: >-
+            Patch inválido. Mensagens reais de `validatePillarPatch`
+            (`pillarSettings.ts`, linhas 140–190), reemitidas como
+            `PillarSettingsServiceError` 400 (`pillarSettings.service.ts`,
+            linhas 74–79): `Campo "values" deve ser um objeto.`;
+            `Campo desconhecido para o pilar "{slug}": {key}`;
+            `Campo "{key}" deve ser booleano.`;
+            `Campo "{key}" deve ser numérico.`;
+            `Campo "{key}" deve ser >= {min}.`;
+            `Campo "{key}" deve ser <= {max}.`;
+            `Campo "{key}" deve ser texto não vazio.`;
+            `Campo "{key}" deve ser um de: {enumValues}`.
+            O serviço também responde 400 com `Contexto de organização é obrigatório.`
+            se `organizationId` vier vazio (defesa no use case; o mount já aplica
+            `requireTenant`).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: >-
+            Pilar desconhecido. Mesmo corpo do GET 404:
+            `{ success: false, error: "Pilar de settings desconhecido: {pillar}" }`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /sales-orchestration/overview:
     get:
       tags: [Sales Orchestration]
@@ -355,95 +473,360 @@ paths:
                 properties:
                   success: { type: boolean }
 
-  /market-intelligence/companies:
+  /agent/commercial-v3/agents:
     get:
-      tags: [Market Intelligence]
-      summary: Pesquisa empresas do snapshot CNPJ publicado
-      description: Filtros, ordenação e paginação são executados no PostgreSQL. pageSize máximo 200.
-      parameters:
-        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
-        - {
-            name: pageSize,
-            in: query,
-            schema: { type: integer, minimum: 1, maximum: 200, default: 50 },
-          }
-        - { name: cnpj, in: query, schema: { type: string } }
-        - { name: razaoSocial, in: query, schema: { type: string, minLength: 2 } }
-        - { name: nomeFantasia, in: query, schema: { type: string, minLength: 2 } }
-        - { name: cnae, in: query, schema: { type: string } }
-        - {
-            name: cnaeScope,
-            in: query,
-            schema: { type: string, enum: [principal, all], default: all },
-          }
-        - { name: municipio, in: query, schema: { type: string } }
-        - { name: municipioIbge, in: query, schema: { type: string, pattern: '^\d{7}$' } }
-        - { name: uf, in: query, schema: { type: string, pattern: '^[A-Z]{2}$' } }
-        - {
-            name: situacaoCadastral,
-            in: query,
-            schema: { type: string, enum: [ATIVA, SUSPENSA, INAPTA, BAIXADA, NULA] },
-          }
-        - {
-            name: icpMinimo,
-            in: query,
-            schema: { type: string, enum: [MUITO_ALTO, ALTO, MEDIO, BAIXO, FORA_DO_ICP] },
-          }
-        - { name: matrizFilial, in: query, schema: { type: string, enum: [MATRIZ, FILIAL] } }
-        - { name: rntrc, in: query, schema: { type: boolean } }
-        - { name: porte, in: query, schema: { type: string } }
-        - { name: simples, in: query, schema: { type: string, enum: [SIM, NAO, NAO_INFORMADO] } }
-        - { name: mei, in: query, schema: { type: string, enum: [SIM, NAO, NAO_INFORMADO] } }
-        - { name: capitalSocialMin, in: query, schema: { type: number, minimum: 0 } }
-        - { name: capitalSocialMax, in: query, schema: { type: number, minimum: 0 } }
-        - {
-            name: sort,
-            in: query,
-            schema:
-              {
-                type: string,
-                enum: [razaoSocial, nomeFantasia, capitalSocial, icpScore, dataInicioAtividade],
-              },
-          }
-        - { name: order, in: query, schema: { type: string, enum: [asc, desc] } }
-      responses:
-        '200': { description: Página de empresas e metadados da competência }
-        '400': { description: Filtro inválido }
-        '503': { description: Nenhum snapshot READY publicado }
-  /market-intelligence/companies/{cnpj}:
-    get:
-      tags: [Market Intelligence]
-      summary: Abre o detalhe empresarial de um CNPJ
-      parameters:
-        - name: cnpj
-          in: path
-          required: true
-          schema: { type: string }
+      tags: [Agent]
+      summary: Lista os agentes comerciais V3.1
+      security: [{ sessionCookie: [] }]
       responses:
         '200':
-          { description: 'Identificação, CNAE, endereço, contato público, ICP, RNTRC e proveniência' }
-        '400': { description: CNPJ inválido }
-        '404': { description: CNPJ ausente no snapshot publicado }
-  /market-intelligence/companies/{cnpj}/approve-to-pipeline:
-    parameters:
-      - name: cnpj
-        in: path
-        required: true
-        schema: { type: string }
-    post:
-      tags: [Market Intelligence]
-      summary: >-
-        Promove uma empresa do catálogo público de Market Intelligence para o pipeline comercial
-        do tenant (cria/vincula `Company` no CRM) — Agente 18, achado de auditoria: endpoint real,
-        sem entrada aqui.
-      responses:
-        '201':
-          description: Empresa aprovada e promovida ao pipeline
+          description: Lista dos 19 agentes comerciais da suíte V3.1
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DataEnvelope'
-        '400': { description: CNPJ inválido }
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
+  /agent/commercial-v3/agents/{agentId}:
+    get:
+      tags: [Agent]
+      summary: Retorna detalhe do agente comercial V3.1
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            enum:
+              - supervisor
+              - gestao
+              - icp
+              - account_intel
+              - prospeccao
+              - intencao
+              - outbound
+              - sdr
+              - solucoes
+              - negociacao
+              - deal_desk
+              - deal_health
+              - forecast
+              - growth_analytics
+              - coaching
+              - crm
+              - expansao
+              - parcerias
+              - winloss
+      responses:
+        '200':
+          description: Detalhes do agente, habilidades associadas, playbooks e handoffs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data: { type: object, additionalProperties: true }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
+  /agent/commercial-v3/playbooks/{agentId}/{playbookId}:
+    get:
+      tags: [Agent]
+      summary: Recupera um playbook operacional do agente comercial V3.1
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            enum:
+              - supervisor
+              - gestao
+              - icp
+              - account_intel
+              - prospeccao
+              - intencao
+              - outbound
+              - sdr
+              - solucoes
+              - negociacao
+              - deal_desk
+              - deal_health
+              - forecast
+              - growth_analytics
+              - coaching
+              - crm
+              - expansao
+              - parcerias
+              - winloss
+        - in: path
+          name: playbookId
+          required: true
+          schema: { type: string, minLength: 1 }
+      responses:
+        '200':
+          description: Conteúdo Markdown e metadados do playbook
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    additionalProperties: true
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
+  /agent/commercial-v3/skills:
+    get:
+      tags: [Agent]
+      summary: Lista skills da suíte comercial V3.1
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - in: query
+          name: agentId
+          required: false
+          schema:
+            type: string
+            enum:
+              - supervisor
+              - gestao
+              - icp
+              - account_intel
+              - prospeccao
+              - intencao
+              - outbound
+              - sdr
+              - solucoes
+              - negociacao
+              - deal_desk
+              - deal_health
+              - forecast
+              - growth_analytics
+              - coaching
+              - crm
+              - expansao
+              - parcerias
+              - winloss
+      responses:
+        '200':
+          description: Lista de skills com contagem total
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  total: { type: integer, example: 463 }
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
+  /agent/commercial-v3/policy:
+    get:
+      tags: [Agent]
+      summary: Retorna a política de execução operacional do agente comercial V3.1
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200':
+          description: Política de execução, limites e salvaguardas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data: { type: object, additionalProperties: true }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
+  /agent/commercial-v3/context:
+    post:
+      tags: [Agent]
+      summary: Monta o contexto do agente comercial V3.1
+      description: Requer perfil ADMIN, GESTOR, CLOSER ou SDR.
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [agentId]
+              properties:
+                agentId:
+                  type: string
+                  enum:
+                    - supervisor
+                    - gestao
+                    - icp
+                    - account_intel
+                    - prospeccao
+                    - intencao
+                    - outbound
+                    - sdr
+                    - solucoes
+                    - negociacao
+                    - deal_desk
+                    - deal_health
+                    - forecast
+                    - growth_analytics
+                    - coaching
+                    - crm
+                    - expansao
+                    - parcerias
+                    - winloss
+                skillIds:
+                  type: array
+                  items: { type: string }
+      responses:
+        '200':
+          description: Contexto montado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data: { type: object, additionalProperties: true }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
+  /agent/commercial-v3/dispatch:
+    post:
+      tags: [Agent]
+      summary: Dispara uma missão comercial para um agente V3.1
+      description: Requer perfil ADMIN, GESTOR, CLOSER ou SDR.
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [agentId, mission]
+              properties:
+                agentId:
+                  type: string
+                  enum:
+                    - supervisor
+                    - gestao
+                    - icp
+                    - account_intel
+                    - prospeccao
+                    - intencao
+                    - outbound
+                    - sdr
+                    - solucoes
+                    - negociacao
+                    - deal_desk
+                    - deal_health
+                    - forecast
+                    - growth_analytics
+                    - coaching
+                    - crm
+                    - expansao
+                    - parcerias
+                    - winloss
+                mission:
+                  type: string
+                  minLength: 1
+                  maxLength: 4000
+                  description: Enunciado da missão comercial a ser executada
+                skillIds:
+                  type: array
+                  items: { type: string }
+                correlationId: { type: string }
+                allowOperational: { type: boolean }
+      responses:
+        '200':
+          description: Missão despachada e avaliada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data: { type: object, additionalProperties: true }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
+  /agent/commercial-v3/evaluate-redteam:
+    post:
+      tags: [Agent]
+      summary: Executa a auditoria Redteam do agente comercial V3.1
+      description: Requer perfil ADMIN ou GESTOR.
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                agentId:
+                  type: string
+                  enum:
+                    - supervisor
+                    - gestao
+                    - icp
+                    - account_intel
+                    - prospeccao
+                    - intencao
+                    - outbound
+                    - sdr
+                    - solucoes
+                    - negociacao
+                    - deal_desk
+                    - deal_health
+                    - forecast
+                    - growth_analytics
+                    - coaching
+                    - crm
+                    - expansao
+                    - parcerias
+                    - winloss
+                all: { type: boolean }
+      responses:
+        '200':
+          description: Relatório da avaliação Redteam
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data: { type: object, additionalProperties: true }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
   /market-intelligence/data-quality-report:
     get:
       tags: [Market Intelligence]
@@ -967,6 +1350,77 @@ paths:
         '200':
           description: Sessão encerrada
 
+  /auth/sso-providers:
+    get:
+      tags: [Auth]
+      summary: Lista provedores SSO corporativos e status real de configuração
+      security: []
+      responses:
+        '200':
+          description: Provedores SSO e disponibilidade de credenciais
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, providers]
+                properties:
+                  success:
+                    type: boolean
+                  providers:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      required: [id, name, configured]
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        configured:
+                          type: boolean
+
+  /auth/sso-discover:
+    post:
+      tags: [Auth]
+      summary: Descoberta de provedor federado SSO corporativo por domínio ou e-mail
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                domain:
+                  type: string
+                  example: empresa.com.br
+                email:
+                  type: string
+                  example: usuario@empresa.com.br
+      responses:
+        '200':
+          description: Provedor corporativo identificado e configurado
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, domain, provider, providerName, configured]
+                properties:
+                  success:
+                    type: boolean
+                  domain:
+                    type: string
+                  provider:
+                    type: string
+                  providerName:
+                    type: string
+                  configured:
+                    type: boolean
+        '400':
+          description: Domínio ou e-mail corporativo inválido
+        '503':
+          description: Provedor corporativo identificado, mas credenciais de SSO não configuradas no ambiente
+
   /auth-extra/welcome-email:
     post:
       tags: [Auth]
@@ -987,6 +1441,177 @@ paths:
                 properties:
                   success:
                     type: boolean
+
+  /auth-extra/sessions:
+    get:
+      tags: [Auth]
+      summary: Lista as sessões ativas do usuário autenticado
+      description: >-
+        Retorna os dispositivos/sessões do próprio usuário (nunca o token).
+        Cada item carrega `current: true` quando é a sessão da requisição atual.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  sessions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        userAgent:
+                          type: string
+                          nullable: true
+                        ipAddress:
+                          type: string
+                          nullable: true
+                        createdAt:
+                          type: string
+                          format: date-time
+                        expiresAt:
+                          type: string
+                          format: date-time
+                        current:
+                          type: boolean
+
+  /auth-extra/sessions/revoke-others:
+    post:
+      tags: [Auth]
+      summary: Revoga todas as sessões do usuário exceto a atual
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  revoked:
+                    type: integer
+
+  /auth-extra/sessions/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    delete:
+      tags: [Auth]
+      summary: Revoga uma sessão específica do usuário
+      description: >-
+        Não é possível revogar a sessão atual por aqui (use sign-out);
+        tentar isso retorna 400. Sessão de outro usuário ou inexistente retorna 404.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api-keys:
+    get:
+      tags: [API Keys]
+      summary: Lista as API keys do tenant (somente metadados, nunca o segredo)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  keys:
+                    type: array
+                    items:
+                      type: object
+    post:
+      tags: [API Keys]
+      summary: Cria uma API key para o tenant
+      description: >-
+        A chave bruta (`rawKey`) só é retornada nesta resposta — depois disso
+        é irrecuperável. Requer role ADMIN.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 80
+                scopes:
+                  type: array
+                  items:
+                    type: string
+                  maxItems: 30
+                  default: []
+                expiresInDays:
+                  type: integer
+                  minimum: 1
+                  maximum: 3650
+                  nullable: true
+      responses:
+        '201':
+          description: Criada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  key:
+                    type: object
+                  rawKey:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api-keys/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    delete:
+      tags: [API Keys]
+      summary: Revoga uma API key do tenant
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   # ───────────────────────────── Companies ─────────────────────────────
   /companies:
@@ -1866,13 +2491,20 @@ paths:
           type: string
     get:
       tags: [Activities]
-      summary: Retorna detalhes públicos de um link de agendamento (host, horários disponíveis)
+      security: []
+      summary: >-
+        Retorna detalhes públicos de um link de agendamento (host, horários disponíveis).
+        Rota pública — montada em `/api/calendar/book` sem `authenticateToken`/`requireTenant`
+        (`publicBookingRouter`), protegida apenas por rate limit dedicado.
       responses:
         '200':
           description: Detalhes do link de agendamento
     post:
       tags: [Activities]
-      summary: Realiza um agendamento público de reunião com o consultor
+      security: []
+      summary: >-
+        Realiza um agendamento público de reunião com o consultor. Rota pública —
+        mesmo mount sem autenticação do GET acima.
       requestBody:
         required: true
         content:
@@ -1898,6 +2530,351 @@ paths:
       responses:
         '201':
           description: Reunião agendada com sucesso
+
+  /public/demo-leads:
+    post:
+      tags: [Landing]
+      security: []
+      summary: Captura pública de lead da landing 360° (demonstração)
+      description: |
+        Endpoint público, sem autenticação. O tenant é resolvido exclusivamente
+        pela variável de ambiente LANDING_LEAD_ORGANIZATION_ID no servidor —
+        qualquer `tenantId` enviado pelo cliente é ignorado.
+
+        Resposta de sucesso é genérica e idempotente (`202 { ok: true }`) tanto
+        para captura nova quanto para reenvio do mesmo e-mail ou honeypot
+        preenchido, para não enumerar leads existentes.
+
+        Rate limit: PUBLIC_LEAD_RATE_LIMIT_MAX (padrão 5) requisições por IP a
+        cada 15 minutos (`429 { ok: false, error: rate_limited }`).
+
+        Consentimento: o cliente envia `consent: true` e `consentTextVersion`
+        igual a `landing-demo-v1`. O servidor grava timestamp, finalidade
+        `agendamento_demonstracao`, a versão e o texto integral canônico.
+
+        Honeypot: campo opcional `website` deve ir vazio/ausente; se preenchido,
+        a API responde 202 e não persiste.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nome, email, equipe, consent, consentTextVersion, purpose]
+              properties:
+                nome:
+                  type: string
+                  minLength: 2
+                  maxLength: 200
+                email:
+                  type: string
+                  format: email
+                whatsapp:
+                  type: string
+                  description: Opcional. Telefone brasileiro com DDD, com ou sem máscara, com ou sem DDI 55
+                equipe:
+                  type: string
+                  enum: ['1 a 5', '6 a 15', '16 a 50', '50+']
+                consent:
+                  type: boolean
+                  description: Deve ser true (opt-in afirmativo; o servidor rejeita false/omitido)
+                consentTextVersion:
+                  type: string
+                  enum: [landing-demo-v1]
+                purpose:
+                  type: string
+                  enum: [agendamento_demonstracao]
+                website:
+                  type: string
+                  description: Honeypot anti-abuso — deve ser omitido ou string vazia
+      responses:
+        '202':
+          description: Pedido aceito (captura nova, reenvio idempotente ou honeypot)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok]
+                properties:
+                  ok:
+                    type: boolean
+                    enum: [true]
+        '400':
+          description: Payload inválido (e-mail, WhatsApp, equipe, consentimento ou versão do texto)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, error, fields]
+                properties:
+                  ok:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+                    enum: [invalid_payload]
+                  fields:
+                    type: object
+                    additionalProperties:
+                      type: string
+                      description: 'required | invalid | stale'
+        '429':
+          description: Rate limit excedido (por IP, janela de 15 minutos)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, error]
+                properties:
+                  ok:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+                    enum: [rate_limited]
+        '503':
+          description: Tenant da landing não configurado ou falha interna (resposta genérica)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, error]
+                properties:
+                  ok:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+                    enum: [unavailable]
+
+  /public/lead-capture:
+    post:
+      tags: [Landing]
+      security: []
+      summary: Captura pública de lead da landing 360° (formulário "Reserve sua Demonstração", envio por e-mail)
+      description: |
+        Endpoint público, sem autenticação, distinto de `/public/demo-leads`
+        (que persiste Lead no banco). Este endpoint **não persiste nada**: o
+        pedido é encaminhado por e-mail via SMTP para a caixa comercial
+        configurada em `LEAD_CAPTURE_EMAIL` (fallback `SMTP_FROM`/`SMTP_USER`).
+
+        Sem destinatário/SMTP configurado a rota responde `503` — nunca finge
+        sucesso.
+
+        LGPD: `consent` é obrigatório (`true` literal); o servidor rejeita
+        `false`/omitido. O e-mail gerado registra o timestamp do consentimento.
+
+        Honeypot: campo opcional `website` deve ir vazio/ausente; se preenchido,
+        a API responde `200 { success: true }` sem gerar e-mail.
+
+        Rate limit: 5 requisições por IP por hora (`429`).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nome, email, whatsapp, equipe, consent]
+              properties:
+                nome:
+                  type: string
+                  minLength: 2
+                  maxLength: 120
+                email:
+                  type: string
+                  format: email
+                  maxLength: 160
+                whatsapp:
+                  type: string
+                  description: Telefone com DDD; máscara opcional. Dígitos finais devem totalizar 10-13.
+                equipe:
+                  type: string
+                  enum: ['1 a 5', '6 a 15', '16 a 50', '50+']
+                consent:
+                  type: boolean
+                  description: Deve ser true (opt-in afirmativo; o servidor rejeita false/omitido)
+                website:
+                  type: string
+                  description: Honeypot anti-abuso — deve ser omitido ou string vazia
+      responses:
+        '200':
+          description: E-mail de lead enviado (ou honeypot absorvido silenciosamente)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success]
+                properties:
+                  success:
+                    type: boolean
+                    enum: [true]
+        '400':
+          description: Payload inválido (nome, e-mail, WhatsApp, equipe ou consentimento)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, error]
+                properties:
+                  success:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+        '429':
+          description: Rate limit excedido (por IP, janela de 1 hora)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, error]
+                properties:
+                  success:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+        '503':
+          description: SMTP/destinatário não configurado ou falha de envio — resposta honesta, nunca sucesso falso
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, error]
+                properties:
+                  success:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+
+  /public/data-subject-requests:
+    post:
+      tags: [LGPD]
+      summary: Registra solicitação pública de exercício de direitos do titular (LGPD art. 18)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, rightType]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  maxLength: 160
+                rightType:
+                  type: string
+                  enum: [ACCESS, PORTABILITY, CORRECTION, ERASURE, CONSENT_REVOCATION, SHARING_INFO]
+                preferredChannel:
+                  type: string
+                  enum: [email, whatsapp]
+                details:
+                  type: string
+                  maxLength: 2000
+      responses:
+        '202':
+          description: Solicitação recebida (resposta idêntica exista ou não o titular — anti-enumeração)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok]
+                properties:
+                  ok:
+                    type: boolean
+                    enum: [true]
+        '400':
+          description: Payload inválido
+        '429':
+          description: Rate limit excedido
+        '503':
+          description: Canal público DSR indisponível
+
+  /public/data-subject-requests/verify:
+    post:
+      tags: [LGPD]
+      summary: Confere o token de uso único enviado por e-mail e executa o direito solicitado
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [protocol, token]
+              properties:
+                protocol:
+                  type: string
+                token:
+                  type: string
+      responses:
+        '200':
+          description: Direito verificado e processado
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, status]
+                properties:
+                  ok:
+                    type: boolean
+                  status:
+                    type: string
+                  package:
+                    type: string
+        '400':
+          description: Token ou protocolo inválido/expirado
+        '404':
+          description: Titular não encontrado no momento da verificação
+        '429':
+          description: Rate limit excedido
+        '503':
+          description: Canal público DSR indisponível
+
+  /public/data-subject-requests/status/{statusToken}:
+    get:
+      tags: [LGPD]
+      summary: Consulta metadados de acompanhamento da solicitação DSR pelo token opaco
+      security: []
+      parameters:
+        - name: statusToken
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Metadados do protocolo (sem PII)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, protocol, rightType, status, createdAt]
+                properties:
+                  ok:
+                    type: boolean
+                  protocol:
+                    type: string
+                  rightType:
+                    type: string
+                  status:
+                    type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+                  verifiedAt:
+                    type: string
+                    format: date-time
+                    nullable: true
+        '400':
+          description: Token de status inválido
+        '429':
+          description: Rate limit excedido
+        '503':
+          description: Canal público DSR indisponível
 
   # ───────────────────────────── Prospecting ─────────────────────────────
   /prospecting/apollo/reconnect:
@@ -3127,39 +4104,6 @@ paths:
                     items:
                       type: object
 
-  /intelligence/swarm/schedule:
-    post:
-      tags: [Intelligence]
-      summary: Disparo do ciclo do Swarm Scheduler para avaliar leads e acionar cadências (Onda 15)
-      description: >-
-        Executa o ciclo de agendamento do Enxame Comercial Autônomo, avaliando oportunidades
-        estagnadas e enfileirando ações multicanal via CadenceExecutionPort com rate-limiting e
-        respeito às janelas comerciais (handoff 13-para-17).
-      responses:
-        '200':
-          description: Ciclo do scheduler disparado com sucesso
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DataEnvelope'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-
-  /intelligence/swarm/status:
-    get:
-      tags: [Intelligence]
-      summary: Consulta status de execução e métricas do Swarm Scheduler (Onda 15)
-      description: >-
-        Retorna o estado operacional do agendador autônomo, última execução, organizações ativas
-        e volume de recomendações geradas.
-      responses:
-        '200':
-          description: Status operacional do Swarm Scheduler
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SwarmSchedulerStatusResponse'
-
   # ─────────────────── Intelligence Suite (catálogo de 16 ações de IA) ───────────────────
   # Montado em intelligence.routes.ts (`router.use('/suite', aiSuiteRouter)`), restrito a
   # ADMIN/GESTOR/CLOSER/SDR (ver src/features/intelligence/routes/ai-suite.routes.ts). A maioria
@@ -3506,77 +4450,114 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
 
   # ───────────────────────────── Agent (copiloto/voz/swarm) ─────────────────────────────
-  /agent/chat:
-    post:
+  /agent/characters:
+    get:
       tags: [Agent]
-      summary: Copiloto de vendas conversacional (modo padrão/objeções)
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ConversationRequest'
+      summary: Catálogo dos 29 personagens com vínculo de runtime real
+      description: >-
+        Lista o catálogo canônico de personagens (metadados de produto) enriquecido com o
+        vínculo de runtime derivado de registros reais (COMMERCIAL_AGENT_REGISTRY, circuit
+        breaker, gate de concorrência). Montado em `characterRuntime.routes.ts` (GET `/`)
+        sob `/api/agent` (`authenticateToken` + `aiLimiter` em `src/bootstrap/rateLimiters.ts`,
+        `requireTenant` em `src/bootstrap/routes.ts`). Sem `requireRole` adicional — qualquer
+        usuário autenticado do tenant pode ler. Quando o circuit breaker da organização está
+        OPEN, personagens com `runtime.dispatch = swarm-stream` têm `runtime.status` rebaixado
+        para `degraded`.
+      security: [{ sessionCookie: [] }]
       responses:
         '200':
-          description: OK
+          description: Lista de personagens e estado do enxame para a organização autenticada
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConversationResponse'
+                $ref: '#/components/schemas/CharactersListEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
-  /agent/groq:
-    post:
+  /agent/characters/activity:
+    get:
       tags: [Agent]
-      summary: Assistente de consulta rápida (sem contexto de base interna)
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ConversationRequest'
+      summary: Execuções recentes do enxame (audit log real, escopo do tenant)
+      description: >-
+        Devolve logs de auditoria do enxame para a `organizationId` da sessão, via
+        `getSwarmAuditLogs` (`src/features/intelligence/services/swarmAudit.service.ts`).
+        A query `limit` é normalizada no handler (`Number(req.query.limit) || 20`, depois
+        limitada ao intervalo 1–100); não há validação Zod nem resposta 400.
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          description: >-
+            Quantidade de logs (padrão 20, mínimo 1, máximo 100). Implementado em
+            `characterRuntime.routes.ts` (GET `/activity`).
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
       responses:
         '200':
-          description: OK
+          description: Logs e total no escopo da organização autenticada
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConversationResponse'
+                $ref: '#/components/schemas/CharactersActivityEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
-  /agent/roleplay:
-    post:
+  /agent/characters/concurrency:
+    get:
       tags: [Agent]
-      summary: Simulação de comprador B2B para treino de objeções
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ConversationRequest'
+      summary: Estado do gate de concorrência de missões do enxame
+      description: >-
+        Observabilidade do gate de missões para a organização autenticada, via
+        `getSwarmConcurrencyState(organizationId)` em
+        `src/features/intelligence/services/swarmConcurrency.service.ts` (ramo com
+        `organizationId` definido — devolve `maxConcurrent`, `active` e `waiting`, sem o
+        campo agregado `organizations`).
+      security: [{ sessionCookie: [] }]
       responses:
         '200':
-          description: OK
+          description: Estado do gate para a organização autenticada
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConversationResponse'
+                $ref: '#/components/schemas/CharactersConcurrencyEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
-  /agent/qualification:
-    post:
+  /agent/characters/{id}:
+    get:
       tags: [Agent]
-      summary: Gera de 4 a 6 perguntas de qualificação (SPIN/BANT) para o vendedor
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ConversationRequest'
+      summary: Detalhe de um personagem do catálogo com vínculo de runtime
+      description: >-
+        Localiza o personagem por `id` técnico no catálogo canônico
+        (`getCharacterRuntimeEntry` em `characterRuntime.ts`). Em caso de sucesso devolve
+        a definição + `runtime` e `recentActivity` (`getSwarmAuditLogs` com `limit: 10`,
+        sempre no escopo do tenant — a atividade não é atribuída artificialmente ao
+        personagem). Em caso de id inexistente responde 404 com a mensagem literal
+        "Personagem não encontrado.".
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID técnico estável do personagem no catálogo (ex. `axiom`, `ledger`).
+          schema: { type: string }
       responses:
         '200':
-          description: OK
+          description: Personagem encontrado
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConversationResponse'
+                $ref: '#/components/schemas/CharacterDetailEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: >-
+            Personagem não encontrado. Corpo emitido pelo handler:
+            `{ success: false, error: "Personagem não encontrado." }`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /agent/tts:
     post:
@@ -4291,6 +5272,423 @@ paths:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
 
+  # ─── Célula Comercial — agentes conectados na onda 6 (AIAGENT-004) ───
+  # Montados via `router.use(commercialCellRoutes)` SEM path em agent.routes.ts — o Passe 2 do
+  # verify-openapi-drift só passou a enxergá-los após suporte a mount sem path
+  # (TAREFA-SANEAMENTO-037 / BT360-DT-0083). Todas exigem papel de escrita
+  # (ADMIN/GESTOR/CLOSER/SDR) e respondem `{ success, data }`.
+  /agent/commercial-cell/ldr-intelligence/run:
+    post:
+      tags: [Agent]
+      summary: >-
+        Executa o agente LDR (inteligência de leads) sobre o snapshot real de Account Intelligence
+        da conta informada (estado, score de fit/timing/intent, volume de evidência).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [accountId]
+              properties:
+                accountId: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+        '500':
+          description: Contexto de organização (tenant) não inicializado na requisição
+
+  /agent/commercial-cell/coordinator-commercial/run:
+    post:
+      tags: [Agent]
+      summary: >-
+        Executa o agente Coordenador Comercial sobre alertas executivos, aging e indicadores
+        leading já calculados pelo CommercialIntelligenceUseCases para o período informado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [month]
+              properties:
+                month: { type: string, pattern: '^\d{4}-\d{2}$', description: 'Formato YYYY-MM' }
+                owner: { type: string }
+                product: { type: string }
+                source: { type: string }
+                icp: { type: string }
+                company: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
+  /agent/commercial-cell/manager-commercial/run:
+    post:
+      tags: [Agent]
+      summary: >-
+        Executa o agente Gerente Comercial sobre executive overview, performance, aging e perdas
+        já calculados pelo CommercialIntelligenceUseCases para o período informado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [month]
+              properties:
+                month: { type: string, pattern: '^\d{4}-\d{2}$', description: 'Formato YYYY-MM' }
+                owner: { type: string }
+                product: { type: string }
+                source: { type: string }
+                icp: { type: string }
+                company: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
+  /agent/commercial-cell/executive-director/run:
+    post:
+      tags: [Agent]
+      summary: >-
+        Executa o agente Diretoria (executivo comercial) sobre executive overview, tendências
+        históricas, health score e acurácia de forecast já calculados para o período informado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [month]
+              properties:
+                month: { type: string, pattern: '^\d{4}-\d{2}$', description: 'Formato YYYY-MM' }
+                owner: { type: string }
+                product: { type: string }
+                source: { type: string }
+                icp: { type: string }
+                company: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
+  /agent/commercial-cell/bitrix-guardian/run:
+    post:
+      tags: [Agent]
+      summary: >-
+        Executa o agente Bitrix Guardian sobre o CrmQualityIndex.bitrixSync já calculado
+        (somente leitura — nenhum writeback para o Bitrix, que é exclusivo do domínio de
+        integrações).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [month]
+              properties:
+                month: { type: string, pattern: '^\d{4}-\d{2}$', description: 'Formato YYYY-MM' }
+                owner: { type: string }
+                product: { type: string }
+                source: { type: string }
+                icp: { type: string }
+                company: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
+  # ─── Ecossistema Universal de Agentes (universalEcosystem.routes.ts) ───
+  # Mesmo mount sem path (`router.use(universalEcosystemRoutes)` em agent.routes.ts).
+  /agent/ecosystem/connectors:
+    get:
+      tags: [Agent]
+      summary: >-
+        Lista o status real dos conectores universais da organização (CRMs, e-mail, mensageria,
+        tarefas, reuniões, wearables). `maskedConfig` só é incluído para ADMIN/GESTOR.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
+  /agent/ecosystem/connectors/{provider}:
+    put:
+      tags: [Agent]
+      summary: >-
+        Salva/atualiza credenciais de um conector universal (somente ADMIN/GESTOR), com validação
+        SSRF e mascaramento de segredos.
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [config]
+              properties:
+                config:
+                  type: object
+                  additionalProperties: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /agent/ecosystem/connectors/{provider}/test:
+    post:
+      tags: [Agent]
+      summary: Testa a conexão e conectividade em tempo real de um provedor específico.
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
+  /agent/ecosystem/catalog:
+    get:
+      tags: [Agent]
+      summary: >-
+        Retorna o catálogo completo de ferramentas universais reutilizáveis pelo Swarm e por
+        agentes standalone.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
+  /agent/ecosystem/standalone-run:
+    post:
+      tags: [Agent]
+      summary: >-
+        Executa um Agente Separado (standalone) equipado com as ferramentas universais das
+        categorias informadas. `success` reflete `!result.error`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mission]
+              properties:
+                mission: { type: string, minLength: 2, maxLength: 4000 }
+                agentTitle: { type: string, maxLength: 120 }
+                customSystemPrompt: { type: string, maxLength: 4000 }
+                categories:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - prospecting_enrichment
+                      - email_intelligence
+                      - messaging_omnichannel
+                      - tasks_projects_notes
+                      - meetings_calendar
+                      - office_docs_sheets_slides
+                      - multi_device_notifications
+                      - scripts_prompts_enablement
+                      - crm_erp_sync
+                      - pipeline_revops
+                sessionId: { type: string, maxLength: 200 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
+  /agent/ecosystem/office/generate:
+    post:
+      tags: [Agent]
+      summary: >-
+        Gera artefato real de Word/Google Docs, Excel (.xlsx binário via ExcelJS) ou
+        PowerPoint/Slides, com download imediato (base64) e indexação na Base de Conhecimento.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [docType, title]
+              properties:
+                docType:
+                  type: string
+                  enum: [word_or_gdoc, excel_or_gsheet, powerpoint_or_gslides]
+                title: { type: string, minLength: 2, maxLength: 200 }
+                leadId: { type: string }
+                companyId: { type: string }
+                documentSections:
+                  type: array
+                  items:
+                    type: object
+                    required: [heading, body]
+                    properties:
+                      heading: { type: string }
+                      body: { type: string }
+                sheetColumns:
+                  type: array
+                  items: { type: string }
+                sheetRows:
+                  type: array
+                  items:
+                    type: array
+                    items:
+                      oneOf:
+                        - { type: string }
+                        - { type: number }
+                        - { type: boolean }
+                        - { nullable: true }
+                slides:
+                  type: array
+                  items:
+                    type: object
+                    required: [title, bullets]
+                    properties:
+                      slideNumber: { type: integer }
+                      title: { type: string }
+                      bullets:
+                        type: array
+                        items: { type: string }
+                      speakerNotes: { type: string }
+      responses:
+        '200':
+          description: >-
+            OK — `data.download` contém `{ filename, mimeType, base64 }` para download imediato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
+  /agent/ecosystem/playbooks:
+    get:
+      tags: [Agent]
+      summary: Lista as receitas/playbooks multi-plataforma automatizados ponta a ponta.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
+  /agent/ecosystem/playbooks/{playbookId}/run:
+    post:
+      tags: [Agent]
+      summary: >-
+        Executa um playbook multi-plataforma completo encadeando as ferramentas universais.
+      parameters:
+        - name: playbookId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                segment: { type: string, maxLength: 120 }
+                location: { type: string, maxLength: 120 }
+                leadId: { type: string, maxLength: 120 }
+                transcript: { type: string, maxLength: 12000 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
+  /agent/ecosystem/events/ingest:
+    post:
+      tags: [Agent]
+      summary: >-
+        Ingestão de eventos reativos multi-plataforma (webhooks e simulações) — mensagem
+        recebida, atualização de card/tarefa, reunião concluída ou mudança de estágio no CRM.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sourcePlatform, eventType, subjectOrTitle, content]
+              properties:
+                sourcePlatform:
+                  type: string
+                  enum:
+                    - outlook_m365
+                    - gmail
+                    - imap_email
+                    - whatsapp
+                    - telegram
+                    - teams
+                    - slack
+                    - trello
+                    - monday
+                    - notion
+                    - bitrix24
+                    - hubspot
+                    - pipedrive
+                    - rdstation
+                    - calendly
+                    - zoom
+                eventType:
+                  type: string
+                  enum:
+                    - inbound_message
+                    - task_or_card_update
+                    - meeting_completed
+                    - crm_deal_stage_change
+                sender: { type: string, maxLength: 160 }
+                subjectOrTitle: { type: string, minLength: 1, maxLength: 240 }
+                content: { type: string, minLength: 1, maxLength: 12000 }
+                leadId: { type: string, maxLength: 120 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
   # ───────────────────────────── Prompts ─────────────────────────────
   /prompts:
     get:
@@ -4481,6 +5879,163 @@ paths:
       responses:
         '200':
           description: Arquivo CSV (`text/csv`) com o mesmo conteúdo de `/analytics/cohort`
+          content:
+            text/csv:
+              schema: { type: string }
+
+  /analytics/productivity-heatmap:
+    get:
+      tags: [Analytics]
+      summary: Mapa de calor de produtividade comercial e conversões por dia da semana e hora
+      parameters:
+        - name: days
+          in: query
+          description: Janela de análise em dias retroativos (padrão 30 dias)
+          schema: { type: integer, minimum: 1, maximum: 90, default: 30 }
+      responses:
+        '200':
+          description: Slots do mapa de calor de produtividade
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, data]
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      required: [dayOfWeek, hour, totalActivities, calls, meetings, messages, tasks, conversions]
+                      properties:
+                        dayOfWeek: { type: integer, minimum: 0, maximum: 6, example: 2 }
+                        hour: { type: integer, minimum: 0, maximum: 23, example: 14 }
+                        totalActivities: { type: integer, example: 12 }
+                        calls: { type: integer, example: 5 }
+                        meetings: { type: integer, example: 3 }
+                        messages: { type: integer, example: 2 }
+                        tasks: { type: integer, example: 2 }
+                        conversions: { type: integer, example: 1 }
+
+  /analytics/realtime-cockpit:
+    get:
+      tags: [Analytics]
+      summary: Cockpit executivo em tempo real com métricas do dia e detecção estatística de anomalias
+      responses:
+        '200':
+          description: Métricas operacionais em tempo real e status de anomalia
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, data]
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    required: [leadsToday, dealsWonToday, wonRevenueToday, activitiesToday, conversionRateToday, anomaly, lastUpdated]
+                    properties:
+                      leadsToday: { type: integer, example: 8 }
+                      dealsWonToday: { type: integer, example: 3 }
+                      wonRevenueToday: { type: number, example: 45000 }
+                      activitiesToday: { type: integer, example: 42 }
+                      conversionRateToday: { type: number, example: 37.5 }
+                      anomaly:
+                        type: object
+                        required: [detected, type, severity, title, message, deviationPct, benchmarkValue, currentValue]
+                        properties:
+                          detected: { type: boolean, example: false }
+                          type: { type: string, enum: [CONVERSION_DROP, ACTIVITY_DROP, NONE], example: NONE }
+                          severity: { type: string, enum: [info, warning, critical], example: info }
+                          title: { type: string, example: Operação Nominal }
+                          message: { type: string, example: Métricas do dia dentro dos parâmetros normais. }
+                          deviationPct: { type: number, example: 0 }
+                          benchmarkValue: { type: number, example: 30 }
+                          currentValue: { type: number, example: 37.5 }
+                      lastUpdated: { type: string, format: date-time, example: '2026-11-03T14:00:00.000Z' }
+
+  /analytics/unified-timeline:
+    get:
+      tags: [Analytics]
+      summary: Timeline unificada cross-entity (leads, negociações, chamadas, WhatsApp, automações)
+      parameters:
+        - name: period
+          in: query
+          description: Período de análise
+          schema: { type: string, enum: [today, 7d, 30d, all], default: 30d }
+        - name: entityType
+          in: query
+          description: Tipo de entidade
+          schema: { type: string, enum: [all, lead, deal, call, email, whatsapp, automation], default: all }
+        - name: outcome
+          in: query
+          description: Resultado do evento
+          schema: { type: string, enum: [all, success, pending, failed], default: all }
+        - name: search
+          in: query
+          description: Termo de busca textual (contato, empresa, responsável, título)
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50, maximum: 200 }
+      responses:
+        '200':
+          description: Eventos da timeline unificada
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, data, meta]
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, timestamp, entityType, title, actor, outcome]
+                      properties:
+                        id: { type: string, example: act_clz12345 }
+                        timestamp: { type: string, format: date-time }
+                        entityType: { type: string, enum: [lead, deal, call, email, whatsapp, automation] }
+                        title: { type: string, example: 'Ligação: Proposta comercial' }
+                        description: { type: string }
+                        actor: { type: string, example: 'Vendedor' }
+                        targetName: { type: string, example: 'Empresa Alpha' }
+                        targetId: { type: string }
+                        outcome: { type: string, enum: [success, pending, failed] }
+                        metadata: { type: object }
+                  meta:
+                    type: object
+                    required: [total, page, limit, totalPages]
+                    properties:
+                      total: { type: integer }
+                      page: { type: integer }
+                      limit: { type: integer }
+                      totalPages: { type: integer }
+
+  /analytics/unified-timeline/export:
+    get:
+      tags: [Analytics]
+      summary: Exportação da timeline unificada para auditoria em CSV (compatível com Excel)
+      parameters:
+        - name: period
+          in: query
+          schema: { type: string, enum: [today, 7d, 30d, all], default: 30d }
+        - name: entityType
+          in: query
+          schema: { type: string, enum: [all, lead, deal, call, email, whatsapp, automation], default: all }
+        - name: outcome
+          in: query
+          schema: { type: string, enum: [all, success, pending, failed], default: all }
+        - name: search
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Arquivo CSV formatado com BOM UTF-8 e delimitador ponto-e-vírgula
           content:
             text/csv:
               schema: { type: string }
@@ -4834,6 +6389,9 @@ paths:
         (`BUG_REPORT_RATE_LIMIT_MAX`, default 10/15min). O campo `context` é
         sanitizado no backend (redação de token/segredo, truncamento) antes de
         persistir — ver `src/features/bug-reports/domain/bugReport.sanitize.ts`.
+        `title`/`description` acima do `maxLength` são truncados no servidor
+        (não rejeitados); `severity` fora do enum é coagido para `MEDIUM`
+        (ver `BugReportUseCases.createBugReport`).
       requestBody:
         required: true
         content:
@@ -5071,50 +6629,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
 
-  /usage/quota:
-    get:
-      tags: [Usage]
-      summary: Consulta de quota de tokens, franquia mensal e telemetria FinOps (Onda 15)
-      description: >-
-        Retorna o teto mensal de tokens por tier de organização, consumo acumulado no mês corrente,
-        percentual utilizado, estado de alerta (Normal, Warning 80%, Crítico 100%) e indicador de
-        ativação de fallback para modelos econômicos (handoff 10-para-23). Restrito a ADMIN e GESTOR.
-      responses:
-        '200':
-          description: Métricas de quota e FinOps da organização
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TokenQuotaFinOps'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-
-  /usage/quota/alert:
-    post:
-      tags: [Usage]
-      summary: Configuração de limiares de alerta e ações preventivas de FinOps (Onda 15)
-      description: >-
-        Configura limiares de aviso (80% e 100%) e ações automatizadas (notificação por email/webhook,
-        ativação forçada de fallback para LLMs mais econômicos, ou throttling defensivo) para a franquia
-        de IA da organização. Restrito a ADMIN.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TokenQuotaAlertConfig'
-      responses:
-        '200':
-          description: Configuração de alerta de FinOps atualizada
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DataEnvelope'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-
   /gamification/leaderboard:
     get:
       tags: [Gamification]
@@ -5234,6 +6748,41 @@ paths:
         '401': { description: Não autenticado }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+  /social-selling/interactions:
+    post:
+      tags: [Social Selling]
+      summary: >-
+        Registra uma interação social executada manualmente e a vincula à
+        timeline do Lead no CRM (RN-SOC-02). Rate limit anti-rajada por organização.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [leadId]
+              properties:
+                leadId: { type: string, description: Lead do tenant que recebe o evento na timeline }
+                kind:
+                  type: string
+                  enum: [approach_sent, interaction_received]
+                  default: approach_sent
+                channel: { type: string, default: linkedin }
+                summary: { type: string, maxLength: 2000, nullable: true }
+      responses:
+        '201':
+          description: Interação registrada e evento gravado na timeline do Lead
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { type: object }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { description: Não autenticado }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
   # ───────────────────────────── Mobile ─────────────────────────────
   /mobile/field-meetings/sync:
     post:
@@ -5310,33 +6859,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-
-  /cadence/opt-outs/check:
-    get:
-      tags: [Cadence]
-      summary: Valida status de opt-out/supressão antes do disparo multicanal (Onda 15 / B-13)
-      description: >-
-        Interceptor pré-envio `checkOptOutStatus`. Garante que nenhum toque multicanal (WhatsApp, e-mail,
-        voz) é disparado para titular em lista de supressão, revogação de consentimento ou exclusão LGPD
-        Art. 18. Bloqueador B-13 e Regra Global §27.
-      parameters:
-        - name: contactId
-          in: query
-          required: true
-          schema: { type: string }
-        - name: channel
-          in: query
-          required: true
-          schema: { type: string, enum: [email, whatsapp, voice] }
-      responses:
-        '200':
-          description: Status de opt-out avaliado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CadenceOptOutCheckResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
 
@@ -5604,34 +7126,6 @@ paths:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
         '404':
           description: Execução não encontrada nesta organização
-
-  /cadence/runs/{id}/events:
-    parameters:
-      - $ref: '#/components/parameters/IdParam'
-    post:
-      tags: [Cadence]
-      summary: Notifica status de entrega e engajamento do toque de cadência (Onda 15 / CadenceExecutionPort)
-      description: >-
-        Recebe atualizações de status de entrega (`delivered`, `bounced`, `replied`, `failed`) emitidas pelos
-        despachantes multicanal (WhatsApp, e-mail, SDR Voice) para alimentar o Swarm e a máquina de estados do
-        run (handoff 13-para-17).
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CadenceTouchEventRequest'
-      responses:
-        '200':
-          description: Evento registrado com sucesso
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DataEnvelope'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
 
   /cadence/leads/{leadId}/schedule-meeting:
     post:
@@ -6591,6 +8085,7 @@ paths:
         description: publicToken opaco do documento comercial — é a credencial, não há autenticação de sessão nesta rota
     get:
       tags: [CRM 360]
+      security: []
       summary: >-
         Visualização pública de uma proposta (CYC-005) — sem `authenticateToken`/`requireTenant`,
         montada fora do bloco autenticado (mesmo lugar dos webhooks de integração). Registra a
@@ -7093,6 +8588,21 @@ paths:
     get:
       tags: [Comercial Inteligente]
       summary: Índice de qualidade de dados do CRM (campos obrigatórios ausentes, falhas de sync) — somente ADMIN/GESTOR
+      responses:
+        '200':
+          {
+            description: OK,
+            content:
+              { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
+          }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  # F4 (handoff 00→04): endpoint dedicado do relatório "Saúde da Sincronização Bitrix24" —
+  # antes só existia composto em `crmQuality.bitrixSync`, sem rota própria. Sem filtro comercial
+  # (saúde de sincronização é operacional): cobre todos os negócios abertos do funil Negócio.
+  /commercial-intelligence/bitrix-sync-health:
+    get:
+      tags: [Comercial Inteligente]
+      summary: Saúde da sincronização Bitrix24 (vínculo, falhas e atividade dos últimos 30 dias sobre negócios abertos) — somente ADMIN/GESTOR
       responses:
         '200':
           {
@@ -10439,69 +11949,25 @@ paths:
           }
         '404': { $ref: '#/components/responses/NotFound' }
 
-  /copiloto-ia/conversations/{id}/live-insights:
+  /copiloto-ia/leads/{leadId}/next-best-action:
     parameters:
-      - $ref: '#/components/parameters/IdParam'
-    post:
-      tags: [Copiloto IA]
-      summary: Ingestão de insight em tempo real (sentimento e objeção) durante chamada ativa (Onda 15)
-      description: >-
-        Emite eventos de detecção de sentimento, objeções comerciais e intenções de compra durante chamadas
-        LiveKit/WebRTC ativas. Alimenta o Live HUD do closer (<800ms) e o cálculo de risco de fechamento do deal
-        (handoffs 07-para-04 e 07-para-02).
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LiveCallInsight'
-      responses:
-        '201':
-          description: Live insight registrado e contorno sugerido calculado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DataEnvelope'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-    get:
-      tags: [Copiloto IA]
-      summary: Lista insights e objeções capturados em tempo real durante a chamada (Onda 15)
-      description: >-
-        Retorna a linha do tempo cronológica de insights em tempo real de uma conversa/ligação ativa ou encerrada.
-      responses:
-        '200':
-          description: Lista de live insights
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LiveCallInsightListResponse'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  /copiloto-ia/live-hud/{callId}:
-    parameters:
-      - name: callId
+      - name: leadId
         in: path
         required: true
         schema: { type: string }
     get:
       tags: [Copiloto IA]
-      summary: Snapshot em tempo real para o HUD flutuante do vendedor durante a chamada (Onda 15)
-      description: >-
-        Fornece o estado atualizado para o componente LiveCopilotHUD (sentimento predominante, objeção ativa,
-        sugestão de contorno recomendada e alerta de risco).
+      summary: >-
+        Próxima Melhor Ação (Next Best Action) prescritiva calculada em tempo real com base no
+        Deal Health Score, tempo de resposta WhatsApp e sinais da conversa.
       responses:
         '200':
-          description: Estado do Live HUD
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LiveHudStatus'
-        '404':
-          $ref: '#/components/responses/NotFound'
+          {
+            description: OK,
+            content:
+              { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
+          }
+        '404': { $ref: '#/components/responses/NotFound' }
 
   # ───────────────────────────── Webhooks (corpo cru) ─────────────────────────────
   # Montados em server.ts ANTES do express.json() global — corpo não é JSON parseado pelo
@@ -10510,6 +11976,7 @@ paths:
   /integrations/birth-voice/webhook:
     post:
       tags: [Webhooks]
+      security: []
       summary: >-
         Webhook de resultado de chamada do Birth Voices Hub (Agente 18, achado de auditoria de
         contrato: path documentado estava incompleto — faltava o segmento `/webhook`; o mount é em
@@ -10535,6 +12002,7 @@ paths:
   /integrations/3cx/webhook:
     post:
       tags: [Webhooks]
+      security: []
       summary: >-
         Webhook de evento de chamada do PABX 3CX (Call Flow). Corpo cru (`express.raw`),
         assinatura HMAC no header `x-3cx-signature`, segredo `THREECX_WEBHOOK_SECRET`.
@@ -10865,6 +12333,7 @@ paths:
   /webhooks/voice-result:
     post:
       tags: [Webhooks]
+      security: []
       summary: >-
         Webhook de resultado de ligação de voz (Bland AI). JSON parseado com parser próprio (não
         depende do `express.json()` global, montado antes dele), segredo comparado em tempo
@@ -10885,6 +12354,7 @@ paths:
   /webhooks/email/webhook:
     post:
       tags: [Webhooks]
+      security: []
       summary: >-
         Webhook de e-mail de ENTRADA (CYC-003, onda 26) — stub de transporte: aceita diretamente o
         payload que um provedor real de inbound-parse (SendGrid/Postmark/Mailgun) entregaria depois
@@ -10929,6 +12399,7 @@ paths:
   /webhooks/signature/webhook:
     post:
       tags: [Webhooks]
+      security: []
       summary: >-
         Webhook de status de assinatura eletrônica de ENTRADA (CYC-006, onda 28). O ENVIO da
         solicitação é um stub (nenhuma credencial de integrador gov.br configurada, ver
@@ -10977,6 +12448,7 @@ paths:
         schema: { type: string }
     post:
       tags: [Webhooks]
+      security: []
       summary: >-
         Webhook de entrada do Bitrix24 ("исходящий вебхук") — leads/eventos criados no Bitrix
         chegam aqui (Agente 18, achado de auditoria de contrato: path documentado estava errado —
@@ -11000,6 +12472,7 @@ paths:
   /integrations/chatwoot/webhook:
     post:
       tags: [Webhooks]
+      security: []
       summary: Webhook de entrada do Chatwoot
       responses:
         '200':
@@ -11017,6 +12490,7 @@ paths:
         schema: { type: string }
     post:
       tags: [Webhooks]
+      security: []
       summary: >-
         Webhook de entrada da Stripe (BILLING-007) — eventos assíncronos de pagamento (confirmação,
         estorno, falha) que `createStripeCharge`/`getStripeCharge` (caminho síncrono) não cobrem.
@@ -11372,6 +12846,12 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
     NotFound:
       description: Recurso não encontrado (ou não pertence ao tenant autenticado)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Não autenticado ou sessão inválida
       content:
         application/json:
           schema:
@@ -12335,3 +13815,476 @@ components:
         modules:
           type: array
           items: { $ref: '#/components/schemas/OrganizationModuleView' }
+
+    # ── Central de Personagens (`GET /agent/characters*`) ──
+    # Origem dos campos: ver descriptions e o corpo do PR. Nada aqui foi inventado.
+    CharacterPalette:
+      type: object
+      description: >-
+        Paleta de cores do personagem. Origem: `CharacterPalette` em
+        `src/features/characters/characterCatalog.shared.ts` (linhas 29–39).
+      required: [primary, secondary, accent, heading, subheading, halo]
+      properties:
+        primary: { type: string }
+        secondary: { type: string }
+        accent: { type: string }
+        heading: { type: string, description: Cor do nome do personagem em títulos }
+        subheading: { type: string, description: Cor do subtítulo/papel }
+        halo: { type: string, description: Box-shadow do halo luminoso }
+
+    CharacterRuntimePayload:
+      type: object
+      description: >-
+        Vínculo de runtime derivado de registros reais. Origem: `CharacterRuntimePayload`
+        em `src/features/characters/characterApiTypes.ts` (linhas 9–18), que espelha
+        `CharacterRuntimeInfo` em `src/features/characters/characterRuntime.ts`
+        (linhas 77–103). O handler de listagem pode sobrescrever `status`/`reason`
+        quando o circuit breaker está OPEN e `dispatch` é `swarm-stream`
+        (`characterRuntime.routes.ts`, linhas 34–39).
+      required: [kind, status, reason, httpRoute, capabilities, requiresApproval, risk, dispatch]
+      properties:
+        kind:
+          type: string
+          enum: [pillar-context, commercial-agent, channel-engine, orchestration]
+        status:
+          type: string
+          enum: [available, degraded, unavailable]
+        reason: { type: string, nullable: true }
+        httpRoute: { type: string, nullable: true }
+        capabilities:
+          type: array
+          items: { type: string }
+        requiresApproval: { type: boolean }
+        risk: { type: string, nullable: true }
+        dispatch:
+          type: string
+          enum: [swarm-stream, module-surface, none]
+
+    CharacterDefinition:
+      type: object
+      description: >-
+        Metadados canônicos de um personagem. Origem: `CharacterDefinition` em
+        `src/features/characters/characterCatalog.shared.ts` (linhas 41–82).
+        `CharacterApiEntry` (`characterApiTypes.ts`, linhas 20–22) estende esta
+        interface com `runtime`.
+      required:
+        [
+          id,
+          name,
+          role,
+          layer,
+          linkedAgentId,
+          contextGroup,
+          modules,
+          palette,
+          svg,
+          viewBox,
+          badgeGradient,
+          headingColor,
+          subheadingColor,
+          contextMsg,
+          ariaLabel,
+          accessibleDescription,
+          archetype,
+          animationSignature,
+          states,
+          fallbackId,
+          command,
+        ]
+      properties:
+        id: { type: string, description: ID técnico estável — também nome do arquivo SVG }
+        name: { type: string }
+        role: { type: string, description: Função/papel curto exibido na UI }
+        layer:
+          type: string
+          enum: [pillar, commercial-agent, channel-agent, orchestration]
+        linkedAgentId: { type: string, nullable: true }
+        contextGroup: { type: string, nullable: true }
+        modules:
+          type: array
+          items: { type: string }
+        palette: { $ref: '#/components/schemas/CharacterPalette' }
+        svg: { type: string, description: Caminho do SVG local servido por /brand/characters/ }
+        viewBox: { type: string }
+        badgeGradient: { type: string }
+        headingColor: { type: string }
+        subheadingColor: { type: string }
+        contextMsg: { type: string, nullable: true }
+        ariaLabel: { type: string }
+        accessibleDescription: { type: string }
+        archetype: { type: string }
+        animationSignature: { type: string }
+        states:
+          type: array
+          items:
+            type: string
+            enum: [idle, listening, processing, speaking, success, error]
+        fallbackId:
+          type: string
+          enum: [core]
+          description: Personagem de fallback seguro (literal `core` no tipo TypeScript)
+        command: { type: string }
+
+    CharacterApiEntry:
+      description: >-
+        `CharacterApiEntry` em `src/features/characters/characterApiTypes.ts` (linhas 20–22) —
+        `CharacterDefinition` + `runtime`.
+      allOf:
+        - $ref: '#/components/schemas/CharacterDefinition'
+        - type: object
+          required: [runtime]
+          properties:
+            runtime: { $ref: '#/components/schemas/CharacterRuntimePayload' }
+
+    CharacterSwarmConcurrency:
+      type: object
+      description: >-
+        Retorno de `getSwarmConcurrencyState(organizationId)` com `organizationId` definido
+        (`src/features/intelligence/services/swarmConcurrency.service.ts`, linhas 146–152).
+        Não inclui o campo `organizations` do ramo agregado (sem organizationId).
+      required: [maxConcurrent, active, waiting]
+      properties:
+        maxConcurrent: { type: integer }
+        active: { type: integer }
+        waiting: { type: integer }
+
+    CharacterCircuitBreakerState:
+      type: object
+      description: >-
+        Recorte exposto pela listagem: o handler só devolve `{ state: breaker.state }`
+        (`characterRuntime.routes.ts`, linha 49). Os valores vêm de `CircuitBreakerState.state`
+        em `src/features/intelligence/services/autonomyCircuitBreaker.service.ts` (linha 25).
+      required: [state]
+      properties:
+        state:
+          type: string
+          enum: [CLOSED, OPEN, HALF_OPEN]
+
+    CharactersApiResponse:
+      type: object
+      description: >-
+        `data` de `GET /agent/characters`. Origem: `CharactersApiResponse` em
+        `src/features/characters/characterApiTypes.ts` (linhas 24–31) e o `res.json` em
+        `characterRuntime.routes.ts` (linhas 43–53). `generatedAt` é `new Date().toISOString()`.
+      required: [characters, swarm, generatedAt]
+      properties:
+        characters:
+          type: array
+          items: { $ref: '#/components/schemas/CharacterApiEntry' }
+        swarm:
+          type: object
+          required: [concurrency, circuitBreaker]
+          properties:
+            concurrency: { $ref: '#/components/schemas/CharacterSwarmConcurrency' }
+            circuitBreaker:
+              allOf:
+                - $ref: '#/components/schemas/CharacterCircuitBreakerState'
+              nullable: true
+        generatedAt: { type: string, format: date-time }
+
+    CharactersListEnvelope:
+      type: object
+      description: Envelope `{success,data}` da listagem (handler em characterRuntime.routes.ts:43–53).
+      required: [success, data]
+      properties:
+        success: { type: boolean, example: true }
+        data: { $ref: '#/components/schemas/CharactersApiResponse' }
+
+    SwarmAuditLog:
+      type: object
+      description: >-
+        Entrada devolvida por `getSwarmAuditLogs` (`SwarmAuditLog` em
+        `src/features/intelligence/services/swarmAudit.service.ts`, linhas 50–64 e o `map`
+        nas linhas 137–150). Não usar o contrato reduzido `SwarmAuditLogEntry` de
+        `characterApiTypes.ts` (linhas 33–42), que omite campos realmente retornados
+        (`organizationId`, `parameters`, `userId`, `ipAddress`, `userAgent`).
+      required: [id, organizationId, agentType, action, parameters, result, createdAt]
+      properties:
+        id: { type: string }
+        organizationId: { type: string }
+        agentType: { type: string }
+        action: { type: string }
+        parameters:
+          type: object
+          additionalProperties: true
+        result:
+          type: string
+          enum: [success, error]
+        errorMessage: { type: string }
+        userId: { type: string }
+        sessionId: { type: string }
+        correlationId: { type: string }
+        ipAddress: { type: string }
+        userAgent: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    SwarmAuditLogsPage:
+      type: object
+      description: >-
+        Retorno de `getSwarmAuditLogs`: `{ logs, total }`
+        (`swarmAudit.service.ts`, linhas 112–119 e 136).
+      required: [logs, total]
+      properties:
+        logs:
+          type: array
+          items: { $ref: '#/components/schemas/SwarmAuditLog' }
+        total: { type: integer }
+
+    CharactersActivityEnvelope:
+      type: object
+      description: Envelope de `GET /agent/characters/activity` (`characterRuntime.routes.ts`, linha 65).
+      required: [success, data]
+      properties:
+        success: { type: boolean, example: true }
+        data: { $ref: '#/components/schemas/SwarmAuditLogsPage' }
+
+    CharactersConcurrencyEnvelope:
+      type: object
+      description: Envelope de `GET /agent/characters/concurrency` (`characterRuntime.routes.ts`, linhas 75–78).
+      required: [success, data]
+      properties:
+        success: { type: boolean, example: true }
+        data: { $ref: '#/components/schemas/CharacterSwarmConcurrency' }
+
+    CharacterDetail:
+      type: object
+      description: >-
+        `data` de `GET /agent/characters/{id}`. Origem: o `res.json` em
+        `characterRuntime.routes.ts` (linhas 93–101) — spread de `entry.character`,
+        `runtime: entry.runtime` e `recentActivity` igual ao retorno de
+        `getSwarmAuditLogs` (objeto `{ logs, total }`, não um array).
+      allOf:
+        - $ref: '#/components/schemas/CharacterApiEntry'
+        - type: object
+          required: [recentActivity]
+          properties:
+            recentActivity: { $ref: '#/components/schemas/SwarmAuditLogsPage' }
+
+    CharacterDetailEnvelope:
+      type: object
+      description: Envelope de `GET /agent/characters/{id}` (`characterRuntime.routes.ts`, linhas 93–101).
+      required: [success, data]
+      properties:
+        success: { type: boolean, example: true }
+        data: { $ref: '#/components/schemas/CharacterDetail' }
+
+    # ── Settings por pilar (`GET`/`PUT` /settings/pillars/{pillar}, Onda F1) ──
+    # Origem dos campos: ver descriptions. Nada aqui foi inventado.
+    PillarSlug:
+      type: string
+      description: >-
+        Slugs canônicos. Origem: `PILLAR_SLUGS` em
+        `src/features/settings/domain/pillarSettings.ts` (linhas 12–21).
+      enum: [hub, market, sales, performance, predictability, ai, automation, engagement]
+
+    PillarHubValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `hub`. Origem: `PILLAR_FIELDS.hub` e
+        `PILLAR_DEFAULTS.hub` em `pillarSettings.ts` (linhas 63–67 e 107).
+        No GET o objeto vem completo (defaults mesclados). No PUT é um patch
+        parcial com as mesmas chaves.
+      properties:
+        stagnationDays: { type: number, minimum: 1, maximum: 365, example: 14 }
+        requireLossReason: { type: boolean, example: true }
+        dedupCnpj: { type: boolean, example: true }
+
+    PillarMarketValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `market`. Origem: `PILLAR_FIELDS.market` e
+        `PILLAR_DEFAULTS.market` em `pillarSettings.ts` (linhas 68–72 e 108).
+      properties:
+        minRevenue: { type: string, example: 'R$ 5.000.000' }
+        autoEnrich: { type: boolean, example: true }
+        signalAlerts: { type: boolean, example: true }
+
+    PillarSalesValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `sales`. Origem: `PILLAR_FIELDS.sales` e
+        `PILLAR_DEFAULTS.sales` em `pillarSettings.ts` (linhas 73–77 e 109).
+      properties:
+        speedToLeadMin: { type: number, minimum: 1, maximum: 1440, example: 5 }
+        requireBant: { type: boolean, example: true }
+        dailyTouchesLimit: { type: number, minimum: 1, maximum: 1000, example: 40 }
+
+    PillarPerformanceValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `performance`. Origem: `PILLAR_FIELDS.performance`
+        e `PILLAR_DEFAULTS.performance` em `pillarSettings.ts` (linhas 78–82 e 110).
+      properties:
+        benchmarkRate: { type: number, minimum: 0, maximum: 100, example: 18.5 }
+        repScoreActive: { type: boolean, example: true }
+        anomalyAlerts: { type: boolean, example: true }
+
+    PillarPredictabilityValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `predictability`. Origem:
+        `PILLAR_FIELDS.predictability` e `PILLAR_DEFAULTS.predictability` em
+        `pillarSettings.ts` (linhas 83–87 e 111).
+      properties:
+        modelType:
+          type: string
+          enum: [historico, manual]
+          example: historico
+        freezeDay: { type: number, minimum: 1, maximum: 28, example: 25 }
+        confidenceFactor: { type: number, minimum: 0, maximum: 100, example: 85 }
+
+    PillarAiValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `ai`. Origem: `PILLAR_FIELDS.ai` e
+        `PILLAR_DEFAULTS.ai` em `pillarSettings.ts` (linhas 88–92 e 112).
+      properties:
+        model: { type: string, example: 'Claude 3.5 Sonnet' }
+        temperature: { type: number, minimum: 0, maximum: 2, example: 0.3 }
+        piiMasking: { type: boolean, example: true }
+
+    PillarAutomationValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `automation`. Origem: `PILLAR_FIELDS.automation`
+        e `PILLAR_DEFAULTS.automation` em `pillarSettings.ts` (linhas 93–97 e 113).
+      properties:
+        biDirectional: { type: boolean, example: true }
+        syncIntervalMin: { type: number, minimum: 1, maximum: 1440, example: 5 }
+        retryCount: { type: number, minimum: 0, maximum: 10, example: 3 }
+
+    PillarEngagementValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `engagement`. Origem: `PILLAR_FIELDS.engagement`
+        e `PILLAR_DEFAULTS.engagement` em `pillarSettings.ts` (linhas 98–102 e 114).
+      properties:
+        clickToCall: { type: boolean, example: true }
+        recordCalls: { type: boolean, example: true }
+        workingHoursOnly: { type: boolean, example: true }
+
+    PillarSettingsValues:
+      description: >-
+        `values` de um pilar. União dos oito mapas de `PILLAR_FIELDS`. O objeto
+        concreto depende do `{pillar}` do path. No GET é o conjunto completo
+        (defaults + persistido, `mergePillarValues`, `pillarSettings.ts` linhas
+        197–203). No PUT é um patch parcial.
+      oneOf:
+        - $ref: '#/components/schemas/PillarHubValues'
+        - $ref: '#/components/schemas/PillarMarketValues'
+        - $ref: '#/components/schemas/PillarSalesValues'
+        - $ref: '#/components/schemas/PillarPerformanceValues'
+        - $ref: '#/components/schemas/PillarPredictabilityValues'
+        - $ref: '#/components/schemas/PillarAiValues'
+        - $ref: '#/components/schemas/PillarAutomationValues'
+        - $ref: '#/components/schemas/PillarEngagementValues'
+
+    PillarSettingsView:
+      type: object
+      description: >-
+        Visão devolvida por GET e PUT. Origem: interface `PillarSettingsView` em
+        `src/features/settings/services/pillarSettings.service.ts` (linhas 32–39),
+        espelhada no cliente em `src/features/settings/pillarSettings.api.ts`
+        (linhas 10–16).
+      required: [pillar, values, configured, updatedAt]
+      properties:
+        pillar: { $ref: '#/components/schemas/PillarSlug' }
+        values: { $ref: '#/components/schemas/PillarSettingsValues' }
+        configured:
+          type: boolean
+          description: true quando a organização já gravou alguma configuração deste pilar
+        updatedAt:
+          type: string
+          nullable: true
+          format: date-time
+          description: >-
+            ISO-8601 (`new Date().toISOString()` no PUT,
+            `pillarSettings.service.ts` linha 85) ou `null` quando ainda não
+            configurado.
+
+    PillarSettingsEnvelope:
+      type: object
+      description: >-
+        Envelope `{ success, data }` emitido por `handle` em
+        `pillarSettings.routes.ts` (linhas 27–31).
+      required: [success, data]
+      properties:
+        success: { type: boolean, example: true }
+        data: { $ref: '#/components/schemas/PillarSettingsView' }
+
+    PillarSettingsUpdateRequest:
+      type: object
+      description: >-
+        Corpo do PUT. Origem: leitura de `(req.body as { values?: unknown })?.values`
+        em `pillarSettings.routes.ts` (linhas 66–71) e validação em
+        `validatePillarPatch` (`pillarSettings.ts`, linhas 136–195).
+      properties:
+        values:
+          $ref: '#/components/schemas/PillarSettingsValues'
+
+  /api/organization/modules:
+    get:
+      summary: Lista status dos modulos da organizacao
+      tags:
+        - OrganizationModules
+      responses:
+        '200':
+          description: Modulos listados com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  modules:
+                    type: array
+                    items:
+                      type: string
+    put:
+      summary: Atualiza modulos da organizacao com controle otimista CAS
+      tags:
+        - OrganizationModules
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - modules
+                - version
+              properties:
+                modules:
+                  type: array
+                  items:
+                    type: string
+                version:
+                  type: integer
+      responses:
+        '200':
+          description: Modulos atualizados com sucesso
+        '409':
+          description: Conflito de versao concorrente (CAS)
+
+  /api/telephony/webhook/3cx:
+    post:
+      summary: Recebe eventos de status de chamada do PABX 3CX
+      tags:
+        - Telephony
+      parameters:
+        - in: header
+          name: x-3cx-signature
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: x-3cx-timestamp
+          required: true
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Evento aceito e enfileirado para processamento assincrono
+        '401':
+          description: Assinatura ou timestamp invalidos

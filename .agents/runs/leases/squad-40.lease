@@ -1,0 +1,9 @@
+{
+  "recurso": "squad-40-coordenacao",
+  "session_id": "devin-subagent-40-ravi-dem20261123-001",
+  "squad": "40",
+  "coordenador": "40 — Ravi",
+  "timestamp": "2026-11-24T00:00:00-03:00",
+  "escopo": "coord/squad-40 em C:/Github/Birthub-360-worktrees/squads/squad-40/wt-coord; base 93e82c220 (integracao/onda-3-dem20261123); documentacao de decisoes, planejamento e consolidacao de handoffs; sem escrita em src/** nesta missao de coordenacao; portas efemeras 22400-22499 quando necessario",
+  "expira_em_horas": 4
+}

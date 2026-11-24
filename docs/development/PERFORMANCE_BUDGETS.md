@@ -79,7 +79,7 @@ budget, falha por total agregado, falha por chunk genérico não documentado, ac
 documentado dentro do próprio teto, falha chunk documentado que cresceu além do próprio teto, e
 garante que toda exceção tem justificativa escrita não-vazia.
 
-## 2. Latência de endpoints críticos (`tests/load/k6-api.js` + `tests/load/k6-crm-authenticated.js`)
+## 2. Latência de endpoints críticos (`tests/load/k6-api.js` + `tests/load/k6-crm-authenticated.js` + `tests/load/k6-analytics-commercial-intelligence.js`)
 
 `docs/SRE.md` (seção 1) já documenta os SLOs de disponibilidade e latência da plataforma — este
 item os transforma em algo que falha um comando/CI, em vez de ficar só em prosa.
@@ -93,6 +93,11 @@ item os transforma em algo que falha um comando/CI, em vez de ficar só em prosa
 | `GET /api/leads` (pipeline, paginado/filtrado) | `authenticateToken` → `getSession()` → `requireTenant` → RLS Postgres → listagem paginada | p50<200ms / p95<500ms / p99<800ms | `docs/SRE.md` 1.2 (P95<500ms transacional) + teto de "Aviso" do mesmo documento (P95>800ms) usado como teto de p99. Onda 42, ver relatório abaixo.                                    |
 | `GET /api/companies` (busca)                   | Mesma cadeia de middleware + busca por `q`                                                | p50<200ms / p95<500ms / p99<800ms | Idem.                                                                                                                                                                                 |
 | `POST /api/activities` (escrita)               | Mesma cadeia + `validateRequest` + INSERT                                                 | p50<200ms / p95<500ms / p99<800ms | Idem.                                                                                                                                                                                 |
+| `GET /api/commercial-intelligence/overview`    | Cadeia completa + RBAC ADMIN/GESTOR + agregadores do Cockpit Executivo                    | p50<200ms / p95<500ms / p99<800ms | Documento Mestre P04 (17 relatórios executivos <800ms) e `docs/SRE.md` 1.2.                                                                                                           |
+| `GET /api/commercial-intelligence/performance` | Agregação analítica de conversão por estágio e volume de deals                             | p50<200ms / p95<500ms / p99<800ms | Idem.                                                                                                                                                                                 |
+| `GET /api/commercial-intelligence/aging`       | Tempo de permanência dos leads em cada estágio do funil                                   | p50<200ms / p95<500ms / p99<800ms | Idem.                                                                                                                                                                                 |
+| `GET /api/commercial-intelligence/pipeline-creation` | Ritmo de geração de novos negócios no período                                       | p50<200ms / p95<500ms / p99<800ms | Idem.                                                                                                                                                                                 |
+| `GET /api/commercial-intelligence/bitrix-sync-health` | Auditoria analítica de saúde de sincronização com Bitrix24                          | p50<200ms / p95<500ms / p99<800ms | Idem.                                                                                                                                                                                 |
 
 `http_req_failed` tem threshold global de `rate<0.01` (falha se mais de 1% das requisições
 falharem) nos dois scripts.

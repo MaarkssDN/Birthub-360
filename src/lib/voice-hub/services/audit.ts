@@ -3,6 +3,7 @@ import { Queue, Worker } from 'bullmq';
 import { createAuditLog } from '../repositories/auditLogRepository.js';
 import { logger } from '../../../lib/logger.js';
 import { getRedisUrl, getRedisRetryStrategy } from '../lib/env.js';
+import { registerQueueForMetrics } from '../../../lib/queue/metrics.js';
 
 const redisUrl = getRedisUrl();
 // BullMQ requires maxRetriesPerRequest: null on its connection; enqueue failures are still caught
@@ -16,6 +17,7 @@ const connection = new Redis(redisUrl, {
 connection.on('error', (err) => logger.error({ err }, 'Audit Redis connection error'));
 
 const auditQueue = new Queue('auditLogs', { connection });
+registerQueueForMetrics('auditLogs', auditQueue);
 
 new Worker(
   'auditLogs',

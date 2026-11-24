@@ -1,3 +1,4 @@
+import { hasRequiredRole } from '../../../../lib/auth/authorization.js';
 import { logger } from '../../../../lib/logger.js';
 import { AppError } from '../../../../shared/middlewares/errorHandler.js';
 import { callBitrix, getConnectionWebhookUrl } from './client.js';
@@ -29,14 +30,22 @@ interface HubTaskUserContext {
   email: string;
   name?: string | null;
   bitrixUserId?: number | null;
+  /** Papel RBAC da Central — ADMIN/GESTOR podem alternar qualquer tarefa do portal (mesma regra
+   * de `resolveScopedAssignedById` em bitrix.routes.ts: gestores enxergam o time inteiro). */
+  role?: string;
 }
 
 interface BitrixTaskRaw {
   ID: string | number;
   TITLE?: string;
   RESPONSIBLE_ID?: string | number;
+  CREATED_BY?: string | number;
   STATUS?: string;
 }
+
+/** Papéis que podem mutar tarefa alheia no portal — gestor/admin enxerga o trabalho do time
+ * inteiro (widget do Hub), vendedor/SDR só mexe no que criou ou no que foi delegado a ele. */
+const HUB_TASK_MANAGER_ROLES = ['ADMIN', 'GESTOR'] as const;
 
 /** Tetos de listagem — este é um widget compacto (mostra só as mais recentes), não o Plano Diário
  * completo; sem isso, um gestor com centenas de tarefas delegadas ao longo do tempo pagaria uma
@@ -92,25 +101,37 @@ export async function listHubTasks(
   ]);
   const nameById = new Map(assignees.map((a) => [a.id, a.name]));
 
-  let rawTasks: BitrixTaskRaw[];
-  try {
-    const payload = await callBitrix<{ result?: { tasks?: BitrixTaskRaw[] } }>(
-      webhookUrl,
-      'tasks.task.list',
-      {
-        filter: { CREATED_BY: creatorId },
-        select: ['ID', 'TITLE', 'RESPONSIBLE_ID', 'STATUS'],
-        order: { ID: 'DESC' },
-      },
-    );
-    rawTasks = (payload.result?.tasks ?? []).slice(0, HUB_TASK_LIST_LIMIT);
-  } catch (err: any) {
+  // O widget mostra a fila de trabalho do usuário: o que ELE delegou (CREATED_BY) mais o que foi
+  // delegado PARA ele (RESPONSIBLE_ID). Antes só o primeiro filtro existia — a tarefa recebida
+  // pelo colega ficava invisível para o responsável real (handoff 45→06 / 43→50). O Bitrix não
+  // aceita OR entre campos distintos num único filter de tasks.task.list, então são duas
+  // chamadas fundidas aqui com dedup por ID.
+  const [createdByMe, assignedToMe] = await Promise.all([
+    callBitrix<{ result?: { tasks?: BitrixTaskRaw[] } }>(webhookUrl, 'tasks.task.list', {
+      filter: { CREATED_BY: creatorId },
+      select: ['ID', 'TITLE', 'RESPONSIBLE_ID', 'STATUS'],
+      order: { ID: 'DESC' },
+    }),
+    callBitrix<{ result?: { tasks?: BitrixTaskRaw[] } }>(webhookUrl, 'tasks.task.list', {
+      filter: { RESPONSIBLE_ID: creatorId },
+      select: ['ID', 'TITLE', 'RESPONSIBLE_ID', 'STATUS'],
+      order: { ID: 'DESC' },
+    }),
+  ]).catch((err) => {
     logger.warn(
       { err, organizationId, creatorId },
-      '[hub-tasks] Falha ao listar tarefas delegadas no Bitrix24',
+      '[hub-tasks] Falha ao listar tarefas no Bitrix24',
     );
     throw err;
+  });
+
+  const byId = new Map<string, BitrixTaskRaw>();
+  for (const t of [...(createdByMe.result?.tasks ?? []), ...(assignedToMe.result?.tasks ?? [])]) {
+    byId.set(String(t.ID), t);
   }
+  const rawTasks = [...byId.values()]
+    .sort((a, b) => Number(b.ID) - Number(a.ID))
+    .slice(0, HUB_TASK_LIST_LIMIT);
 
   return rawTasks.map((t) => {
     const assigneeId = t.RESPONSIBLE_ID != null ? String(t.RESPONSIBLE_ID) : '';
@@ -151,6 +172,24 @@ export async function createHubTask(
   return listHubTasks(organizationId, user);
 }
 
+/** Carrega a tarefa no portal para autorizar a mutação — `tasks.task.get` só enxerga tarefas do
+ * portal da conexão desta organização, então o escopo de tenancy já vem de graça do webhook. */
+async function fetchHubTaskForAuthz(
+  webhookUrl: string,
+  taskId: string,
+): Promise<BitrixTaskRaw> {
+  const payload = await callBitrix<{ result?: { task?: BitrixTaskRaw } }>(
+    webhookUrl,
+    'tasks.task.get',
+    { taskId, select: ['ID', 'TITLE', 'CREATED_BY', 'RESPONSIBLE_ID', 'STATUS'] },
+  );
+  const task = payload.result?.task;
+  if (!task || task.ID == null) {
+    throw new AppError('Tarefa não encontrada no Bitrix24 desta organização.', 404);
+  }
+  return task;
+}
+
 export async function toggleHubTask(
   organizationId: string,
   user: HubTaskUserContext,
@@ -159,6 +198,20 @@ export async function toggleHubTask(
 ): Promise<HubTask[]> {
   const connection = await resolveConnection(organizationId);
   const webhookUrl = await getConnectionWebhookUrl(organizationId, connection.id);
+
+  // Autorização ANTES de mutar (IDOR intra-portal — IDs do Bitrix são sequenciais/enumeráveis,
+  // sem esta checagem qualquer usuário da org concluía/abria a tarefa de qualquer colega pelo
+  // portal — handoffs 45→06 e 43→50, onda 3). Gestor/admin pode mexer em qualquer tarefa do
+  // portal; os demais só na que criaram ou na que lhes foi delegada (RESPONSIBLE_ID).
+  const task = await fetchHubTaskForAuthz(webhookUrl, taskId);
+  if (!hasRequiredRole(user.role ?? '', HUB_TASK_MANAGER_ROLES)) {
+    const ownBitrixId = await resolveCreatorBitrixUserId(organizationId, connection.id, user);
+    const createdBy = task.CREATED_BY != null ? String(task.CREATED_BY) : null;
+    const responsibleId = task.RESPONSIBLE_ID != null ? String(task.RESPONSIBLE_ID) : null;
+    if (createdBy !== ownBitrixId && responsibleId !== ownBitrixId) {
+      throw new AppError('Você não tem permissão para alterar esta tarefa.', 403);
+    }
+  }
 
   if (done) {
     await callBitrix(webhookUrl, 'tasks.task.complete', { taskId });

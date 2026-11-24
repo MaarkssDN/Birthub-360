@@ -79,6 +79,10 @@ router.get('/conversations/:id/handoff', (req, res, next) =>
 router.get('/leads/:leadId/whatsapp-response-time', (req, res, next) =>
   resolve().getWhatsAppResponseTimeStats(req, res, next),
 );
+// ─── Trilha C.1 — Next Best Action (Próxima Melhor Ação) ───────────────────
+router.get('/leads/:leadId/next-best-action', (req, res, next) =>
+  resolve().getNextBestAction(req, res, next),
+);
 
 // ─── Onda 4 — mapeamento de campo Bitrix + writeback (ADMIN/GESTOR) ────────
 router.get('/bitrix-field-mappings', managementRoles, (req, res, next) =>

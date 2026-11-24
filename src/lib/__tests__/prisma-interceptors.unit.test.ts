@@ -1,7 +1,10 @@
+import { Prisma } from '@prisma/client';
 import { describe, expect, it } from 'vitest';
 import {
   applyPiiEncryptionToWriteArgs,
   applySoftDeleteReadFilter,
+  AUDITABLE_MODELS,
+  buildSoftDeleteData,
   BYPASS_RLS_ALLOWED_MODELS,
   decryptNestedContactPii,
   injectTenantIntoWriteArgs,
@@ -212,6 +215,74 @@ describe('applySoftDeleteReadFilter / isAuditableModel', () => {
 
     expect(isAuditableModel('Lead')).toBe(true);
     expect(isAuditableModel('Organization')).toBe(false);
+  });
+
+  // ONDA3-10-DATA-INTERCEPTORS / DEM-20261123-001 — Defeito A (handoff 20→11/10):
+  // TimelineEvent tinha deletedAt/deletedBy/deleteReason no schema mas estava fora de
+  // AUDITABLE_MODELS → leituras devolviam eventos soft-deletados (vazamento LGPD em
+  // portabilidade/erasure) e delete executava hard delete sem AuditLog.
+  it('TimelineEvent é auditável e leituras filtram deletedAt=null', () => {
+    expect(isAuditableModel('TimelineEvent')).toBe(true);
+    expect(AUDITABLE_MODELS).toContain('TimelineEvent');
+
+    const args = { where: { leadId: 'lead-1', type: 'creation' } };
+    applySoftDeleteReadFilter(args, 'TimelineEvent', 'findMany');
+    const a = args as { where: Record<string, unknown> };
+    expect(a.where.deletedAt).toBeNull();
+    expect(a.where.leadId).toBe('lead-1');
+    expect(a.where.type).toBe('creation');
+  });
+
+  it('paridade estrutural: todo model com deletedAt no schema está em AUDITABLE_MODELS (e vice-versa)', () => {
+    // Trava de regressão contra a classe inteira do Defeito A: deriva os dois conjuntos do
+    // DMMF (fonte de verdade do schema.prisma) em vez de listas manuais que já divergem.
+    const withDeletedAt = new Set(
+      Prisma.dmmf.datamodel.models
+        .filter((m) => m.fields.some((f) => f.name === 'deletedAt'))
+        .map((m) => m.name),
+    );
+    const auditable = new Set(AUDITABLE_MODELS);
+    for (const model of withDeletedAt) {
+      expect(auditable.has(model), `model com deletedAt fora de AUDITABLE_MODELS: ${model}`).toBe(
+        true,
+      );
+    }
+    for (const model of auditable) {
+      expect(withDeletedAt.has(model), `model auditável sem deletedAt no schema: ${model}`).toBe(
+        true,
+      );
+    }
+  });
+});
+
+describe('buildSoftDeleteData', () => {
+  // ONDA3-10-DATA-INTERCEPTORS / DEM-20261123-001 — Defeito B (handoff 20→11/12):
+  // Agent, AgentSession, CadenceSequence e Workflow tinham APENAS deletedAt no schema;
+  // escrever deletedBy/deleteReason neles quebrava delete/deleteMany com "Unknown argument".
+  // Resolvido pela migration aditiva (handoff 10→11/12 + missão 11, schema-only): os 4
+  // models ganharam deletedBy/deleteReason nullable → buildSoftDeleteData (DMMF-driven)
+  // passa a escrever os 3 campos neles sem mudança de código.
+  it('model completo recebe deletedAt + deletedBy + deleteReason', () => {
+    const data = buildSoftDeleteData('Lead', 'user-1', 'Soft delete');
+    expect(data.deletedAt).toBeInstanceOf(Date);
+    expect(data.deletedBy).toBe('user-1');
+    expect(data.deleteReason).toBe('Soft delete');
+  });
+
+  it('Agent/AgentSession/CadenceSequence/Workflow recebem os 3 campos após colunas aditivas', () => {
+    for (const model of ['Agent', 'AgentSession', 'CadenceSequence', 'Workflow']) {
+      const data = buildSoftDeleteData(model, 'user-1', 'Soft delete');
+      expect(data.deletedAt).toBeInstanceOf(Date);
+      expect(data.deletedBy).toBe('user-1');
+      expect(data.deleteReason).toBe('Soft delete');
+    }
+  });
+
+  it('model fora do DMMF mantém comportamento legado completo (fail-fast, não silencioso)', () => {
+    const data = buildSoftDeleteData('ModelQueNaoExiste', 'user-1', 'r');
+    expect(data).toHaveProperty('deletedAt');
+    expect(data).toHaveProperty('deletedBy', 'user-1');
+    expect(data).toHaveProperty('deleteReason', 'r');
   });
 });
 

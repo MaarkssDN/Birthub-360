@@ -46,14 +46,6 @@ propósito por estar fora de "## Exceções ativas"):
 
 ## Exceções ativas
 
-### `src/features/auth/components/LandingLoginSplitScreen.tsx`
-
-- **Limite excepcional:** 1100 linhas
-- **Dono:** Marks-Mah (autor das alterações visuais recentes; fora do roster de agentes)
-- **Motivo:** a tela de login/landing reúne a composição visual e as animações da experiência institucional. As alterações visuais recentes elevaram o arquivo a 1082 linhas, bloqueando o gate. A exceção permite manter o deploy desbloqueado enquanto a extração dos blocos visuais para componentes próprios é planejada, sem elevar o limite padrão do repositório.
-- **Registrado em:** 2026-09-30
-- **Reavaliar até:** 2026-11-30
-
 ### `src/features/landing/pages/Landing360.tsx`
 
 - **Limite excepcional:** 3500 linhas
@@ -106,14 +98,6 @@ propósito por estar fora de "## Exceções ativas"):
 - **Motivo:** Catálogo de componentes de design system do Voice Hub. Convertido para re-export canônico na campanha techdebt-2026-09-29 (eliminando 1060 linhas duplicadas).
 - **Registrado em:** 2026-09-28
 - **Atualizado em:** 2026-09-29 (correção de proprietário)
-- **Reavaliar até:** 2026-11-30
-
-### `src/features/auth/components/NewLoginScreen.tsx`
-
-- **Limite excepcional:** 2100 linhas
-- **Dono:** Agente 02 — Produto e UX
-- **Motivo:** Arquivo refatorado mas acabou cruzando o limite de falha; necessita planejamento de componentização e limpeza de lógica visual.
-- **Registrado em:** 2026-10-03
 - **Reavaliar até:** 2026-11-30
 
 ### `src/features/intelligence/routes/intelligence.routes.ts`

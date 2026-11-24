@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { ENCRYPTED_MODEL_FIELDS, encryptSensitiveFields } from './crypto/piiFields.js';
 import { computeContactPiiIndexes } from './crypto/piiIndex.js';
 import { tryDecryptField } from './crypto/secretFields.js';
@@ -169,10 +170,84 @@ export const AUDITABLE_MODELS = [
   'CrmDealItem',
   'CrmCommercialDocument',
   'Attachment',
+  // DEBT-0056: estes 5 models têm `deletedAt` no schema e código que o preenche
+  // (sessionRepository/workflowRepository fazem soft delete em AgentSession/Workflow;
+  // CadenceSequence usa active/deletedAt), mas não estavam na lista — leituras
+  // devolviam registros "deletados". Derivado do schema.prisma (14 models com
+  // deletedAt = 9 originais + estes 5; TimelineEvent entrou depois, ver nota abaixo).
+  'Agent',
+  'AgentSession',
+  'CadenceSequence',
+  'CopilotoConversation',
+  'Workflow',
+  // ONDA3-10-DATA-INTERCEPTORS (handoff 20→11/10, DEM-20261123-001): TimelineEvent tem
+  // deletedAt/deletedBy/deleteReason no schema (linhas ~797-799) mas não estava na lista —
+  // leituras devolviam eventos soft-deletados (vazamento em portabilidade/erasure LGPD,
+  // ver dataSubjectPortability.service.ts) e delete/deleteMany executavam hard delete sem
+  // AuditLog. Com a entrada aqui, delete vira soft delete + AuditLog como nos demais.
+  // ATENÇÃO: TimelineEvent não tem organizationId próprio — o AuditLog usa o tenantId do
+  // requestContext (AuditService.log cai para '' se ausente, nunca quebra).
+  'TimelineEvent',
 ];
 
 export function isAuditableModel(model: string): boolean {
   return AUDITABLE_MODELS.includes(model);
+}
+
+/**
+ * Campos de soft delete suportados por model, derivados do DMMF do schema (mesma técnica de
+ * `tenant-scoping-registry.ts` — `Prisma.dmmf` é metadado estático do client gerado, NÃO
+ * instancia PrismaClient/Pool; este módulo continua sem dependência de `pg`/Prometheus).
+ *
+ * Motivo (ONDA3-10-DATA-INTERCEPTORS, handoff 20→11/12, DEM-20261123-001 — Defeito B): quatro
+ * models auditáveis — Agent, AgentSession, CadenceSequence, Workflow — têm APENAS `deletedAt`
+ * no schema, sem `deletedBy`/`deleteReason`. O interceptor de delete em prisma.ts escrevia os
+ * três campos incondicionalmente → `prisma.<model>.delete/deleteMany` quebrava com "Unknown
+ * argument" sempre que alguém os usasse (ex.: fixtures de teste chamam
+ * `cadenceSequence.delete/deleteMany` e `agentSession.deleteMany`).
+ *
+ * Decisão: tolerância por model (escrever só os campos que existem no schema) em vez de
+ * fail-fast. Menos arriscada porque (a) o soft delete passa a funcionar de fato nesses models
+ * em vez de lançar erro, (b) a trilha de auditoria NÃO se perde — AuditLog continua sendo
+ * gravado com beforeState/afterState completos, e (c) não exige mudança de schema (proibida
+ * nesta onda — colunas deletedBy/deleteReason nesses 4 models seguem pendentes de decisão do
+ * Agente 11/12 + aprovação humana, registrada em handoff formal). Fail-fast foi descartado:
+ * manteria um crash latente em caminho de código real sem ganho de segurança — o dado
+ * sensível já está protegido por deletedAt + AuditLog + RLS.
+ *
+ * Model ausente do DMMF (impossível hoje — AUDITABLE_MODELS é validado contra o schema por
+ * teste co-localizado) cai no comportamento legado completo, preservando fail-fast ruidoso
+ * em vez de escrever silenciosamente menos campos.
+ */
+const DMMF_MODEL_FIELDS = new Map(
+  Prisma.dmmf.datamodel.models.map((m) => [
+    m.name,
+    new Set(m.fields.map((f) => f.name)),
+  ]),
+);
+
+/**
+ * Monta o `data` de soft delete (`deletedAt`/`deletedBy`/`deleteReason`) contendo apenas os
+ * campos que existem no schema do model. Usado pelos caminhos de delete/deleteMany/cascade
+ * de prisma.ts — substituir os literais inline garante que nenhum model auditável escreva
+ * campo inexistente.
+ */
+export function buildSoftDeleteData(
+  model: string,
+  userId: string | undefined,
+  deleteReason: string,
+): Record<string, unknown> {
+  const fields = DMMF_MODEL_FIELDS.get(model);
+  if (!fields) {
+    // Comportamento legado: todos os campos (fail-fast se o schema não tiver — não deveria
+    // acontecer para models auditáveis, que são validados contra o DMMF em teste).
+    return { deletedAt: new Date(), deletedBy: userId, deleteReason };
+  }
+  const data: Record<string, unknown> = {};
+  if (fields.has('deletedAt')) data.deletedAt = new Date();
+  if (fields.has('deletedBy')) data.deletedBy = userId;
+  if (fields.has('deleteReason')) data.deleteReason = deleteReason;
+  return data;
 }
 
 /**

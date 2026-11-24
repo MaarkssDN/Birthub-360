@@ -260,6 +260,8 @@ export class SelfDrivingCrmService implements ISelfDrivingCrmPort {
       lastActivityAt: Date;
       hasActiveDeal: boolean;
       isWonOrLost: boolean;
+      contactEmail?: string | null;
+      contactPhone?: string | null;
     }>;
 
     if (seededLeads.length > 0) {
@@ -277,7 +279,7 @@ export class SelfDrivingCrmService implements ISelfDrivingCrmPort {
             lastInteraction: true,
             updatedAt: true,
             createdAt: true,
-            contact: { select: { name: true } },
+            contact: { select: { name: true, email: true, whatsapp: true, phone: true } },
             company: { select: { tradeName: true, legalName: true } },
           },
         });
@@ -289,6 +291,10 @@ export class SelfDrivingCrmService implements ISelfDrivingCrmPort {
           currentStage: l.status,
           lastActivityAt: l.lastInteraction || l.updatedAt || l.createdAt,
           hasActiveDeal: false,
+          // Identificadores de contato para o sujeito de opt-out completo (handoff 44→17):
+          // opt-out gravado só por e-mail/telefone também precisa bloquear a reativação.
+          contactEmail: l.contact?.email ?? null,
+          contactPhone: l.contact?.whatsapp ?? l.contact?.phone ?? null,
           isWonOrLost:
             l.status === LeadStatus.Negocios_Ganhos ||
             l.status === LeadStatus.Negocios_Perdidos ||
@@ -305,11 +311,19 @@ export class SelfDrivingCrmService implements ISelfDrivingCrmPort {
       );
 
       if (daysInactive >= inactivityThresholdDays) {
-        // Verificar trava mandatória de Opt-Out
+        // Verificar trava mandatória de Opt-Out — sujeito completo (leadId + e-mail + telefone
+        // do contato): `subjectsMatch` só casa por identificador compartilhado, então um
+        // opt-out gravado apenas por e-mail/telefone (sem leadId) não seria detectado com
+        // `{ leadId }` sozinho (achado da auditoria ONDA3-44 — correção do handoff 44→17).
+        const optOutSubject = {
+          leadId: lead.leadId,
+          email: lead.contactEmail ?? null,
+          phoneE164: lead.contactPhone ?? null,
+        };
         const [optedOutVoice, optedOutEmail, optedOutWhatsApp] = await Promise.all([
-          isOptedOut(this.optOutRepo, organizationId, { leadId: lead.leadId }, 'voice'),
-          isOptedOut(this.optOutRepo, organizationId, { leadId: lead.leadId }, 'email'),
-          isOptedOut(this.optOutRepo, organizationId, { leadId: lead.leadId }, 'whatsapp'),
+          isOptedOut(this.optOutRepo, organizationId, optOutSubject, 'voice'),
+          isOptedOut(this.optOutRepo, organizationId, optOutSubject, 'email'),
+          isOptedOut(this.optOutRepo, organizationId, optOutSubject, 'whatsapp'),
         ]);
         const isOptedOutFlag =
           optedOutVoice ||

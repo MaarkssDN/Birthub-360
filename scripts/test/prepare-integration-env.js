@@ -164,7 +164,26 @@ export function rewriteEnvTestForRemoteDocker(content, remoteHost) {
 const POSTGRES_CONTAINER = 'birthhub_postgres';
 const BOOTSTRAP_SUPERUSER = 'prospector';
 const BOOTSTRAP_DB = 'prospectordb';
-const TEST_DB_NAME = 'prospectordb_test';
+
+/**
+ * Extrai o nome do banco de dados de teste da URL de conexão efetiva (DATABASE_URL / TEST_DATABASE_URL).
+ * Permite isolamento concorrente entre múltiplos worktrees/runners apontando para bancos dedicados
+ * (ex.: prospectordb_o2_wt02_test, prospectordb_o2_wt04_test), com fallback seguro para prospectordb_test.
+ */
+export function getEffectiveTestDatabaseName(envVars = process.env) {
+  const targetUrl = envVars.TEST_DATABASE_URL || envVars.DATABASE_URL;
+  if (targetUrl) {
+    try {
+      const parsed = new URL(targetUrl);
+      const dbName = decodeURIComponent(parsed.pathname.replace(/^\/+/, '')).split('/')[0] || '';
+      if (dbName && dbName.endsWith('_test')) {
+        return dbName;
+      }
+    } catch {}
+  }
+  return 'prospectordb_test';
+}
+
 const APP_ROLE_PASSWORD = process.env.APP_ROLE_PASSWORD || 'prospector_app_pass';
 const MIGRATOR_ROLE_PASSWORD =
   process.env.MIGRATOR_ROLE_PASSWORD ||
@@ -305,6 +324,7 @@ async function runPrepareIntegrationEnv() {
     ...process.env,
     NODE_ENV: process.env.NODE_ENV || parsedEnvFile.NODE_ENV || 'test',
   };
+  const TEST_DB_NAME = getEffectiveTestDatabaseName(effectiveEnv);
 
   try {
     assertTestDatabaseSafety(effectiveEnv);

@@ -1,3 +1,4 @@
+import { motion, useReducedMotion } from 'framer-motion';
 import {
   Building2,
   ChevronDown,
@@ -16,8 +17,6 @@ import {
   X,
 } from 'lucide-react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
-import { drawerSlideRight, modalBackdropMotion } from '../../../lib/motion.js';
 import { EntityAttachments } from '../../../components/crm/EntityAttachments.js';
 import { AIEmailGenerator } from '../../../components/ui/AIEmailGenerator.js';
 import { Button } from '../../../components/ui/Button.js';
@@ -28,6 +27,7 @@ import { useActivePlaybook } from '../../../hooks/useActivePlaybook.js';
 import { useActiveRecord } from '../../../hooks/useActiveRecord.js';
 import { api } from '../../../lib/api.js';
 import { LEAD_STATUS_EMOJI as STATUS_EMOJI } from '../../../lib/enumMap.js';
+import { drawerSlideRight, modalBackdropMotion } from '../../../lib/motion.js';
 import { SoundFX } from '../../../lib/soundEffects.js';
 import { toast } from '../../../lib/toast.js';
 // LEAD_STATUS é reexportado como tipo em ../../../types (export type {...}) — o array em
