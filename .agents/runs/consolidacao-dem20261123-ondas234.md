@@ -62,7 +62,7 @@ A linha global (`integracao/onda-3-dem20261123`) estava baseada em `32d07c375` �
 | `npx tsc --noEmit` | `e65f42efa` | ✅ 0 erros |
 | `npm run test:architecture` | `e65f42efa` | ✅ depcruise 0 violações, coverage OK, hotspots OK (11 exceções ativas, 0 falhas), baseline-freshness OK, ownership OK |
 | `npm run build` | `e65f42efa` | ✅ vite + esbuild + verify:pwa-precache (248 entradas) |
-| `npm run lint` | `8f3e92e6a` | ⏳ em execução |
+| `npm run lint` | `8f3e92e6a` | ✅ 0 erros / 1512 warnings pré-existentes (não-bloqueante) |
 | `npm run test:unit` | `8f3e92e6a` | ⏳ em execução (~87 min estimados) |
 | `test:integration` / RLS | — | ❌ não executável (Docker/PG indisponíveis) — handoff 04 emitido |
 | e2e / visual / semgrep / trivy | — | ❌ pendentes de CI/ambiente autorizado |
