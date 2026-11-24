@@ -2,7 +2,10 @@
 
 ## Dono
 
-Agente 17 — Cadência Multicanal e Ciclo de Receita
+Agente 44 — Lola (Motor de Cadências Comerciais, Squad 40). Este arquivo declarava
+"Agente 17" (numeração legada de roster anterior) — substituído pela
+`.agents/MATRIZ_PROPRIEDADE.md` oficial (revisão 2026-11-24), que confirma
+`src/features/cadence/**` e `src/features/crm/cadences/**` sob o Agente 44.
 
 Este arquivo governa esta pasta e todas as subpastas. Criada na Onda 7
 (`.agents/prompts/17-cadencia-ciclo-receita.md`).
