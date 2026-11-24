@@ -10,7 +10,9 @@ import {
 // pedir memória ilimitada nem derrubar o login com exceção) e o roundtrip Argon2id/scrypt.
 
 describe('password-hash (Argon2id + fallback scrypt legado)', () => {
-  it('faz roundtrip: hash gerado verifica a senha correta e rejeita a errada', async () => {
+  // Argon2id m=19456,t=2 é intencionalmente caro (é o ponto do KDF) — em hosts compartilhados
+  // cada operação pode levar vários segundos; timeout explícito evita flake no gate.
+  it('faz roundtrip: hash gerado verifica a senha correta e rejeita a errada', { timeout: 60_000 }, async () => {
     const hash = await hashPasswordArgon2id('Senha-Forte-123!');
     expect(isArgon2idHash(hash)).toBe(true);
     expect(hash.startsWith('$argon2id$v=19$m=19456,t=2,p=1$')).toBe(true);
@@ -23,7 +25,7 @@ describe('password-hash (Argon2id + fallback scrypt legado)', () => {
     ).resolves.toBe(false);
   });
 
-  it('hashes distintos para a mesma senha (salt aleatório)', async () => {
+  it('hashes distintos para a mesma senha (salt aleatório)', { timeout: 60_000 }, async () => {
     const a = await hashPasswordArgon2id('mesma-senha');
     const b = await hashPasswordArgon2id('mesma-senha');
     expect(a).not.toBe(b);
@@ -70,7 +72,7 @@ describe('password-hash (Argon2id + fallback scrypt legado)', () => {
     }
   });
 
-  it('hash Argon2 estruturalmente válido mas com hash incorreto retorna false (não lança)', async () => {
+  it('hash Argon2 estruturalmente válido mas com hash incorreto retorna false (não lança)', { timeout: 60_000 }, async () => {
     const real = await hashPasswordArgon2id('senha-real');
     const parts = real.split('$');
     // Mantém parâmetros/salt válidos, troca só o hash final por bytes aleatórios do mesmo tamanho.
