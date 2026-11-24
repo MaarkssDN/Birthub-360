@@ -120,7 +120,10 @@ Cada executor usará branch `agente/<id>-<slug>-s50` e worktree `squads/squad-50
   `claimWebhookDelivery`), signature (HMAC+dedup), stripe (`stripe-signature`), birth-voice
   (candidatos de segredo) — todos validam origem; risco R3 do §4 rebaixado.
 - **Testes executados:** `tests/unit/lib/integrations/` → 13/13 PASS (circuit breaker,
-  webhookIdempotency, whatsappAntiBan, bitrixBatchExtractor); client Bitrix 24/24 PASS (sessão 1).
+  webhookIdempotency, whatsappAntiBan, bitrixBatchExtractor); client Bitrix 24/24 PASS (sessão 1);
+  `tests/unit/features/integrations/` + `chatwoot/__tests__` → **282/282 PASS em 30 arquivos**
+  (omie, slack, stripe, signature, chatwoot, bitrix outbound/dedup/idempotentSync/hubTasks,
+  ExternalCrm providers, whatsapp conversation-intelligence) — baseline de saúde dos conectores.
 
 ## 6. Handoffs emitidos nesta sessão
 
