@@ -1,0 +1,9 @@
+{
+  "recurso": "squad-40-wt47",
+  "session_id": "devin-subagent-47-dante-dem20261123-001",
+  "squad": "40",
+  "agente": "47 — Dante",
+  "timestamp": "2026-11-24T15:55:00-03:00",
+  "escopo": "worktree C:/Github/Birthub-360-worktrees/squads/squad-40/wt-47, branch agente/47-routing-s40 (base coord/squad-40); ownership src/features/crm/routing/**; portas efemeras 22400-22499 quando necessario; sem recursos externos reservados (missao de logica pura)",
+  "expira_em_horas": 8
+}
