@@ -3,7 +3,7 @@
 - **De:** 44 — Motor de Cadências Comerciais (auditoria Onda 3, `ONDA3-44-CADENCE`)
 - **Para:** 17 — Cadência Multicanal e Ciclo de Receita
 - **Onda:** 3
-- **Status:** aberto
+- **Status:** resolvido
 - **Prioridade:** normal
 - **Bloqueador-ref:** nenhum
 - **Sprint destino:** próxima janela do 17
@@ -70,3 +70,30 @@ Teste unitário: opt-out gravado apenas por e-mail (sem leadId) bloqueia
 - Sem envio real hoje nesses caminhos → prioridade normal, não bloqueador.
 - Se a decisão for "sujeito parcial é aceitável porque o dispatch final
   revalida", registrar a decisão aqui e fechar o handoff.
+
+## Resolução (Agente 44 — follow-up ONDA3-44-CADENCE-FIX, commit `148133b6b`)
+
+Ownership de `src/features/cadence/**` estendida ao Agente 44 por decisão do
+Coordenador (ver `.agents/runs/onda-3/44-relatorio.md` e handoff 44→00) — o
+"Agente 17" legado não existe no roster de 100 agentes; o motor de cadências é
+domínio do 44.
+
+- **`adaptiveMultichannelCadence.service.ts`**: novo método privado
+  `resolveOptOutSubject(organizationId, leadId, fallback)` — resolve
+  `Lead.contact.{email,whatsapp,phone}` via Prisma (escopado por tenant) com
+  fallback para `enrollment.contactEmail/contactPhone`; falha de leitura degrada
+  para os identificadores do enrollment com `logger.warn`, nunca para "sem
+  opt-out". Usado em `executeNextStep` (antes consultava só `{ leadId }`) e em
+  `isLeadOptedOut` (antes `normalizeOptOutSubject({ leadId })`).
+- **`selfDrivingCrm.service.ts`**: `detectStagnatedLeads` passou a selecionar
+  `contact.{email,whatsapp,phone}` no `prisma.lead.findMany` e monta
+  `optOutSubject = { leadId, email, phoneE164 }` por lead antes das três
+  consultas `isOptedOut` por canal. Leads sem contato (seed/teste) mantêm
+  sujeito `{ leadId }` — comportamento anterior preservado.
+- **Teste de regressão**: `src/features/cadence/__tests__/optOutSubjectCompleteness.test.ts`
+  — 4 cenários novos (opt-out só por e-mail via enrollment; só por telefone via
+  contato do lead; `isLeadOptedOut` por e-mail; `detectStagnatedLeads` por
+  e-mail) — todos falhariam antes da correção (sujeito parcial não casava).
+- **Gates**: `npx tsc --noEmit` verde; vitest cadence-related 226/226 (18
+  arquivos), incluindo os 4 testes novos e os 16 testes pré-existentes de
+  `tests/unit/cadence/` sem regressão.

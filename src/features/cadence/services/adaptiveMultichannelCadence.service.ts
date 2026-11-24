@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { logger } from '../../../lib/logger.js';
+import { prisma } from '../../../lib/prisma.js';
 import { domainEventMesh } from '../../../lib/queue/domainEventMesh.service.js';
 import type {
   CadenceChannel,
@@ -14,6 +15,7 @@ import {
   isOptedOut,
   normalizeOptOutSubject,
   type OptOutRepository,
+  type OptOutSubject,
   recordOptOut,
 } from '../application/optOutService.js';
 import { prismaOptOutRepository } from '../infra/PrismaOptOutRepository.js';
@@ -115,15 +117,16 @@ export class AdaptiveMultichannelCadenceService implements IMultichannelCadenceP
       };
     }
 
-    // Checagem de Opt-Out Cross-Channel (persistente — tabela OptOutRecord, não mais Map volátil)
-    const optedOut = await isOptedOut(
-      this.optOutRepo,
+    // Checagem de Opt-Out Cross-Channel (persistente — tabela OptOutRecord, não mais Map volátil).
+    // Sujeito completo (leadId + e-mail + telefone): `subjectsMatch` só casa por identificador
+    // compartilhado, então consultar só por leadId deixava passar opt-out gravado por e-mail ou
+    // telefone sem leadId vinculado (achado da auditoria ONDA3-44 — correção do handoff 44→17).
+    const optOutSubject = await this.resolveOptOutSubject(
       organizationId,
-      {
-        leadId: enrollment.leadId,
-      },
-      step.channel,
+      enrollment.leadId,
+      { email: enrollment.contactEmail, phone: enrollment.contactPhone },
     );
+    const optedOut = await isOptedOut(this.optOutRepo, organizationId, optOutSubject, step.channel);
 
     if (optedOut) {
       logger.warn(
@@ -251,13 +254,47 @@ export class AdaptiveMultichannelCadenceService implements IMultichannelCadenceP
   }
 
   /**
+   * Monta o sujeito de opt-out mais completo possível: leadId sempre, mais e-mail/telefone do
+   * contato atual do lead (fonte mais fresca, escopada por tenant) com fallback para os
+   * identificadores gravados no enrollment. Se a leitura do lead falhar (ex.: banco indisponível
+   * num caminho de teste), degrada para os identificadores do enrollment — nunca para "sem
+   * opt-out", e nunca derruba o passo por causa da consulta extra.
+   */
+  private async resolveOptOutSubject(
+    organizationId: string,
+    leadId: string,
+    enrollmentContact?: { email?: string | null; phone?: string | null },
+  ): Promise<OptOutSubject> {
+    let email = enrollmentContact?.email?.trim() || null;
+    let phoneE164 = enrollmentContact?.phone?.trim() || null;
+    try {
+      const lead = await prisma.lead.findFirst({
+        where: { id: leadId, organizationId },
+        select: { contact: { select: { email: true, whatsapp: true, phone: true } } },
+      });
+      // `||` (não `??`): contato pode ter string vazia — ela não pode mascarar o fallback do enrollment.
+      email = lead?.contact?.email || email;
+      phoneE164 = (lead?.contact?.whatsapp || lead?.contact?.phone) || phoneE164;
+    } catch (err) {
+      logger.warn(
+        { err, organizationId, leadId },
+        '[MultichannelCadence] Falha ao enriquecer sujeito de opt-out com contato do lead — usando apenas identificadores disponíveis.',
+      );
+    }
+    return { leadId, email, phoneE164 };
+  }
+
+  /**
    * `true` se existe QUALQUER OptOutRecord do lead no tenant — equivalente ao antigo
-   * `optOutRegistry` volátil, agora consultando a tabela durável `OptOutRecord`.
+   * `optOutRegistry` volátil, agora consultando a tabela durável `OptOutRecord`. O sujeito
+   * inclui e-mail/telefone do contato do lead (mesma correção do handoff 44→17): um opt-out
+   * gravado só por e-mail/telefone também bloqueia.
    */
   async isLeadOptedOut(organizationId: string, leadId: string): Promise<boolean> {
+    const subject = await this.resolveOptOutSubject(organizationId, leadId);
     const matches = await this.optOutRepo.findMatches(
       organizationId,
-      normalizeOptOutSubject({ leadId }),
+      normalizeOptOutSubject(subject),
     );
     return matches.length > 0;
   }

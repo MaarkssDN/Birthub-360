@@ -3,7 +3,7 @@
 - **De:** 44 — Motor de Cadências Comerciais (auditoria Onda 3, `ONDA3-44-CADENCE`)
 - **Para:** 17 — Cadência Multicanal e Ciclo de Receita
 - **Onda:** 3
-- **Status:** aberto
+- **Status:** resolvido
 - **Prioridade:** normal
 - **Bloqueador-ref:** nenhum
 - **Sprint destino:** próxima janela do 17
@@ -77,3 +77,33 @@ despacha conteúdo da sequência estranha.
   worker/webhook resolver (defesa em profundidade, não exploit conhecido).
 - `CadenceRun_leadId_active_unique` (índice parcial na migration) está
   confirmado e `POST /runs` mapeia P2002 → 409 corretamente.
+
+## Resolução (Agente 44 — follow-up ONDA3-44-CADENCE-FIX, commits `8cae07968` + `148133b6b`)
+
+- **Item 1 — CORRIGIDO.** `cadenceRun.worker.ts`: a busca de
+  `CadenceSequence` agora filtra `organizationId ∈ orgs dos runs ativos` e o
+  mapa guarda `{ sequence, organizationId }`; o consumidor exige par
+  `(run.organizationId === seq.organizationId)` — mismatch cai no fluxo de
+  sequência inválida → run `failed`/`policy-guardrail`, nunca despacha conteúdo
+  de outro tenant. `cadenceWebhookResolver.ts`: `findUnique` por id →
+  `findFirst({ id, organizationId })`. Varredura dos demais lookups
+  (`cadence.routes.ts`, `PrismaCadenceSequenceRepository`,
+  `PrismaCadenceRunRepository`, `PrismaCadenceRateLimitPort`,
+  `PrismaCalendarSchedulerPort`): todos já filtram por `organizationId` —
+  aprovado sem alteração.
+- **Item 2 — DOCUMENTADO (stub sem caller de produção).** `enqueueAction`
+  retorna `accepted/queued` sem persistir fila: verificado que não há nenhum
+  caller de produção (só `index.ts` reexporta; consumidores do contrato
+  `CadenceExecutionPort` não existem fora de teste). Decisão: mantido como
+  contrato de porta para uso futuro pelo Swarm; se um consumidor real surgir,
+  a fila deverá ser implementada antes — registrado em
+  `.agents/runs/onda-3/44-relatorio.md`. Não é bug ativo.
+- **Item 3 — DOCUMENTADO (stub).** `multichannelDispatcher.service.ts` segue
+  sem caller de produção; mantido como stub declarado. Se for ligado a envio
+  real, deve ser substituído por dispatcher honesto (mesma disciplina de
+  "nenhuma escrita otimista" do AGENTS.md local do 17).
+- **Teste de regressão**: 2 cenários no mesmo arquivo de teste — run com
+  `sequenceId` de outro tenant → `failedInvalidSequence=1` e query com filtro
+  de org assertado; run com sequência do mesmo tenant → não cai no caminho de
+  falha.
+- **Gates**: `npx tsc --noEmit` verde; vitest cadence-related 226/226.

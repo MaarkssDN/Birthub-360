@@ -139,15 +139,36 @@ export async function scanAndAdvanceCadenceRuns(
     });
 
     if (runs.length === 0)
-      return { activeRuns: runs, sequences: new Map<string, CadenceSequenceDefinition | null>() };
+      return {
+        activeRuns: runs,
+        sequences: new Map<
+          string,
+          { sequence: CadenceSequenceDefinition; organizationId: string } | null
+        >(),
+      };
 
     const sequenceIds = [...new Set(runs.map((r) => r.sequenceId))];
+    const runOrgIds = [...new Set(runs.map((r) => r.organizationId))];
+    // Defesa em profundidade (achado da auditoria ONDA3-44): a FK CadenceRun.sequenceId →
+    // CadenceSequence.id NÃO é composta por tenant — se uma linha cross-tenant existir, o
+    // worker despacharia o templateRef da sequência de OUTRA organização para o lead deste
+    // run. O filtro por organizationId restringe a carga às sequências dos tenants dos runs
+    // encontrados, e o consumidor abaixo ainda confere par (run.organizationId, seq.org).
     const sequenceRows = await prisma.cadenceSequence.findMany({
-      where: { id: { in: sequenceIds } },
-      select: { id: true, name: true, touches: true },
+      where: { id: { in: sequenceIds }, organizationId: { in: runOrgIds } },
+      select: { id: true, organizationId: true, name: true, touches: true },
     });
-    const seqMap = new Map<string, CadenceSequenceDefinition | null>();
-    for (const row of sequenceRows) seqMap.set(row.id, parseCadenceSequenceDefinition(row));
+    const seqMap = new Map<
+      string,
+      { sequence: CadenceSequenceDefinition; organizationId: string } | null
+    >();
+    for (const row of sequenceRows) {
+      const parsed = parseCadenceSequenceDefinition(row);
+      seqMap.set(
+        row.id,
+        parsed ? { sequence: parsed, organizationId: row.organizationId } : null,
+      );
+    }
     return { activeRuns: runs, sequences: seqMap };
   });
 
@@ -159,7 +180,14 @@ export async function scanAndAdvanceCadenceRuns(
   let failedInvalidSequence = 0;
 
   for (const run of activeRuns) {
-    const sequence = sequences.get(run.sequenceId);
+    const sequenceEntry = sequences.get(run.sequenceId);
+    // Sequência precisa pertencer ao MESMO tenant do run — mismatch (dado cross-tenant
+    // corrompido) é tratado como sequência inválida: run encerrado como failed, nunca
+    // despacha conteúdo de outra organização.
+    const sequence =
+      sequenceEntry && sequenceEntry.organizationId === run.organizationId
+        ? sequenceEntry.sequence
+        : null;
     if (!sequence) {
       // Sequência ausente/malformada — encerra o run como `failed` em vez de deixá-lo `Active`
       // para sempre (o próximo tick voltaria a pular exatamente do mesmo jeito). Roda com o
