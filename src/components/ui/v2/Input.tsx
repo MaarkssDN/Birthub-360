@@ -33,6 +33,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <input
         type={type}
+        // aria-invalid sinaliza o estado de erro para leitores de tela,
+        // independente do estilo visual da variant.
+        aria-invalid={variant === "error" || undefined}
         className={cn(inputVariants({ variant, size, className }))}
         ref={ref}
         {...props}
