@@ -374,21 +374,33 @@ const extendedPrisma = basePrisma.$extends({
             await executeWithRls((client) =>
               client.lead.updateMany({
                 where: { companyId: { in: affectedIds } },
-                data: buildSoftDeleteData('Lead', userId, cascadeReason) as Prisma.LeadUpdateManyMutationInput,
+                data: buildSoftDeleteData(
+                  'Lead',
+                  userId,
+                  cascadeReason,
+                ) as Prisma.LeadUpdateManyMutationInput,
               }),
             );
           } else if (model === 'Contact') {
             await executeWithRls((client) =>
               client.lead.updateMany({
                 where: { contactId: { in: affectedIds } },
-                data: buildSoftDeleteData('Lead', userId, cascadeReason) as Prisma.LeadUpdateManyMutationInput,
+                data: buildSoftDeleteData(
+                  'Lead',
+                  userId,
+                  cascadeReason,
+                ) as Prisma.LeadUpdateManyMutationInput,
               }),
             );
           } else if (model === 'Lead') {
             await executeWithRls((client) =>
               client.activity.updateMany({
                 where: { leadId: { in: affectedIds } },
-                data: buildSoftDeleteData('Activity', userId, cascadeReason) as Prisma.ActivityUpdateManyMutationInput,
+                data: buildSoftDeleteData(
+                  'Activity',
+                  userId,
+                  cascadeReason,
+                ) as Prisma.ActivityUpdateManyMutationInput,
               }),
             );
           }

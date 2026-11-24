@@ -1,8 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type {
-  DatabaseMutationRunner,
-  VoiceCommandPayload,
-} from '../command.processor.js';
+import type { DatabaseMutationRunner, VoiceCommandPayload } from '../command.processor.js';
 import { VoiceCommandConfirmationManager } from '../confirmation.manager.js';
 import { parseVoiceTranscript } from '../intent.parser.js';
 import type { VoiceCommandActor } from '../permission.guard.js';

@@ -164,10 +164,7 @@ export async function scanAndAdvanceCadenceRuns(
     >();
     for (const row of sequenceRows) {
       const parsed = parseCadenceSequenceDefinition(row);
-      seqMap.set(
-        row.id,
-        parsed ? { sequence: parsed, organizationId: row.organizationId } : null,
-      );
+      seqMap.set(row.id, parsed ? { sequence: parsed, organizationId: row.organizationId } : null);
     }
     return { activeRuns: runs, sequences: seqMap };
   });

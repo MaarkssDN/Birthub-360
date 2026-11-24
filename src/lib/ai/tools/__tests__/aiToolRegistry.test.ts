@@ -41,9 +41,9 @@ describe('B-08 — AI tool registry must be the same engine the runtime executes
     const tool = makeTool('splitBrainProbe');
     toolRegistry.registerTool(tool);
     const ctx = makeCtx({ allowedTools: ['splitBrainProbe'] });
-    await expect(
-      toolEngine.executeTool('s1', 'splitBrainProbe', {}, ctx),
-    ).resolves.toEqual({ ok: true });
+    await expect(toolEngine.executeTool('s1', 'splitBrainProbe', {}, ctx)).resolves.toEqual({
+      ok: true,
+    });
   });
 });
 
@@ -163,7 +163,12 @@ describe('AiToolRegistry.listToolsForModel — só anuncia o que é executável'
   it('filtra por allowedTools, requiredPermission e isAvailable', async () => {
     const registry = new AiToolRegistry();
     registry.register({ name: 'ok', description: 'ok', parameters: {}, execute: async () => 1 });
-    registry.register({ name: 'otherTenant', description: 'd', parameters: {}, execute: async () => 1 });
+    registry.register({
+      name: 'otherTenant',
+      description: 'd',
+      parameters: {},
+      execute: async () => 1,
+    });
     registry.register({
       name: 'needsPerm',
       description: 'd',
@@ -189,7 +194,12 @@ describe('AiToolRegistry.listToolsForModel — só anuncia o que é executável'
   it('não anuncia tool fora do allowedTools nem sem permissão exigida', async () => {
     const registry = new AiToolRegistry();
     registry.register({ name: 'ok', description: 'ok', parameters: {}, execute: async () => 1 });
-    registry.register({ name: 'otherTenant', description: 'd', parameters: {}, execute: async () => 1 });
+    registry.register({
+      name: 'otherTenant',
+      description: 'd',
+      parameters: {},
+      execute: async () => 1,
+    });
     registry.register({
       name: 'adminOnly',
       description: 'd',
@@ -197,7 +207,10 @@ describe('AiToolRegistry.listToolsForModel — só anuncia o que é executável'
       requiredPermission: 'tools:admin',
       execute: async () => 1,
     });
-    const ctx = makeCtx({ allowedTools: ['ok', 'otherTenant', 'adminOnly'], grantedPermissions: [] });
+    const ctx = makeCtx({
+      allowedTools: ['ok', 'otherTenant', 'adminOnly'],
+      grantedPermissions: [],
+    });
     const listed = await registry.listToolsForModel(ctx);
     expect(listed.map((t) => t.name)).toEqual(['ok', 'otherTenant']);
 

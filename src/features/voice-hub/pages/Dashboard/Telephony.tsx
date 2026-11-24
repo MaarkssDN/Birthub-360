@@ -148,10 +148,18 @@ export default function TelephonyPage() {
         <table className="w-full text-sm text-left">
           <thead className="bg-slate-50 text-slate-500 font-medium">
             <tr>
-              <th scope="col" className="p-3">Número</th>
-              <th scope="col" className="p-3">Provedor</th>
-              <th scope="col" className="p-3">Destino (Webhook)</th>
-              <th scope="col" className="p-3">Status</th>
+              <th scope="col" className="p-3">
+                Número
+              </th>
+              <th scope="col" className="p-3">
+                Provedor
+              </th>
+              <th scope="col" className="p-3">
+                Destino (Webhook)
+              </th>
+              <th scope="col" className="p-3">
+                Status
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">

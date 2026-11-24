@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  evaluateCadenceBusinessWindow,
-  resolveLocalTimeParts,
-} from '../cadence.worker.js';
+import { evaluateCadenceBusinessWindow, resolveLocalTimeParts } from '../cadence.worker.js';
 
 /**
  * Testes focados do avaliador de janela comercial de cadências (Agente 44 — Onda 4).

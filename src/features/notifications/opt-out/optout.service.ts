@@ -50,12 +50,7 @@ function extractSignificantDigits(phone: string | null | undefined): string | nu
  * 'waiting-children' deixaria escapar exatamente os envios comerciais mais "quentes" do opt-out —
  * a revogação precisa ser a trava mais forte (LGPD).
  */
-const PENDING_JOB_STATES: JobType[] = [
-  'waiting',
-  'delayed',
-  'prioritized',
-  'waiting-children',
-];
+const PENDING_JOB_STATES: JobType[] = ['waiting', 'delayed', 'prioritized', 'waiting-children'];
 
 /** Extrai string de forma defensiva — payloads de fila não são contratualmente confiáveis. */
 function asNonEmptyString(value: unknown): string | null {
