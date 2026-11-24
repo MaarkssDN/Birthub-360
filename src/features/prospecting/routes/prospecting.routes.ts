@@ -603,32 +603,39 @@ router.get(
 );
 
 // Enriquecimento web via scraper seguro (Cheerio + Playwright fallback)
-router.post('/enrich', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const { url, forceBrowser } = req.body as { url?: string; forceBrowser?: boolean };
-    if (!url) {
-      res.status(400).json({ success: false, error: 'A URL é obrigatória para o scraper' });
-      return;
-    }
+// ACH-05-01 / auditoria-20261115 (handoff 05→15): scraping arbitrário dispara fetch externo +
+// browser headless por request — recurso faturável/operacional que VISUALIZADOR (papel
+// somente-leitura) não pode acionar. Mesmo conjunto de /discover e rotas faturáveis vizinhas.
+router.post(
+  '/enrich',
+  requireRole(['ADMIN', 'GESTOR', 'CLOSER', 'SDR']),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { url, forceBrowser } = req.body as { url?: string; forceBrowser?: boolean };
+      if (!url || typeof url !== 'string') {
+        res.status(400).json({ success: false, error: 'A URL é obrigatória para o scraper' });
+        return;
+      }
 
-    const { webScraperService } = await import('../services/enrichment/webScraper.service.js');
-    if (!webScraperService.isSafeUrl(url)) {
-      res
-        .status(400)
-        .json({ success: false, error: 'URL bloqueada pela política de segurança SSRF' });
-      return;
-    }
+      const { webScraperService } = await import('../services/enrichment/webScraper.service.js');
+      if (!webScraperService.isSafeUrl(url)) {
+        res
+          .status(400)
+          .json({ success: false, error: 'URL bloqueada pela política de segurança SSRF' });
+        return;
+      }
 
-    const scrapedData = await webScraperService.scrapeWebsite(url, {
-      forcePlaywright: Boolean(forceBrowser),
-    });
-    res.json({
-      success: true,
-      data: scrapedData,
-    });
-  } catch (error: any) {
-    next(error);
-  }
-});
+      const scrapedData = await webScraperService.scrapeWebsite(url, {
+        forcePlaywright: Boolean(forceBrowser),
+      });
+      res.json({
+        success: true,
+        data: scrapedData,
+      });
+    } catch (error: any) {
+      next(error);
+    }
+  },
+);
 
 export const prospectingRoutes = router;
