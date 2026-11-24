@@ -25,6 +25,7 @@ Matriz de ownership: `.agents/runs/onda-3-matriz-ownership.md` (commit d5192c47a
 | 6 | 65 — Lena | ONDA3-65-VOICE-HUB | wt-65-voice-hub | agente/65-voice-hub-onda3 | 65d2e81f |
 | 7 | 96 — Nera | ONDA3-96-AUTH | wt-96-auth | agente/96-auth-onda3 | 97b85714 |
 | 8 | 09 — Silas | ONDA3-09-AUDIT (baseline Onda 2) | wt-09-audit-onda3 | agente/09-audit-onda3 | a1e19e5c |
+| 8' | 99 — Vito | ONDA3-99-APPSEC (slot liberado após parecer 09 APROVADO) | wt-99-appsec | agente/99-appsec-onda3 | 0a75be87 |
 
 ## Regras em vigor
 
