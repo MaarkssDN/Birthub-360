@@ -88,3 +88,42 @@ Nenhum arquivo fora de `commands/**` foi alterado. UI do Voice Hub (Agente 65) i
   mover `VoiceCommandConfirmationManager` para store compartilhado.
 - **Agente 00**: parecer do auditor independente (Agente 09) sobre o SHA
   `965fc4bf5` antes de integração.
+
+## Revisão Silas — rodada 2
+
+Parecer: `.agents/reviews/onda4/64-voice-commands-onda4.md` (worktree wt-09-review)
+— **REPROVADO** sobre `965fc4bf5` + `b46224334`, dois achados. Correções:
+
+- **A1 — Ownership (teste fora de `commands/**`):** RESOLVIDO.
+  `tests/unit/features/voice-hub/voiceCommandRouter.test.ts` movido via `git mv`
+  para `src/features/voice-hub/commands/__tests__/voiceCommandRouter.test.ts`
+  (imports ajustados para `../*.js`; caminho coberto pelo include
+  `src/**/__tests__/**/*.test.ts` do `vitest.unit.config.ts`).
+- **A2 — Confirmação sem vínculo tenant/ator:** RESOLVIDO.
+  Em `voice-command-router.ts` → `resolveConfirmation()`, após `consume`
+  retornar `found`, o router agora rejeita com `confirmation_denied` quando
+  `pending.command.organizationId !== actor.organizationId` **e** quando
+  `pending.command.userId !== actor.userId` (vínculo estrito ao criador —
+  `organizationId`/`userId` já trafegam no `VoiceCommandPayload`, sem mudança
+  de schema no confirmation.manager). Revalidação de papel
+  (`authorizeVoiceCommand`) mantida depois do binding. Dois testes novos
+  provam rejeição cross-tenant (admin de outra org) e cross-user (mesmo tenant,
+  outro usuário), ambos sem chamar `mutate`.
+
+### Novos SHAs (branch `agente/64-voice-commands-onda4`)
+
+- `8b7a9ab1d32bc2816887d4dc4243fce9ca2439db` — fix A1+A2.
+- (handoff update — commit seguinte)
+
+### Evidências rodada 2
+
+- `npx vitest run -c vitest.unit.config.ts src/features/voice-hub/commands/__tests__/voiceCommandRouter.test.ts tests/unit/features/voice-hub/commandProcessor.test.ts`
+  → **23/23 passando** (20 router + 3 processor).
+- `npx tsc --noEmit` → sem erros; `npx biome lint src/features/voice-hub/commands` → limpo.
+
+### Observação de design (não-bloqueante)
+
+O caminho `decision: 'cancel'` descarta o token sem binding de tenant — não
+executa mutação, apenas libera a pendência; risco residual é um ator estranho
+cancelar a confirmação de outrem (DoS leve, ID não-adivinhável + TTL 2min).
+Se o 00 julgar necessário, endurecer com `peek`+binding antes do `cancel`.
