@@ -77,7 +77,7 @@
 |:---|:---|
 | `50` | `src/lib/integrations/index.ts`, `src/lib/integrations/integrationSettings.repository.ts`, `src/features/integrations/bitrix/**` (demais arquivos não listados em 51–54/59 — coordenação, rotas `hubTasks`/`dailyPlan*`/`leads`/`deals`/`ownershipGuard`, `service/{dailyPlan*,deals,hubTasks,leads,ownershipGuard,syncRules}.ts`, `infra/**`), `src/features/integrations/components/**` (exceto `externalCrm/**` do 54) |
 | `51` | `src/lib/integrations/bitrix/client.ts`, `src/features/integrations/bitrix/client.ts`, `src/features/integrations/bitrix/bitrix.service.ts`, `src/features/integrations/bitrix/service/{client,connections,settings,tokenRefreshLock}.ts` |
-| `52` | `src/lib/integrations/bitrix/batch/**`, `src/features/integrations/bitrix/service/extraction*.ts`, `src/features/integrations/bitrix/jobs/**` |
+| `52` | `src/lib/integrations/bitrix/batch/**`, `src/features/integrations/bitrix/{paginatedExtractor.ts,service/extraction*.ts}`, `src/features/integrations/bitrix/jobs/**` |
 | `53` | `src/features/integrations/bitrix/{bitrix.webhook.ts,bitrixWebhook.queue.ts}`, `src/features/integrations/bitrix/service/{outboundSync,idempotentSync}.ts`, `src/lib/integrations/webhookIdempotency.ts` |
 | `54` | `src/lib/integrations/bitrix/mapping/**`, `src/features/integrations/bitrix/bitrixFieldMap.ts`, `src/features/integrations/bitrix/service/{userMapping,customFields}.ts`, `src/features/integrations/{hubspot,monday,pipedrive,rdstation,shared}/**`, `src/features/integrations/components/externalCrm/**` |
 | `55` | `src/lib/integrations/email/**`, `src/features/integrations/email/**` |
@@ -90,7 +90,7 @@
 | ID | Diretórios e Ficheiros OBRIGATÓRIOS |
 |:---|:---|
 | `60` | `src/features/voice-hub/{index.ts,types.ts}`, `src/lib/voice-hub/**` (módulo legado — dono único até deliberação de decommission; ordem humana 2026-11-24: preservar temporariamente) |
-| `61` | `src/features/voice-hub/{voip,sip}/**`, `src/features/voice-hub/services/{telephonyProvider.service.ts,vadBargeIn.service.ts}`, `src/features/integrations/{threecx,birth-voice}/**` (preservar "ABERTURA OBRIGATÓRIA" do birth-voice — consentimento LGPD) |
+| `61` | `src/features/voice-hub/voip/**`, `src/features/voice-hub/services/{telephonyProvider.service.ts,vadBargeIn.service.ts}`, `src/features/integrations/{threecx,birth-voice}/**` (preservar "ABERTURA OBRIGATÓRIA" do birth-voice — consentimento LGPD) |
 | `62` | `src/features/voice-hub/recording/**`, `src/features/voice-hub/infra/**`, `src/features/voice-hub/services/callRecord.service.ts` |
 | `63` | `src/features/voice-hub/transcription/**`, `src/features/voice-hub/services/realtimeTranscription.service.ts` |
 | `64` | `src/features/voice-hub/commands/**` |
