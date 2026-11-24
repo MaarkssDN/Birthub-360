@@ -1,7 +1,10 @@
 De: 45 — Otto (Tarefas, Agendas e Atividades)
 Para: 04 — CRM e BI
 Onda: 3
-Status: aberto
+Status: RESOLVIDO pelo próprio Agente 45 na Round 2 — o Agente 00 ampliou o ownership do
+45 para `src/features/activities/**`, então os 5 achados foram corrigidos diretamente
+(commits `768951e0b`..`2cf644cf0` na branch `agente/45-crm-agenda-onda3`). Este documento
+permanece como registro do diagnóstico. Ver `.agents/runs/onda-3/45-relatorio-round2.md`.
 Prioridade: alto
 Bloqueador-ref: ONDA3-45-CRM-AGENDA
 Sprint destino: onda-3
