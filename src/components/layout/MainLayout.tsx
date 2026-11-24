@@ -65,8 +65,14 @@ export function MainLayout({ children, activeTab: activeTabProp }: MainLayoutPro
         <div className="flex flex-1 flex-col min-w-0 h-full overflow-hidden">
           <AppTopbar onOpenMobileNav={toggleMobileNav} activeTab={activeTab as TabType} />
 
+          {/* id="main-content" + tabIndex={-1}: alvo do SkipLink (WCAG 2.4.1) entregue pelo
+              Agente 34 em src/components/a11y/SkipLink.tsx (branch agente/34-accessibility-onda3,
+              pendente de merge). Declarativo aqui para que, após o merge, o componente funcione
+              sem nova alteração neste arquivo — ver handoff 31→00 sobre ordem de integração. */}
           <main
-            className="relative flex-1 overflow-y-auto"
+            id="main-content"
+            tabIndex={-1}
+            className="relative flex-1 overflow-y-auto outline-none"
             data-module={activeModuleId}
             data-accent={domainAccent}
             data-page-accent={domainAccent}
