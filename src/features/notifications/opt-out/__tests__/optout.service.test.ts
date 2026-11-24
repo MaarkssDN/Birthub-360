@@ -1,9 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import {
-  cancelPendingJobsForOptOut,
-  recordOptOutAndPurgePendingJobs,
-} from '../optout.service.js';
 import type { OptOutRepository } from '../../../../shared/domain/optOut.js';
+import { cancelPendingJobsForOptOut, recordOptOutAndPurgePendingJobs } from '../optout.service.js';
 
 /**
  * Regressão Onda4-69: a purga de opt-out precisa cobrir TODOS os estados BullMQ v6 em que um
@@ -116,6 +113,18 @@ describe('cancelPendingJobsForOptOut — cobertura de estados e resiliência (Ag
     expect(result.cancelledJobsCount).toBe(1);
   });
 
+  it('sem nenhum identificador aproveitável, não varre a fila (early return antes do getJobs)', async () => {
+    const queue = createMockQueue([createMockJob('j1', { organizationId: 'org-1' })]);
+
+    const result = await cancelPendingJobsForOptOut(
+      { organizationId: 'org-1', leadId: '   ', phoneE164: null, email: null },
+      queue,
+    );
+
+    expect(queue.getJobs).not.toHaveBeenCalled();
+    expect(result).toEqual({ cancelledJobsCount: 0, jobIds: [] });
+  });
+
   it('retorna resultado vazio sem lançar quando a fila está indisponível (queues desabilitadas)', async () => {
     const result = await cancelPendingJobsForOptOut(
       { organizationId: 'org-1', leadId: 'lead-target' },
@@ -124,6 +133,170 @@ describe('cancelPendingJobsForOptOut — cobertura de estados e resiliência (Ag
 
     expect(result.cancelledJobsCount).toBe(0);
     expect(result.jobIds).toEqual([]);
+  });
+
+  it('opt-out por sujeito identificável SEM lead: persiste por telefone e purga jobs do mesmo número', async () => {
+    // Cenário POS4-69-OPTOUT2: contato sem Lead aberto diz STOP — o serviço precisa
+    // registrar o opt-out por phoneE164 (leadId null) e purgar os jobs pendentes dele.
+    const mockRepo: OptOutRepository = {
+      create: vi.fn().mockImplementation((record) =>
+        Promise.resolve({
+          id: 'optout-rec-phone',
+          createdAt: new Date(),
+          ...record,
+        }),
+      ),
+      findMatches: vi.fn().mockResolvedValue([]),
+      list: vi.fn().mockResolvedValue([]),
+    };
+
+    const matchingJob = createMockJob('job-send-pending', {
+      type: 'send',
+      organizationId: 'org-1',
+      number: '+55 11 98765-4321',
+      context: { email: null, leadId: null },
+    });
+    const otherPhoneJob = createMockJob('job-other-phone', {
+      type: 'send',
+      organizationId: 'org-1',
+      number: '+5511911111111',
+    });
+    const otherTenantJob = createMockJob('job-other-tenant', {
+      type: 'send',
+      organizationId: 'org-2',
+      number: '+5511987654321',
+    });
+    const queue = createMockQueue([matchingJob, otherPhoneJob, otherTenantJob]);
+
+    const outcome = await recordOptOutAndPurgePendingJobs(
+      mockRepo,
+      {
+        organizationId: 'org-1',
+        scope: 'global',
+        originChannel: 'whatsapp',
+        // Sem leadId — só o telefone identifica o titular.
+        subject: { phoneE164: '5511987654321' },
+      },
+      queue,
+    );
+
+    // 1. Persistência: registro criado com leadId null e telefone normalizado E.164.
+    expect(mockRepo.create).toHaveBeenCalledOnce();
+    const persisted = (mockRepo.create as any).mock.calls[0][0];
+    expect(persisted.leadId).toBeNull();
+    expect(persisted.phoneE164).toBe('+5511987654321');
+    expect(persisted.organizationId).toBe('org-1');
+    expect(outcome.record?.id).toBe('optout-rec-phone');
+
+    // 2. Purga: só o job do mesmo número no mesmo tenant foi removido.
+    expect(matchingJob.remove).toHaveBeenCalledOnce();
+    expect(otherPhoneJob.remove).not.toHaveBeenCalled();
+    expect(otherTenantJob.remove).not.toHaveBeenCalled();
+    expect(outcome.purgeResult).toEqual({
+      cancelledJobsCount: 1,
+      jobIds: ['job-send-pending'],
+    });
+  });
+
+  it('opt-out por e-mail sem lead: purga job que carrega o e-mail no payload/context', async () => {
+    const mockRepo: OptOutRepository = {
+      create: vi
+        .fn()
+        .mockImplementation((record) =>
+          Promise.resolve({ id: 'optout-rec-email', createdAt: new Date(), ...record }),
+        ),
+      findMatches: vi.fn().mockResolvedValue([]),
+      list: vi.fn().mockResolvedValue([]),
+    };
+
+    const jobByEmail = createMockJob('job-email', {
+      organizationId: 'org-1',
+      number: '+5511000000000',
+      context: { email: 'Titular@Example.com ' },
+    });
+    const queue = createMockQueue([jobByEmail]);
+
+    const outcome = await recordOptOutAndPurgePendingJobs(
+      mockRepo,
+      {
+        organizationId: 'org-1',
+        scope: 'email',
+        originChannel: 'email',
+        subject: { email: '  titular@example.com' },
+      },
+      queue,
+    );
+
+    expect(jobByEmail.remove).toHaveBeenCalledOnce();
+    expect(outcome.purgeResult.cancelledJobsCount).toBe(1);
+    // O registro persistido carrega o e-mail já normalizado (minúsculo/trim).
+    const persisted = (mockRepo.create as any).mock.calls[0][0];
+    expect(persisted.email).toBe('titular@example.com');
+    expect(persisted.leadId).toBeNull();
+  });
+
+  it('sujeito sem nenhum identificador: não varre a fila e retorna purga vazia', async () => {
+    const mockRepo: OptOutRepository = {
+      create: vi.fn(),
+      findMatches: vi.fn().mockResolvedValue([]),
+      list: vi.fn().mockResolvedValue([]),
+    };
+    const queue = createMockQueue([createMockJob('j1', { organizationId: 'org-1' })]);
+
+    const outcome = await recordOptOutAndPurgePendingJobs(
+      mockRepo,
+      {
+        organizationId: 'org-1',
+        scope: 'global',
+        originChannel: 'manual',
+        subject: { leadId: '  ', email: null, phoneE164: null },
+      },
+      queue,
+    );
+
+    expect(mockRepo.create).not.toHaveBeenCalled();
+    expect(outcome.record).toBeNull();
+    expect(queue.getJobs).not.toHaveBeenCalled();
+    expect(outcome.purgeResult).toEqual({ cancelledJobsCount: 0, jobIds: [] });
+  });
+
+  it('aceita array de filas e agrega a purga de todas', async () => {
+    const mockRepo: OptOutRepository = {
+      create: vi
+        .fn()
+        .mockImplementation((record) =>
+          Promise.resolve({ id: 'optout-rec-multi', createdAt: new Date(), ...record }),
+        ),
+      findMatches: vi.fn().mockResolvedValue([]),
+      list: vi.fn().mockResolvedValue([]),
+    };
+
+    const jobA = createMockJob('job-q1', {
+      organizationId: 'org-1',
+      context: { leadId: 'lead-x' },
+    });
+    const jobB = createMockJob('job-q2', {
+      organizationId: 'org-1',
+      context: { leadId: 'lead-x' },
+    });
+    const queueA = createMockQueue([jobA]);
+    const queueB = createMockQueue([jobB]);
+
+    const outcome = await recordOptOutAndPurgePendingJobs(
+      mockRepo,
+      {
+        organizationId: 'org-1',
+        scope: 'global',
+        originChannel: 'manual',
+        subject: { leadId: 'lead-x' },
+      },
+      [queueA, queueB],
+    );
+
+    expect(jobA.remove).toHaveBeenCalledOnce();
+    expect(jobB.remove).toHaveBeenCalledOnce();
+    expect(outcome.purgeResult.cancelledJobsCount).toBe(2);
+    expect(outcome.purgeResult.jobIds).toEqual(['job-q1', 'job-q2']);
   });
 
   it('recordOptOutAndPurgePendingJobs registra o opt-out mesmo se a fila estiver nula', async () => {
