@@ -34,7 +34,9 @@ describe('wallTimeInZoneToUtcIso', () => {
 
   it('rejeita formato que não seja YYYY-MM-DD', () => {
     expect(() => wallTimeInZoneToUtcIso('23/11/2026', null, 'America/Sao_Paulo')).toThrow();
-    expect(() => wallTimeInZoneToUtcIso('2026-11-23T10:00:00Z', null, 'America/Sao_Paulo')).toThrow();
+    expect(() =>
+      wallTimeInZoneToUtcIso('2026-11-23T10:00:00Z', null, 'America/Sao_Paulo'),
+    ).toThrow();
   });
 });
 
