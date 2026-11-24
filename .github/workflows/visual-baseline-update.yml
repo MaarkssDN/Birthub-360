@@ -11,10 +11,15 @@ name: Visual Baseline Update
 # pode nascer dentro do próprio runner Linux.
 #
 # Este workflow é workflow_dispatch apenas: dispara sob demanda (ex.: após mudança visual
-# intencional ou bump de Playwright/Chromium), regenera TODAS as baselines Linux no runner
-# e commita os PNGs numa branch `ci/visual-baselines-linux` a partir do ref disparado.
-# O passo seguinte é humano: abrir PR dessa branch (uma única vez por baseline nova,
-# via --admin se necessário) para mergear em main.
+# intencional ou bump de Playwright/Chromium), compara primeiro contra as baselines atuais
+# para capturar o relatório interativo de diffs (expected × actual × diff) como artefato
+# auditável, gera as candidatas Linux no runner autoritativo (`ubuntu-latest`) e:
+#   - por padrão (`dry_run: 'true'`), NÃO faz commit nem push — apenas publica os artefatos
+#     `visual-baseline-diff-report` e `visual-baselines-candidates-linux` + resumo em
+#     `$GITHUB_STEP_SUMMARY` para análise visual humana obrigatória;
+#   - somente quando disparado explicitamente com `dry_run: 'false'` (após revisão visual
+#     humana), commita os PNGs na branch isolada `ci/visual-baselines-linux` (sem merge
+#     automático em `main` — exige PR + revisão humana + parecer do Agente 09).
 #
 # Escopo das suítes regeneradas:
 #   1. visual-regression/visual.spec.ts  → visual-regression/baselines/** (check
@@ -25,14 +30,25 @@ name: Visual Baseline Update
 
 on:
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Somente gerar diffs e artefatos para revisão visual humana, sem push na branch (true/false)'
+        required: false
+        default: 'true'
+        type: choice
+        options: ['true', 'false']
 
-# Permissão mínima para este workflow: push da branch de baselines. Não toca em mais nada.
+# Permissão mínima para este workflow: push da branch isolada de baselines quando dry_run=false.
 permissions:
   contents: write
 
+concurrency:
+  group: visual-baseline-update
+  cancel-in-progress: false
+
 jobs:
   update-visual-baselines:
-    name: Gerar e commitar baselines visuais Linux
+    name: Gerar diffs e candidatas de baselines visuais Linux
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -88,8 +104,11 @@ jobs:
       ALLOW_DEV_AUTH_BYPASS: true
       ALLOWED_ORIGINS: http://localhost:3000
       AUTH_RATE_LIMIT_MAX: 5000
+      API_RATE_LIMIT_MAX: 5000
       PLATFORM_OPERATOR_TOKEN: ci-test-operator-token-not-for-production
+      BOOTSTRAP_SUPERUSER_URL: postgresql://prospector:prospector_test_pass@localhost:5434/prospectordb_test
       BASELINE_BRANCH: ci/visual-baselines-linux
+      DRY_RUN: ${{ inputs.dry_run || 'true' }}
 
     steps:
       - name: Checkout repository
@@ -139,7 +158,9 @@ jobs:
           ALLOW_DEV_AUTH_BYPASS=$ALLOW_DEV_AUTH_BYPASS
           ALLOWED_ORIGINS=$ALLOWED_ORIGINS
           AUTH_RATE_LIMIT_MAX=$AUTH_RATE_LIMIT_MAX
+          API_RATE_LIMIT_MAX=$API_RATE_LIMIT_MAX
           PLATFORM_OPERATOR_TOKEN=$PLATFORM_OPERATOR_TOKEN
+          BOOTSTRAP_SUPERUSER_URL=$BOOTSTRAP_SUPERUSER_URL
           EOF
 
       - name: Install Playwright Browsers
@@ -163,42 +184,156 @@ jobs:
           sed -i "s|testIgnore: \['\*\*/visual.spec.ts', '\*\*/visual-audit.spec.ts'\],|testIgnore: ['**/visual-audit.spec.ts'],|" playwright.config.ts
           grep -n "testIgnore" playwright.config.ts
 
+      - name: Capturar diffs visuais pré-atualização (evidência para revisão humana)
+        id: pre_diff
+        run: |
+          set -uo pipefail
+          mkdir -p visual-diff-before-update
+
+          set +e
+          npm run test:visual
+          VISUAL_GATE_EXIT=$?
+          set -e
+          echo "visual_gate_exit=$VISUAL_GATE_EXIT" >> "$GITHUB_OUTPUT"
+          if [ -d visual-regression-report ]; then
+            cp -R visual-regression-report visual-diff-before-update/visual-regression-report
+          fi
+          if [ -d test-results ]; then
+            cp -R test-results visual-diff-before-update/visual-regression-test-results
+          fi
+
+          rm -rf test-results playwright-report
+          set +e
+          npx dotenv-cli -e .env.test -- playwright test tests/e2e/visual.spec.ts
+          E2E_VISUAL_EXIT=$?
+          set -e
+          echo "e2e_visual_exit=$E2E_VISUAL_EXIT" >> "$GITHUB_OUTPUT"
+          if [ -d playwright-report ]; then
+            cp -R playwright-report visual-diff-before-update/e2e-visual-playwright-report
+          fi
+          if [ -d test-results ]; then
+            cp -R test-results visual-diff-before-update/e2e-visual-test-results
+          fi
+
+          find visual-diff-before-update -type f -name '*-diff.png' | sort > visual-diff-before-update/divergent-scenarios.txt
+          DIFF_COUNT="$(wc -l < visual-diff-before-update/divergent-scenarios.txt | tr -d ' ')"
+          echo "diff_count=$DIFF_COUNT" >> "$GITHUB_OUTPUT"
+          echo "Cenários com pixel-diff antes da regeneração: $DIFF_COUNT"
+          cat visual-diff-before-update/divergent-scenarios.txt || true
+
       - name: Gerar baselines tests/e2e/visual.spec.ts (chromium-linux)
         run: npx dotenv-cli -e .env.test -- playwright test tests/e2e/visual.spec.ts --update-snapshots
 
       - name: Gerar baselines visual-regression (check obrigatório)
         run: npm run test:visual:update
 
-      - name: Commitar baselines na branch ci/visual-baselines-linux
+      - name: Inventariar baselines alteradas
+        id: inventory
         run: |
           set -euo pipefail
+          mkdir -p visual-diff-before-update
+          git status --porcelain -- tests/e2e/visual.spec.ts-snapshots/ visual-regression/baselines/ > visual-diff-before-update/changed-baselines.txt
+          CHANGED_COUNT="$(wc -l < visual-diff-before-update/changed-baselines.txt | tr -d ' ')"
+          echo "changed_count=$CHANGED_COUNT" >> "$GITHUB_OUTPUT"
+          echo "PNGs de baseline alterados/novos: $CHANGED_COUNT"
+          cat visual-diff-before-update/changed-baselines.txt || true
+
+      - name: Upload relatório e diffs visuais pré-atualização (revisão humana obrigatória)
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: visual-baseline-diff-report
+          path: |
+            visual-diff-before-update/
+            playwright-report/
+            visual-regression-report/
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: Upload baselines candidatas Linux (para inspeção humana)
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: visual-baselines-candidates-linux
+          path: |
+            visual-regression/baselines/**/*.png
+            tests/e2e/visual.spec.ts-snapshots/*-linux.png
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Commitar baselines na branch ci/visual-baselines-linux
+        id: publish_branch
+        run: |
+          set -euo pipefail
+          if [ "$DRY_RUN" != "false" ]; then
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::dry_run=true — nenhum commit ou push realizado. Inspecione o artefato visual-baseline-diff-report antes de aprovar."
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # A branch de baselines é efêmera e 100% regenerada a cada run: o histórico
-          # remoto (se existir — ex.: resquício de run anterior falho ou PR não
-          # mergeado) é sempre descartável. Por isso fazemos fetch prévio para
-          # registrar a ref remota e push com --force-with-lease, que sobrescreve
-          # histórico divergente de forma segura (falha se outro push concorrente
-          # tiver alterado a branch depois do nosso fetch). Sem isso, um `git push`
-          # simples é rejeitado com "fetch first" e as baselines geradas se perdem
-          # (ver .agents/handoffs/00-para-08-visual-baseline-workflow-nonff.md).
+          # A branch de baselines é isolada e 100% regenerada a cada run autorizado (dry_run=false):
+          # nunca faz merge automático em main — exige abertura manual de PR + revisão humana +
+          # parecer do Agente 09 (ver .agents/handoffs/00-para-08-visual-baseline-workflow-nonff.md).
           git fetch origin "+refs/heads/$BASELINE_BRANCH:refs/remotes/origin/$BASELINE_BRANCH" 2>/dev/null || true
           git checkout -B "$BASELINE_BRANCH"
           git add tests/e2e/visual.spec.ts-snapshots/ visual-regression/baselines/
           if git diff --cached --quiet; then
+            echo "published=unchanged" >> "$GITHUB_OUTPUT"
             echo "Nenhuma baseline alterada — nada a commitar."
           else
             git commit -m "chore(ci): atualiza baselines visuais Linux (workflow_dispatch)"
             git push --force-with-lease origin "HEAD:refs/heads/$BASELINE_BRANCH"
-            echo "Baselines publicadas em $BASELINE_BRANCH."
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "Baselines publicadas em $BASELINE_BRANCH (sem merge automático)."
           fi
 
-      - name: Upload Playwright report (se falhar)
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        if: failure()
-        with:
-          name: visual-baseline-update-report
-          path: |
-            playwright-report/
-            visual-regression-report/
-          if-no-files-found: ignore
+      - name: Publicar protocolo de revisão visual humana no resumo
+        if: always()
+        env:
+          TARGET_SHA: ${{ github.sha }}
+          TARGET_REF: ${{ github.ref_name }}
+          VISUAL_GATE_EXIT: ${{ steps.pre_diff.outputs.visual_gate_exit || 'n/a' }}
+          E2E_VISUAL_EXIT: ${{ steps.pre_diff.outputs.e2e_visual_exit || 'n/a' }}
+          DIFF_COUNT: ${{ steps.pre_diff.outputs.diff_count || '0' }}
+          CHANGED_COUNT: ${{ steps.inventory.outputs.changed_count || '0' }}
+          PUBLISHED_STATE: ${{ steps.publish_branch.outputs.published || 'false' }}
+        run: |
+          {
+            echo "## Visual Baseline Update — Revisão Humana Obrigatória"
+            echo ""
+            echo "- **SHA base:** \`$TARGET_SHA\` (\`$TARGET_REF\`)"
+            echo "- **Runner autoritativo:** \`ubuntu-latest\`"
+            echo "- **Modo dry_run:** \`$DRY_RUN\`"
+            echo "- **Comparação pré-update (\`test:visual\`):** exit \`$VISUAL_GATE_EXIT\`"
+            echo "- **Comparação pré-update (\`tests/e2e/visual.spec.ts\`):** exit \`$E2E_VISUAL_EXIT\`"
+            echo "- **Cenários com pixel-diff (\`*-diff.png\`):** \`$DIFF_COUNT\`"
+            echo "- **Arquivos PNG alterados/novos:** \`$CHANGED_COUNT\`"
+            echo "- **Branch isolada (\`$BASELINE_BRANCH\`):** \`published=$PUBLISHED_STATE\` (nunca faz merge automático em \`main\`)"
+            echo ""
+            echo "### Cenários divergentes capturados antes da regeneração"
+            if [ -s visual-diff-before-update/divergent-scenarios.txt ]; then
+              echo '```text'
+              cat visual-diff-before-update/divergent-scenarios.txt
+              echo '```'
+            else
+              echo "_Nenhum \`*-diff.png\` registrado na comparação prévia._"
+            fi
+            echo ""
+            echo "### Baselines candidatas modificadas no runner Linux"
+            if [ -s visual-diff-before-update/changed-baselines.txt ]; then
+              echo '```text'
+              cat visual-diff-before-update/changed-baselines.txt
+              echo '```'
+            else
+              echo "_Nenhuma baseline alterada._"
+            fi
+            echo ""
+            echo "### Procedimento obrigatório de decisão humana (PROIBIDO aceitar às cegas)"
+            echo "1. Baixe o artefato **\`visual-baseline-diff-report\`** desta execução."
+            echo "2. Abra \`visual-diff-before-update/visual-regression-report/index.html\` e inspecione visualmente cada cenário divergente (\`Expected\` × \`Actual\` × \`Diff\`), cobrindo \`desktop\`, \`laptop\`, \`tablet\` e \`mobile\` em \`light\` e \`dark\` (incluindo \`Login\` ×8 e \`Automações\` ×6)."
+            echo "3. **Se qualquer diff revelar regressão real de UI/layout/contraste:** REJEITE as candidatas e abra handoff para o dono da tela (Squad 30/70). **PROIBIDO elevar \`maxDiffPixels\`**."
+            echo "4. **Somente se todos os diffs forem mudanças visuais intencionais aprovadas pelo humano:**"
+            echo "   - Caso este run tenha sido \`dry_run=true\`, re-dispare com \`dry_run=false\` (ou aplique o artefato \`visual-baselines-candidates-linux\` em branch isolada) para publicar em \`$BASELINE_BRANCH\`."
+            echo "   - Abra PR de \`$BASELINE_BRANCH\` → \`main\`, aguarde \`Visual Regression Gate\` + \`build\` verdes e parecer \`APROVADO\` do Agente 09 (Silas) antes do merge."
+          } >> "$GITHUB_STEP_SUMMARY"
