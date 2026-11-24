@@ -2,7 +2,8 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 import express, { type Request, type Response, Router } from 'express';
 import { env } from '../../../config/env.js';
 import { requestContext } from '../../../lib/async-context.js';
-import { contactEmailIndex } from '../../../lib/crypto/piiIndex.js';
+import { findOpenLeadByEmail } from '../../../lib/integrations/email/leadByEmail.js';
+import type { SenderAuthResults } from '../../../lib/integrations/email/rawEmailParser.js';
 import { logger } from '../../../lib/logger.js';
 import { prisma } from '../../../lib/prisma.js';
 import {
@@ -53,6 +54,10 @@ interface EmailInboundPayload {
   body?: unknown;
   autoSubmittedHeader?: unknown;
   receivedAt?: unknown;
+  /** Vereditos SPF/DKIM/DMARC (ex.: vindos de `Authentication-Results` via parser MIME ou do
+   * provedor). Observacional: nunca rejeita sozinho — o HMAC do transporte já autenticou a
+   * entrega; um `fail` aqui é sinal de spoofing para auditoria/rate-limit futuro. */
+  senderAuth?: unknown;
 }
 
 function asString(value: unknown): string | null {
@@ -69,34 +74,6 @@ function isValidSignature(
   const expected = Buffer.from(createHmac('sha256', secret).update(rawBody).digest('hex'), 'utf8');
   const received = Buffer.from(receivedSignature, 'utf8');
   return received.length === expected.length && timingSafeEqual(received, expected);
-}
-
-/**
- * Resolve o lead em aberto cujo contato tem este e-mail, dentro da organização do contexto —
- * mesmo raciocínio de `findContactByPhone` em `whatsappMessage.service.ts`, mas por e-mail em vez
- * de telefone. `Contact.email` é cifrado em repouso (ver src/lib/crypto/piiFields.ts) — a busca
- * exata (antes `contact: { email: { equals, mode: 'insensitive' } }`) usa o índice cego
- * determinístico `emailIndex` em vez do campo cifrado direto (ver src/lib/crypto/piiIndex.ts).
- */
-async function findOpenLeadByEmail(
-  organizationId: string,
-  email: string,
-): Promise<{ id: string } | null> {
-  const emailIndex = contactEmailIndex(email);
-  // `contactEmailIndex` só devolve null para e-mail vazio/ausente — sem isso, `{ emailIndex:
-  // null }` casaria com QUALQUER contato sem e-mail cadastrado (falso positivo em massa), não
-  // com "nenhum".
-  if (!emailIndex) return null;
-  const lead = await prisma.lead.findFirst({
-    where: {
-      organizationId,
-      status: { notIn: ['Negocios_Ganhos', 'Negocios_Perdidos', 'Lead_Desqualificado'] },
-      contact: { emailIndex },
-    },
-    orderBy: { createdAt: 'desc' },
-    select: { id: true },
-  });
-  return lead;
 }
 
 type HandleOutcome =
@@ -246,6 +223,44 @@ async function recordInboundEmail(
   });
 }
 
+/**
+ * Porta programática de ingestão — usada pelo caminho HTTP abaixo e, no futuro, por um sync
+ * IMAP que monta `InboundEmailReply` via `src/lib/integrations/email/inboundAdapter.ts` sem
+ * passar por HTTP. Aplica exatamente o mesmo pipeline (auto-reply → dedup → lead → opt-out →
+ * classificação → timeline); nenhum passo é duplicado.
+ *
+ * `senderAuth` é observacional: `fail`/`permerror` em SPF, DKIM ou DMARC gera warn de auditoria,
+ * nunca rejeição — no caminho HTTP o HMAC já autenticou o provedor, e no caminho IMAP a
+ * decisão de rejeição por autenticação de domínio cabe à política do sync (Squad 20), não a
+ * esta função.
+ */
+export async function ingestInboundEmailReply(
+  email: InboundEmailReply,
+  toEmail: string,
+  leadIdHint: string | null,
+  senderAuth?: SenderAuthResults | null,
+): Promise<HandleOutcome> {
+  if (senderAuth) {
+    const failed = (['spf', 'dkim', 'dmarc'] as const).filter(
+      (k) => senderAuth[k] === 'fail' || senderAuth[k] === 'permerror',
+    );
+    if (failed.length > 0) {
+      logger.warn(
+        { organizationId: email.organizationId, fromEmail: email.fromEmail, failed },
+        'E-mail inbound com veredito de autenticação de domínio reprovado (observacional).',
+      );
+    }
+  }
+  return recordInboundEmail(email.organizationId, email, toEmail, leadIdHint);
+}
+
+function asSenderAuth(value: unknown): SenderAuthResults | null {
+  if (!value || typeof value !== 'object') return null;
+  const v = value as Record<string, unknown>;
+  const pick = (k: string) => (typeof v[k] === 'string' ? (v[k] as string) : null);
+  return { spf: pick('spf'), dkim: pick('dkim'), dmarc: pick('dmarc'), raw: pick('raw') };
+}
+
 async function handleInboundEmail(req: Request, res: Response): Promise<void> {
   const secret = env.EMAIL_INBOUND_WEBHOOK_SECRET;
   if (!secret) {
@@ -330,11 +345,11 @@ async function handleInboundEmail(req: Request, res: Response): Promise<void> {
   };
 
   try {
-    const outcome = await recordInboundEmail(
-      organizationId,
+    const outcome = await ingestInboundEmailReply(
       email,
       toEmail,
       asString(payload.leadId),
+      asSenderAuth(payload.senderAuth),
     );
 
     res.status(200).json({ success: true, outcome: outcome.status });
