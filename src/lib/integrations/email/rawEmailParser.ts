@@ -20,7 +20,16 @@ export interface ParsedEmailAddress {
   name: string | null;
 }
 
-export type AuthVerdict = 'pass' | 'fail' | 'softfail' | 'neutral' | 'none' | 'temperror' | 'permerror' | string | null;
+export type AuthVerdict =
+  | 'pass'
+  | 'fail'
+  | 'softfail'
+  | 'neutral'
+  | 'none'
+  | 'temperror'
+  | 'permerror'
+  | string
+  | null;
 
 export interface SenderAuthResults {
   spf: AuthVerdict;
@@ -110,34 +119,37 @@ function decodeBytes(bytes: Buffer, charset: string | null | undefined): string 
 export function decodeHeaderValue(value: string | null | undefined): string {
   if (!value) return '';
   const merged = value.replace(/(\?=)[ \t]+(=\?)/g, '$1$2');
-  return merged.replace(/=\?([^?\s]+)\?([bBqQ])\?([^?]*)\?=/g, (_m, charset: string, enc: string, text: string) => {
-    try {
-      if (enc.toUpperCase() === 'B') {
-        return decodeBytes(Buffer.from(text, 'base64'), charset);
-      }
-      // Q-encoding: `_` é espaço; `=XX` é byte.
-      const bytes: number[] = [];
-      for (let i = 0; i < text.length; i++) {
-        const ch = text[i];
-        if (ch === '_') {
-          bytes.push(0x20);
-        } else if (ch === '=' && i + 2 < text.length) {
-          const hex = text.slice(i + 1, i + 3);
-          if (/^[0-9A-Fa-f]{2}$/.test(hex)) {
-            bytes.push(parseInt(hex, 16));
-            i += 2;
+  return merged.replace(
+    /=\?([^?\s]+)\?([bBqQ])\?([^?]*)\?=/g,
+    (_m, charset: string, enc: string, text: string) => {
+      try {
+        if (enc.toUpperCase() === 'B') {
+          return decodeBytes(Buffer.from(text, 'base64'), charset);
+        }
+        // Q-encoding: `_` é espaço; `=XX` é byte.
+        const bytes: number[] = [];
+        for (let i = 0; i < text.length; i++) {
+          const ch = text[i];
+          if (ch === '_') {
+            bytes.push(0x20);
+          } else if (ch === '=' && i + 2 < text.length) {
+            const hex = text.slice(i + 1, i + 3);
+            if (/^[0-9A-Fa-f]{2}$/.test(hex)) {
+              bytes.push(parseInt(hex, 16));
+              i += 2;
+            } else {
+              bytes.push(ch.charCodeAt(0));
+            }
           } else {
             bytes.push(ch.charCodeAt(0));
           }
-        } else {
-          bytes.push(ch.charCodeAt(0));
         }
+        return decodeBytes(Buffer.from(bytes), charset);
+      } catch {
+        return text;
       }
-      return decodeBytes(Buffer.from(bytes), charset);
-    } catch {
-      return text;
-    }
-  });
+    },
+  );
 }
 
 /** Extrai endereços de um header de endereço (From, To, Cc...). Lida com `Nome <a@b>`, bare `a@b`, vírgulas e comentários. */
@@ -153,7 +165,10 @@ export function parseAddressList(value: string | null | undefined): ParsedEmailA
     const emailMatch = rawAddr.match(EMAIL_RE);
     if (!emailMatch) continue;
     const email = emailMatch[0];
-    let name = (match[1] ?? '').trim().replace(/^["']|["']$/g, '').trim();
+    let name = (match[1] ?? '')
+      .trim()
+      .replace(/^["']|["']$/g, '')
+      .trim();
     if (!name) {
       // Endereço bare sem parte de nome: tenta o texto antes do '@' no próprio slot.
       name = '';
@@ -237,7 +252,11 @@ function decodeQuotedPrintable(body: string): string {
   return Buffer.from(bytes).toString('latin1');
 }
 
-function decodeTransferEncoding(body: string, encoding: string | null, charset: string | null): string {
+function decodeTransferEncoding(
+  body: string,
+  encoding: string | null,
+  charset: string | null,
+): string {
   const enc = (encoding ?? '7bit').toLowerCase().trim();
   if (enc === 'base64') {
     // Remove whitespace (MIME permite CRLF a cada 76 cols) antes de decodificar.
@@ -271,7 +290,10 @@ export function htmlToPlainText(html: string): string {
     .replace(HTML_TAG_RE, '')
     .replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (m, entity: string) => {
       if (entity[0] === '#') {
-        const code = entity[1]?.toLowerCase() === 'x' ? parseInt(entity.slice(2), 16) : parseInt(entity.slice(1), 10);
+        const code =
+          entity[1]?.toLowerCase() === 'x'
+            ? parseInt(entity.slice(2), 16)
+            : parseInt(entity.slice(1), 10);
         return Number.isFinite(code) ? String.fromCodePoint(code) : m;
       }
       return HTML_ENTITIES[entity.toLowerCase()] ?? m;
@@ -286,7 +308,12 @@ interface LeafCandidate {
   text: string;
 }
 
-function collectTextLeaves(part: MimePart, depth: number, budget: { parts: number }, out: LeafCandidate[]): void {
+function collectTextLeaves(
+  part: MimePart,
+  depth: number,
+  budget: { parts: number },
+  out: LeafCandidate[],
+): void {
   if (depth > MAX_MIME_DEPTH || budget.parts <= 0) return;
   budget.parts -= 1;
 
@@ -366,7 +393,9 @@ export function parseRawEmail(raw: string | Buffer): ParsedInboundEmail {
     // mesmos bytes que um Buffer utf8 equivalente; para Buffer (caminho IMAP), latin1 é
     // byte-preserving puro.
     const asText =
-      typeof raw === 'string' ? Buffer.from(raw, 'utf8').toString('latin1') : raw.toString('latin1');
+      typeof raw === 'string'
+        ? Buffer.from(raw, 'utf8').toString('latin1')
+        : raw.toString('latin1');
     const normalized = normalizeNewlines(asText);
     const { headerBlock, body } = splitHeaderBody(normalized);
     const headers = parseHeaderLines(headerBlock);

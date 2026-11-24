@@ -6,7 +6,10 @@ const leadFindFirst = vi.fn();
 
 vi.mock('../../../prisma.js', () => ({
   prisma: {
-    emailMessage: { findUnique: (...a: unknown[]) => findUnique(...a), create: (...a: unknown[]) => create(...a) },
+    emailMessage: {
+      findUnique: (...a: unknown[]) => findUnique(...a),
+      create: (...a: unknown[]) => create(...a),
+    },
     lead: { findFirst: (...a: unknown[]) => leadFindFirst(...a) },
   },
 }));

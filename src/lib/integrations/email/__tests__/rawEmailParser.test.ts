@@ -84,7 +84,9 @@ describe('parseRawEmail', () => {
     expect(parsed.from?.name).toBe('Lead Teste');
     expect(parsed.to[0]?.email).toBe('vendas@empresa.com');
     expect(parsed.subject).toBe('Interesse no plano');
-    expect(parsed.date?.toISOString()).toBe(new Date('Mon, 23 Nov 2026 10:00:00 -0300').toISOString());
+    expect(parsed.date?.toISOString()).toBe(
+      new Date('Mon, 23 Nov 2026 10:00:00 -0300').toISOString(),
+    );
     expect(parsed.autoSubmitted).toBe('no');
     expect(parsed.bodyText).toContain('plano Pro');
   });
