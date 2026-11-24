@@ -5,13 +5,15 @@ import {
   Plus,
   RefreshCw,
   RotateCcw,
-  ShieldAlert,
   X,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { EmptyState } from '../../../components/feedback/EmptyState.js';
+import { ErrorState } from '../../../components/feedback/ErrorState.js';
+import { LoadingState } from '../../../components/feedback/LoadingState.js';
 import { Badge } from '../../../components/ui/Badge.js';
 import { Button } from '../../../components/ui/Button.js';
 import {
@@ -530,18 +532,22 @@ export function MemoryGovernancePanel() {
           )}
 
           {candidateError && (
-            <div className="p-3 bg-danger/10 border border-danger/30 text-danger-active dark:text-danger rounded-xl text-xs flex items-center gap-2 mb-4">
-              <ShieldAlert className="w-4 h-4 shrink-0" />
-              {candidateError}
-            </div>
+            <ErrorState
+              variant="compact"
+              className="mb-4"
+              title="Erro na gestão de candidatos"
+              message={candidateError}
+              onRetry={() => void loadCandidates()}
+            />
           )}
 
           {loadingCandidates && candidates.length === 0 ? (
-            <div className="text-center py-8 text-xs text-ink-2">Carregando candidatos...</div>
+            <LoadingState variant="skeleton" label="Carregando candidatos…" />
           ) : candidates.length === 0 ? (
-            <div className="text-center py-8 text-xs text-ink-2 border border-dashed border-line rounded-xl">
-              Nenhum aprendizado aguardando aprovação no momento.
-            </div>
+            <EmptyState
+              title="Nenhum aprendizado aguardando aprovação"
+              description="Quando execuções de IA propuserem novos aprendizados, eles aparecerão aqui para revisão."
+            />
           ) : (
             <div className="space-y-4">
               {candidates.map((candidate) => {
@@ -698,17 +704,21 @@ export function MemoryGovernancePanel() {
           </div>
 
           {recordsError && (
-            <div className="p-3 bg-danger/10 border border-danger/30 text-danger-active dark:text-danger rounded-xl text-xs">
-              {recordsError}
-            </div>
+            <ErrorState
+              variant="compact"
+              title="Erro na memória ativa"
+              message={recordsError}
+              onRetry={() => void loadRecords()}
+            />
           )}
 
           {loadingRecords ? (
-            <div className="text-center py-6 text-xs text-ink-2">Carregando memória ativa...</div>
+            <LoadingState variant="skeleton" label="Carregando memória ativa…" />
           ) : records.length === 0 ? (
-            <div className="text-center py-6 text-xs text-ink-2 border border-dashed border-line rounded-xl">
-              Nenhuma memória ativa encontrada para este escopo.
-            </div>
+            <EmptyState
+              title="Nenhuma memória ativa encontrada para este escopo."
+              description="Ajuste o escopo acima ou aguarde novas aprovações de aprendizados."
+            />
           ) : (
             <div className="space-y-3">
               {records.map((record) => (
