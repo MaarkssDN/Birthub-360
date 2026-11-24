@@ -72,7 +72,9 @@ settings continua falando com `/api/**` via HTTP).
 
 ## SHA congelado para Silas
 
-- _(preenchido após commit)_
+- Commit de implementação: `a69344d7638e9cc3e7f21438a2242fa814c86119`
+- HEAD da branch `agente/32-ui-states-s30` no momento do freeze: registrado no
+  relatório de conclusão da missão (este arquivo é commitado em seguida, docs-only).
 
 ## Pendências / handoffs
 
