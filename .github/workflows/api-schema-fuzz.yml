@@ -3,41 +3,74 @@ name: API Schema Fuzz (Schemathesis)
 # MEL-39 (Backlog Onda 5 / DEM-20261116-001, handoff 18→08): teste de contrato
 # orientado a propriedade do docs/openapi.yaml contra a API real.
 #
+# Consolidação Genesis (Onda III/IV, 2026-11-21): este arquivo é o ÚNICO pipeline
+# Schemathesis do repositório. O workflow `schemathesis-fuzzing.yml` proposto pela
+# branch agente/08-handoffs-20261117 foi avaliado pelo Agente 09 e consolidado
+# aqui para eliminar duplicação (duas versões pinadas divergentes, duas fontes de
+# verdade). Capacidades agregadas em relação à versão original:
+#   - gatilho pull_request com filtro de paths (smoke rápido) — antes só schedule+dispatch;
+#   - correção da base URL: -u http://127.0.0.1:3000/api (todas as rotas montam sob
+#     /api — ver src/bootstrap/routes.ts; sem o prefixo o fuzz media a SPA, não a API);
+#   - overrides de rate limit para todos os limiters aplicáveis (não só API/AUTH);
+#   - verificação de cobertura efetiva via operations.tested/test_cases.generated
+#     do relatório JSON (reprova quando zero operações são testadas);
+#   - controle negativo em PR: URL sem /api DEVE reprovar (prova de detecção);
+#   - sanity anti-HTML da SPA antes do fuzzing.
+#
 # Decisão de escopo (registrada no handoff .agents/handoffs/backlog-5/18-para-08-schemathesis-ci.md):
 # - NÃO entra no required check `build` do ci.yml. O gate bloqueante de contrato
-#   continua sendo `npm run verify:openapi-drift` (80 prefixos, 506 paths, 0 deriva),
+#   continua sendo `npm run verify:openapi-drift` (81 prefixos, 510 paths, 0 deriva),
 #   que já roda em todo PR/push. Schemathesis é fuzzing: a primeira execução completa
 #   tende a produzir findings que exigem triagem própria (baseline, --exclude-checks),
-#   então um job bloqueante nasceria vermelho.
-# - Roda em schedule noturno + workflow_dispatch, com app de teste de verdade
-#   (Postgres pgvector + Redis + Meilisearch efêmeros, migrations aplicadas,
-#   NODE_ENV=test, banco prospectordb_test — mesma receita do job build-and-test
-#   do ci.yml). Falhas aparecem como run agendado/manual falho, não como bloqueio
-#   de PR.
+#   então um job bloqueante nasceria vermelho. O gatilho em PR roda smoke não-bloqueante
+#   como sinal; a triagem de findings continua sendo responsabilidade do run.
+# - schedule noturno + workflow_dispatch rodam o fuzzing profundo.
 #
 # Autenticação: o spec declara `security: sessionCookie` em ~todos os paths.
 # O job provisiona um usuário descartável via POST /api/auth/sign-up/email +
 # sign-in/email (better-auth, mesmo fluxo dos specs E2E em tests/e2e/helpers.ts)
-# e injeta o cookie de sessão + Origin (exigido pelo csrfGuard em mutações,
-# ver playwright.config.ts) via `schemathesis run -H`.
+# e injeta o cookie de sessão + Origin (exigido pelo csrfGuard em mutações —
+# ver src/bootstrap/security.ts e playwright.config.ts) via `schemathesis run -H`.
+# O cookie vai para GITHUB_ENV (não para outputs/log) e a resposta de sign-up NÃO é
+# impressa (conteria Set-Cookie).
 #
-# Relatórios: JUnit XML em schemathesis-report/ sobe como artefato em todo run
-# (sucesso ou falha) para triagem. `--max-time` limita o orçamento da fase de
-# fuzzing/stateful; `--report junit` gera o arquivo consumível por qualquer CI.
+# Relatórios: JUnit XML + JSON em schemathesis-report/ sobem como artefato em todo
+# run (sucesso ou falha). `--max-time` limita o orçamento da fase de fuzzing/
+# stateful; `--report junit,json` gera os arquivos consumíveis por qualquer CI.
 
 on:
+  pull_request:
+    paths:
+      - 'docs/openapi.yaml'
+      - 'server.ts'
+      - 'src/bootstrap/**'
+      - 'src/features/**/routes/**'
+      - 'src/shared/**'
+      - 'src/config/**'
+      - 'prisma/schema.prisma'
+      - 'prisma/migrations/**'
+      - '.github/workflows/api-schema-fuzz.yml'
   schedule:
     # Diário 05:37 UTC — fora do horário dos scans semanais de Trivy (seg 06:00),
     # CodeQL (qua) e SBOM (qui 06:00) para não disputar runner.
     - cron: '37 5 * * *'
   workflow_dispatch:
+    inputs:
+      max_examples:
+        description: 'Exemplos Hypothesis por endpoint (vazio = sem limite explícito, limitado por --max-time)'
+        default: ''
+        required: false
+      max_time:
+        description: 'Orçamento de fuzzing em segundos'
+        default: '3600'
+        required: false
 
 permissions:
   contents: read
 
 concurrency:
-  group: api-schema-fuzz
-  cancel-in-progress: false
+  group: api-schema-fuzz-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
 
 jobs:
   schemathesis:
@@ -97,14 +130,22 @@ jobs:
       BETTER_AUTH_SECRET: ci-e2e-test-only-secret-not-for-production
       BETTER_AUTH_URL: http://localhost:3000
       ALLOW_DEV_AUTH_BYPASS: true
-      ALLOWED_ORIGINS: http://localhost:3000
+      ALLOWED_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
       AUTH_RATE_LIMIT_MAX: 5000
-      # Schemathesis dispara centenas de requests por operação; os limiters de
-      # teste precisam de teto alto para o fuzz medir contrato, não rate limit
-      # (mesmo racional de playwright.config.ts para a suíte E2E).
+      # Schemathesis dispara centenas de requests por operação a partir de UM IP;
+      # os limiters de teste precisam de teto alto para o fuzz medir contrato, não
+      # rate limit (mesmo racional de playwright.config.ts para a suíte E2E).
+      # Estes overrides só existem neste job efêmero — produção usa os defaults de
+      # src/config/env.ts e nenhuma flag de teste é lida fora de NODE_ENV=test.
       API_RATE_LIMIT_MAX: 100000
+      AI_RATE_LIMIT_MAX: 100000
+      BUG_REPORT_RATE_LIMIT_MAX: 100000
+      EXPORT_RATE_LIMIT_MAX: 100000
+      PUBLIC_LEAD_RATE_LIMIT_MAX: 100000
+      PUBLIC_BOOKING_RATE_LIMIT_MAX: 100000
       PLATFORM_OPERATOR_TOKEN: ci-test-operator-token-not-for-production
       APP_BASE_URL: http://127.0.0.1:3000
+      API_BASE_URL: http://127.0.0.1:3000/api
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -154,6 +195,11 @@ jobs:
           ALLOWED_ORIGINS=$ALLOWED_ORIGINS
           AUTH_RATE_LIMIT_MAX=$AUTH_RATE_LIMIT_MAX
           API_RATE_LIMIT_MAX=$API_RATE_LIMIT_MAX
+          AI_RATE_LIMIT_MAX=$AI_RATE_LIMIT_MAX
+          BUG_REPORT_RATE_LIMIT_MAX=$BUG_REPORT_RATE_LIMIT_MAX
+          EXPORT_RATE_LIMIT_MAX=$EXPORT_RATE_LIMIT_MAX
+          PUBLIC_LEAD_RATE_LIMIT_MAX=$PUBLIC_LEAD_RATE_LIMIT_MAX
+          PUBLIC_BOOKING_RATE_LIMIT_MAX=$PUBLIC_BOOKING_RATE_LIMIT_MAX
           PLATFORM_OPERATOR_TOKEN=$PLATFORM_OPERATOR_TOKEN
           BOOTSTRAP_SUPERUSER_URL=postgresql://prospector:prospector_test_pass@localhost:5434/prospectordb_test
           EOF
@@ -183,6 +229,22 @@ jobs:
           tail -100 server.log
           exit 1
 
+      - name: Sanity — API responde JSON sob /api (nao HTML da SPA)
+        run: |
+          # Rota autenticada sem sessão: esperamos 401/403/404 JSON da API —
+          # nunca HTML da SPA (que indicaria base URL errada ou fallback ativo).
+          CODE=$(curl -s -o /tmp/sanity.json -w '%{http_code}' "${API_BASE_URL}/organization-modules")
+          echo "GET ${API_BASE_URL}/organization-modules -> HTTP $CODE"
+          if grep -qi '<!doctype html\|<html' /tmp/sanity.json; then
+            echo "::error::Resposta HTML da SPA — base URL errada ou SPA fallback ativo"
+            exit 1
+          fi
+          if [ "$CODE" = "200" ]; then
+            echo "::error::Rota autenticada respondeu 200 sem sessão — inesperado"
+            exit 1
+          fi
+          echo "Sanity OK: API viva sob /api (status $CODE)"
+
       - name: Provisionar sessão de teste (sign-up + sign-in better-auth)
         id: session
         env:
@@ -191,16 +253,18 @@ jobs:
           TEST_PASSWORD: SchemathesisCi-${{ github.run_id }}Aa1
         run: |
           set -euo pipefail
-          # Domínio @birthhub360.com.br é obrigatório pela access-policy do signup
-          # (mesmo domínio usado por tests/e2e/helpers.ts).
-          SIGNUP=$(curl -sS -X POST "$BASE_URL/api/auth/sign-up/email" \
+          # Domínio @birthhub360.com.br é o usado pelos specs E2E
+          # (tests/e2e/helpers.ts); a access-policy valida formato, não domínio.
+          # A resposta do sign-up NÃO é impressa: ela pode conter Set-Cookie.
+          SIGNUP_CODE=$(curl -sS -o /tmp/signup.json -w '%{http_code}' -X POST "$BASE_URL/api/auth/sign-up/email" \
             -H "Content-Type: application/json" \
             -H "Origin: $BASE_URL" \
             --data "{\"name\":\"Schemathesis CI\",\"email\":\"$TEST_EMAIL\",\"password\":\"$TEST_PASSWORD\"}")
-          echo "$SIGNUP" | grep -q '"email"' || { echo "::error::sign-up falhou: $SIGNUP"; exit 1; }
+          [ "$SIGNUP_CODE" = "200" ] || { echo "::error::sign-up falhou (HTTP $SIGNUP_CODE)"; exit 1; }
 
           # Captura TODOS os Set-Cookie do sign-in (better-auth pode emitir
           # session_token + session_data) e monta o header Cookie manualmente.
+          # O header bruto NUNCA é impresso — apenas validado como não-vazio.
           COOKIE_HEADER=$(curl -sS -D - -o /dev/null -X POST "$BASE_URL/api/auth/sign-in/email" \
             -H "Content-Type: application/json" \
             -H "Origin: $BASE_URL" \
@@ -210,12 +274,12 @@ jobs:
           [ -n "$COOKIE_HEADER" ] || { echo "::error::sign-in não retornou Set-Cookie"; exit 1; }
 
           SESSION_JSON=$(curl -sS "$BASE_URL/api/auth/get-session" -H "Cookie: $COOKIE_HEADER")
-          echo "$SESSION_JSON" | grep -q "$TEST_EMAIL" || { echo "::error::sessão não validada: $SESSION_JSON"; exit 1; }
+          echo "$SESSION_JSON" | grep -q "$TEST_EMAIL" || { echo "::error::sessão não validada"; exit 1; }
 
           # O cookie é credencial de sessão descartável de banco efêmero — vai para
           # GITHUB_ENV (não para outputs/log) para não vazar em sumário de run.
           echo "SESSION_COOKIE=$COOKIE_HEADER" >> "$GITHUB_ENV"
-          echo "Sessão provisionada para $TEST_EMAIL"
+          echo "Sessão provisionada para $TEST_EMAIL (cookie omitido dos logs)"
 
       - name: Instalar Schemathesis (Python do runner, venv local)
         run: |
@@ -225,23 +289,101 @@ jobs:
           .venv-schemathesis/bin/schemathesis --version
 
       - name: Rodar Schemathesis contra docs/openapi.yaml
+        env:
+          # Smoke em PR (poucos exemplos, orçamento curto); deep em schedule/dispatch.
+          PR_MODE: ${{ github.event_name == 'pull_request' }}
+          INPUT_MAX_EXAMPLES: ${{ inputs.max_examples }}
+          INPUT_MAX_TIME: ${{ inputs.max_time }}
         run: |
+          set -euo pipefail
+          if [ "$PR_MODE" = "true" ]; then
+            MAX_EXAMPLES=15
+            MAX_TIME=900
+            echo "Modo SMOKE (pull_request): -n $MAX_EXAMPLES --max-time $MAX_TIME"
+          else
+            MAX_EXAMPLES="${INPUT_MAX_EXAMPLES:-50}"
+            MAX_TIME="${INPUT_MAX_TIME:-3600}"
+            echo "Modo DEEP (schedule/dispatch): -n $MAX_EXAMPLES --max-time $MAX_TIME"
+          fi
+          set +e
           .venv-schemathesis/bin/schemathesis run docs/openapi.yaml \
-            --origin http://127.0.0.1:3000 \
+            -u "${API_BASE_URL}" \
             -H "Cookie: $SESSION_COOKIE" \
             -H "Origin: http://127.0.0.1:3000" \
-            --report junit \
-            --report-dir schemathesis-report \
+            -H "Referer: http://127.0.0.1:3000/" \
+            --report junit,json \
             --report-junit-path schemathesis-junit.xml \
-            --max-time 3600 \
-            -w auto
+            --report-json-path schemathesis-report.json \
+            --max-time "$MAX_TIME" \
+            -n "$MAX_EXAMPLES" \
+            -w 2
+          SC_EXIT=$?
+          set -e
+          echo "schemathesis exit=$SC_EXIT"
+          # Exit != 0 = findings reais — deve reprovar o step (sinal, não required check).
+          exit "$SC_EXIT"
+
+      - name: Verificar cobertura efetiva (operations.tested > 0)
+        if: always()
+        run: |
+          if [ ! -f schemathesis-report.json ]; then
+            echo "::error::Relatório JSON ausente — run não produziu evidência de cobertura"
+            exit 1
+          fi
+          python3 - <<'PY'
+          import json, sys
+          with open('schemathesis-report.json', encoding='utf-8') as f:
+              report = json.load(f)
+          ops = report.get('operations') or {}
+          cases = report.get('test_cases') or {}
+          tested = ops.get('tested', 0)
+          selected = ops.get('selected', 0)
+          generated = cases.get('generated', 0)
+          exit_code = report.get('exit_code')
+          complete = report.get('complete')
+          print(f"operations: total={ops.get('total')} selected={selected} tested={tested} errored={ops.get('errored')} skipped={ops.get('skipped')}")
+          print(f"test_cases: generated={generated} with_failures={cases.get('with_failures')} unique_failures={cases.get('unique_failures')}")
+          print(f"exit_code={exit_code} complete={complete}")
+          if tested == 0 or generated == 0:
+              print("::error::Zero operações/casos efetivamente testados — aprovação sem cobertura é proibida")
+              sys.exit(1)
+          print(f"Cobertura efetiva confirmada: {tested} operações testadas, {generated} casos gerados.")
+          PY
+
+      - name: Controle negativo — base URL sem /api DEVE falhar (somente PR)
+        if: github.event_name == 'pull_request'
+        run: |
+          # Prova de que o gate detecta configuração errada: apontar para a origem
+          # sem /api deve produzir falhas de contrato (mutations -> 404/HTML não
+          # documentados). Se sair 0, a detecção é falso-positivo.
+          set +e
+          .venv-schemathesis/bin/schemathesis run docs/openapi.yaml \
+            -u "http://127.0.0.1:3000" \
+            -H "Cookie: $SESSION_COOKIE" \
+            -H "Origin: http://127.0.0.1:3000" \
+            --checks status_code_conformance \
+            -n 2 \
+            --max-time 300 \
+            -w 1 \
+            --report-dir /tmp/neg-report > /tmp/negative.log 2>&1
+          NEG_EXIT=$?
+          set -e
+          echo "Negative control exit=$NEG_EXIT"
+          if [ "$NEG_EXIT" -eq 0 ]; then
+            echo "::error::URL sem /api passou — o gate não detecta configuração errada"
+            exit 1
+          fi
+          echo "Controle negativo OK: configuração errada detectada (exit $NEG_EXIT)."
 
       - name: Upload relatório Schemathesis
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: schemathesis-report-${{ github.run_id }}
-          path: schemathesis-report/
+          path: |
+            schemathesis-report.json
+            schemathesis-junit.xml
+            schemathesis-report/
           retention-days: 30
           if-no-files-found: warn
 
@@ -256,11 +398,10 @@ jobs:
             echo "## API Schema Fuzz (Schemathesis)"
             echo ""
             echo "- Spec: \`docs/openapi.yaml\`"
-            echo "- Alvo: \`http://127.0.0.1:3000\` (app de teste efêmero)"
-            echo "- Autenticação: sessão better-auth de usuário descartável"
-            echo "- Orçamento de fuzzing: \`--max-time 3600\`"
-            echo ""
-            echo "Este job NÃO é required check. O gate bloqueante de contrato continua sendo"
-            echo "\`verify:openapi-drift\` no ci.yml. Findings deste run devem ser triados"
-            echo "(corrigir contrato/código ou registrar em baseline via \`--baseline\`)."
+            echo "- Alvo: \`${API_BASE_URL}\` (app de teste efêmero, rotas sob /api)"
+            echo "- Autenticação: sessão better-auth de usuário descartável + Origin (csrfGuard)"
+            echo "- Modo: \`${{ github.event_name }}\` (PR=smoke 15 exemplos/900s; schedule+dispatch=deep 50+/3600s)"
+            echo "- Este job NÃO é required check. O gate bloqueante de contrato continua sendo"
+            echo "  \`verify:openapi-drift\` no ci.yml. Findings deste run devem ser triados"
+            echo "  (corrigir contrato/código ou registrar em baseline via \`--baseline\`)."
           } >> "$GITHUB_STEP_SUMMARY"
