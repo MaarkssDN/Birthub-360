@@ -29,6 +29,7 @@ import { shutdownLangfuse } from './src/lib/langfuse.js';
 import { connection, rateLimiterConnection, cacheConnection } from './src/lib/queue/redis.js';
 import { sseService } from './src/features/notifications/sse.service.js';
 import { errorHandler } from './src/shared/middlewares/errorHandler.js';
+import { sanitizeRequest } from './src/shared/middlewares/sanitizeRequest.js';
 
 import {
   assertAllowedOriginsConfigured,
@@ -82,6 +83,14 @@ async function startServer() {
   app.use(express.json({ limit: env.JSON_BODY_LIMIT }));
   // CORREÇÃO: JSON_BODY_LIMIT definida em env.ts (default '2mb') mas um valor hardcoded '10mb'
   // sobrescrevia a configuração da env completamente — corrigido usando env.JSON_BODY_LIMIT.
+
+  // ── Anti prototype-pollution / envenenamento de string ────────────────────
+  // AUD-1 (achado 15-21 P2-4): o middleware existia sem nunca ter sido montado. Posição
+  // deliberada: DEPOIS do express.json (precisa do body parseado) e DEPOIS dos webhooks
+  // pré-JSON de mountPreJsonWebhooks — esses validam assinatura HMAC sobre o corpo cru e
+  // não podem ter req.body reescrito. Cobre body/query/params de todas as rotas montadas
+  // abaixo (auth Better Auth, BullBoard, features, frontend).
+  app.use(sanitizeRequest);
 
   // ── Métricas Prometheus, documentação da API e health checks ────────────
   mountMetricsEndpoint(app);
