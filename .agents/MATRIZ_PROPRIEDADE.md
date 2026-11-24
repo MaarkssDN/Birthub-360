@@ -6,18 +6,18 @@
 | `00` | `server.ts`, `package.json`, `.agents/ESTADO_ATUAL.md` |
 | `01` | `.agents/templates/**` |
 | `02` | `tests/setup/**`, `jest.config.js`, `vitest.config.ts` |
-| `03` | `tests/unit/**`, `tests/architecture/**` |
+| `03` | `tests/unit/**` (co-propriedade governada: cada especialista 01–99 pode criar/editar o arquivo `*.test.ts(x)` dedicado exclusivamente ao seu módulo sob revisão do Agente 09; suítes transversais e `tests/architecture/**` são exclusivas do 03), `tests/architecture/**` |
 | `04` | `tests/integration/**` |
 | `05` | `tests/e2e/**`, `cypress/**`, `playwright.config.ts` |
 | `06` | Acesso de leitura global (Auditoria de persistência) |
 | `07` | `docs/lgpd/**` |
-| `08` | `src/features/privacy/**` |
+| `08` | `src/features/privacy/**`, `src/shared/services/dataSubject*.ts` |
 | `09` | `.agents/reviews/**` |
 
 ## Squad 10 — Dados e Multi-Tenancy
 | ID | Diretórios e Ficheiros OBRIGATÓRIOS |
 |:---|:---|
-| `10` | `src/lib/db/index.ts` |
+| `10` | `src/lib/db/index.ts`, `src/lib/prisma.ts`, `src/lib/prisma-interceptors.ts`, `src/lib/__tests__/prisma-interceptors.unit.test.ts` |
 | `11` | `prisma/schema.prisma` |
 | `12` | `prisma/migrations/**` |
 | `13` | `src/lib/tenant-prisma.ts`, `scripts/security/rls-coverage.ts`, `scripts/security/check-rls-coverage.ts`, `supabase/migrations/**` (se aplicável) |
@@ -31,9 +31,9 @@
 ## Squad 20 — Core Backend, APIs e Billing
 | ID | Diretórios e Ficheiros OBRIGATÓRIOS |
 |:---|:---|
-| `20` | `src/api/index.ts`, `src/api/router.ts` |
-| `21` | `src/api/schemas/**`, `openapi.yaml` |
-| `22` | `src/api/controllers/**`, `src/api/middlewares/**` |
+| `20` | `src/api/index.ts`, `src/api/router.ts`, `src/bootstrap/**` (exceto `observability.ts` do 95 e `auth.ts` do 96) |
+| `21` | `src/api/schemas/**`, `openapi.yaml`, `docs/openapi.yaml`, `postman/specs/**` |
+| `22` | `src/api/controllers/**`, `src/api/middlewares/**` (exceto `rate-limit.ts` do 25), `src/shared/middlewares/**` (exceto `authenticateToken.ts` e `authorization.ts` do 96/97), `src/middleware/**` |
 | `23` | `src/lib/queue/**`, `src/workers/**` |
 | `24` | `src/lib/resilience/**`, `src/lib/queue/dlq/**` |
 | `25` | `src/api/middlewares/rate-limit.ts` |
@@ -59,23 +59,23 @@
 ## Squad 40 — CRM e Receita
 | ID | Diretórios e Ficheiros OBRIGATÓRIOS |
 |:---|:---|
-| `40` | `src/features/crm/index.ts`, `src/features/crm/types.ts` |
-| `41` | `src/features/crm/leads/**`, `src/features/crm/contacts/**` |
+| `40` | `src/features/crm/index.ts`, `src/features/crm/types.ts`, `src/features/crm/components/**` |
+| `41` | `src/features/crm/leads/**`, `src/features/crm/contacts/**`, `src/features/activities/**` |
 | `42` | `src/features/crm/deals/**`, `src/features/crm/pipelines/**` |
-| `43` | `src/features/crm/scoring/**` |
-| `44` | `src/features/crm/cadences/**` |
-| `45` | `src/features/crm/tasks/**` |
+| `43` | `src/features/crm/scoring/**`, `src/features/prospecting/**` |
+| `44` | `src/features/crm/cadences/**`, `src/features/cadence/**` |
+| `45` | `src/features/crm/tasks/**`, `src/features/calendar/**` |
 | `46` | `src/features/crm/forecast/**` |
 | `47` | `src/features/crm/routing/**` |
 | `48` | `src/features/crm/deduplication/**` |
-| `49` | `src/features/crm/analytics/**` |
+| `49` | `src/features/crm/analytics/**`, `src/features/commercial-intelligence/**` |
 
 ## Squad 50 — Integrações Externas e Bitrix24
 | ID | Diretórios e Ficheiros OBRIGATÓRIOS |
 |:---|:---|
-| `50` | `src/lib/integrations/index.ts` |
+| `50` | `src/lib/integrations/index.ts`, `src/features/integrations/bitrix/**` (coordenação e rotas gerais `hub-tasks`) |
 | `51` | `src/lib/integrations/bitrix/auth/**` |
-| `52` | `src/lib/integrations/bitrix/batch/**` |
+| `52` | `src/lib/integrations/bitrix/batch/**`, `src/features/integrations/bitrix/service/extraction.ts` |
 | `53` | `src/lib/integrations/bitrix/webhooks/**` |
 | `54` | `src/lib/integrations/bitrix/mapping/**` |
 | `55` | `src/lib/integrations/email/**` |

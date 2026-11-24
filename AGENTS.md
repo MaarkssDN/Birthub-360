@@ -429,22 +429,31 @@ A branch de integração segue:
 
 O isolamento é obrigatório.
 
-## 13. Concorrência
-O Coordenador ocupa 1 slot.
-Podem executar simultaneamente até 8 especialistas, desde que todas as condições de concorrência sejam atendidas.
+## 13. Concorrência (Capacidade Dinâmica — 100 Agentes / 10 Squads)
+O sistema suporta a mobilização dos 100 agentes oficiais (numerados de `00` a `99`, distribuídos nos 10 Squads), sem teto administrativo fixo de oito especialistas (autorização expressa do Orquestrador Humano em 2026-11-24).
 
-Executar mais de 3 especialistas simultaneamente exige:
-1. isolamento;
-2. propriedade disjunta;
-3. matriz de propriedade publicada;
-4. gate a cada 2–3 merges;
-5. ausência de bloqueadores mútuos;
+Regras de concorrência dinâmica:
+1. O **Agente 00 (Astra)** permanece como Coordenador Global.
+2. Os **Agentes 01–99** podem receber missões e executar em paralelo em worktrees e branches exclusivas.
+3. A concorrência efetiva em cada instante é determinada pela capacidade real dos runtimes, infraestrutura física (CPU, RAM, disco, conexões de banco PostgreSQL/Redis), orçamento de sessões e isolamento de propriedade.
+4. O objetivo operacional é permitir até **100 agentes reais em execução simultânea** quando existir capacidade computacional e de sessões suficiente.
+5. É estritamente proibido declarar um agente como `ATIVO` / executando quando ele possuir apenas um prompt, uma missão pendente na fila ou um worktree preparado sem sessão ativa.
+6. Todos os agentes em execução paralela devem respeitar ownership exclusivo (`.agents/MATRIZ_PROPRIEDADE.md`), worktrees separados, bancos de teste isolados e contratos de qualidade.
+7. O **Agente 09 (Silas)** permanece responsável pela auditoria independente obrigatória, devendo ter capacidade operacional reservada permanentemente.
+8. A ausência de capacidade computacional para 100 processos locais simultâneos não autoriza falsificar a quantidade de agentes ativos; o escalonador de capacidade deve operar no limite máximo seguro comprovado da máquina/cluster e enfileirar os demais.
+
+Executar múltiplos especialistas simultaneamente exige:
+1. isolamento em worktree e branch próprios;
+2. propriedade disjunta verificada;
+3. matriz de propriedade publicada e reconciliada;
+4. gate de verificação a cada 2–3 merges;
+5. ausência de bloqueadores mútuos (§14);
 6. dono único para arquivos compartilhados;
-7. capacidade real da ferramenta;
-8. slots exclusivos respeitados;
-9. orçamento de sessões declarado.
+7. capacidade real de hardware/runtime verificada pelo escalonador;
+8. slots de exclusão mútua respeitados;
+9. orçamento de sessões e bancos de teste isolados declarados.
 
-Se qualquer condição falhar, reduzir o número de agentes simultâneos.
+Se qualquer condição ou recurso físico atingir saturação, o escalonador suspende ou reprograma novas ativações até a liberação de recursos.
 
 ## 14. Slots exclusivos e concorrência entre Squads
 Nunca executar simultaneamente, quando houver sobreposição:
