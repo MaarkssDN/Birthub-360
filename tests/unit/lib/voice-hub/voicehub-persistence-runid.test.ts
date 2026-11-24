@@ -30,4 +30,16 @@ describe('VoiceHub persistence RUN_ID isolation regression test', () => {
     expect(org1).not.toBe(org2);
     expect(org1).toContain('test-voicehub-org-a-');
   });
+
+  it('keeps ORG_A derived from RUN_ID so tenant isolation tracks each run', () => {
+    const filePath = resolve(__dirname, '../../../integration/voicehub-persistence.test.ts');
+    const content = readFileSync(filePath, 'utf-8');
+
+    // Se ORG_A deixar de interpolar ${RUN_ID}, duas execuções paralelas do teste
+    // de integração passam a colidir no mesmo tenant — regressão real de isolamento.
+    const orgALine = content.split('\n').find((l) => l.includes('const ORG_A'));
+    expect(orgALine, 'const ORG_A não encontrada').toBeDefined();
+    expect(orgALine).toContain('${RUN_ID}');
+    expect(orgALine).toContain('`');
+  });
 });

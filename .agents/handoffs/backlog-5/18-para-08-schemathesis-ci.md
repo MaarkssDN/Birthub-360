@@ -30,9 +30,10 @@ gate e Schemathesis como job noturno/manual.
 
 ## Resolução (Agente 08, 2026-11-18)
 
-- **Workflow de CI implementado:** Criado `.github/workflows/schemathesis-fuzzing.yml`.
-- **Estratégia de execução (dupla cadência):**
-  1. *Pull Requests com alteração de API:* Disparo automático quando houver modificações em `docs/openapi.yaml`, `src/server/**` ou `src/routes/**`. Executa smoke fuzzing com 20 exemplos por endpoint (`--checks not_a_server_error`), protegendo contra 5xx sem inflar o tempo do pipeline principal.
-  2. *Noturno / Manual:* Agendamento diário via cron (`0 4 * * *`) e sob demanda via `workflow_dispatch` com parâmetros configuráveis de `hypothesis_max_examples` e `checks`, gerando artefato JUnit XML (`schemathesis-results.xml`).
+- **Workflow de CI implementado:** pipeline Schemathesis consolidado em `.github/workflows/api-schema-fuzz.yml` (consolidação Genesis 2026-11-21 — o `schemathesis-fuzzing.yml` proposto foi fundido neste arquivo para eliminar duplicação; inclui gatilho PR smoke + schedule/dispatch deep, URL `/api` corrigida, rate-limit overrides, cobertura efetiva e controle negativo).
+- **Estratégia de execução (dupla cadência, consolidada):**
+  1. *Pull Requests com alteração de API:* Disparo automático quando houver modificações em `docs/openapi.yaml`, `server.ts`, `src/bootstrap/**`, `src/features/**/routes/**`, `src/shared/**`, `prisma/schema.prisma`, `prisma/migrations/**` ou no próprio workflow. Executa smoke fuzzing com 15 exemplos por endpoint e `--max-time 900`.
+  2. *Noturno / Manual:* Agendamento diário via cron (`37 5 * * *`) e sob demanda via `workflow_dispatch` com `max_examples`/`max_time` configuráveis (default 50 exemplos / 3600s), gerando artefatos JUnit XML + JSON.
+- **Correções Genesis (pós-auditoria Agente 09):** base URL `-u http://127.0.0.1:3000/api` (rotas montam sob `/api`); headers `Origin`+`Referer` para o `csrfGuard`; overrides de todos os rate limiters (`API/AI/BUG_REPORT/EXPORT/PUBLIC_LEAD/PUBLIC_BOOKING=100000`, `AUTH=5000`); verificação de cobertura via `operations.tested`/`test_cases.generated` (zero = reprova); controle negativo com URL sem `/api` em PR; sanity anti-HTML da SPA; sessão real via sign-up+sign-in better-auth com cookies capturados (sem Bearer fictício, sem echo de Set-Cookie).
 - **Harness e Infraestrutura:** Pipeline sobe containers Postgres (`pgvector`), Redis e Meilisearch, aplica migrations (`prisma migrate deploy`), executa build do Express, inicializa o servidor de teste em background e executa `schemathesis run` com autenticação e validação estrita.
 - **Status:** resolvido.
