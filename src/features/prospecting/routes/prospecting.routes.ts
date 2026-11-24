@@ -38,6 +38,33 @@ const rejectCandidateSchema = z.object({
   reason: z.string().trim().max(300).optional(),
 });
 
+const enrichCnpjBodySchema = z.object({
+  cnpj: z.string().trim().min(1, 'CNPJ é obrigatório').max(32),
+});
+
+const promoteCandidateBodySchema = z.object({
+  tradeName: z.string().trim().min(1, 'tradeName e source são obrigatórios').max(300),
+  source: z.string().trim().min(1, 'tradeName e source são obrigatórios').max(120),
+  legalName: z.string().trim().max(300).optional(),
+  cnpj: z.string().trim().max(32).optional(),
+  website: z.string().trim().max(500).optional(),
+  segment: z.string().trim().max(200).optional(),
+  size: z.string().trim().max(120).optional(),
+  city: z.string().trim().max(150).optional(),
+  state: z.string().trim().max(64).optional(),
+  address: z.string().trim().max(400).optional(),
+  phone: z.string().trim().max(64).optional(),
+  email: z.string().trim().max(254).optional(),
+  contactName: z.string().trim().max(200).optional(),
+  contactRole: z.string().trim().max(200).optional(),
+  linkedinUrl: z.string().trim().max(500).optional(),
+  fitScore: z.number().min(0).max(100).optional(),
+  fitReason: z.string().trim().max(2000).optional(),
+  notes: z.string().trim().max(4000).optional(),
+  autoEnrich: z.boolean().optional(),
+  autorizarPagos: z.boolean().optional(),
+});
+
 // Só em memória (nunca grava em disco) — a imagem só existe pelo tempo do OCR, não é um asset
 // que o app precisa reter depois de extrair o texto.
 const ocrUpload = multer({
@@ -208,13 +235,10 @@ router.post(
 // Apollo/Hunter/IA, então fica fora do requireRole aplicado às rotas acima.
 router.post(
   '/enrich-cnpj',
+  validateRequest(enrichCnpjBodySchema),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { cnpj } = req.body as { cnpj?: string };
-      if (!cnpj || typeof cnpj !== 'string') {
-        res.status(400).json({ success: false, error: 'CNPJ é obrigatório' });
-        return;
-      }
+      const { cnpj } = req.body as z.infer<typeof enrichCnpjBodySchema>;
       if (!isValidCnpj(cnpj)) {
         res.status(400).json({ success: false, error: 'CNPJ inválido' });
         return;
@@ -236,13 +260,10 @@ router.post(
 router.post(
   '/promote',
   requireRole(['ADMIN', 'GESTOR', 'CLOSER', 'SDR']),
+  validateRequest(promoteCandidateBodySchema),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const body = req.body as { tradeName?: string; source?: string };
-      if (!body.tradeName || !body.source) {
-        res.status(400).json({ success: false, error: 'tradeName e source são obrigatórios' });
-        return;
-      }
+      const body = req.body as z.infer<typeof promoteCandidateBodySchema>;
       if (/google|places/i.test(body.source)) {
         res.status(403).json({
           success: false,
@@ -251,7 +272,7 @@ router.post(
         });
         return;
       }
-      if (req.body.autoEnrich === true && req.body.autorizarPagos !== true) {
+      if (body.autoEnrich === true && body.autorizarPagos !== true) {
         res.status(400).json({
           success: false,
           error: 'Enriquecimento adicional exige autorização de consultas pagas.',
@@ -260,8 +281,8 @@ router.post(
       }
       const { organizationId } = (req as AuthRequest).user;
       const result = await promoteToCrm({
-        ...req.body,
-        autoEnrich: req.body.autoEnrich === true && req.body.autorizarPagos === true,
+        ...body,
+        autoEnrich: body.autoEnrich === true && body.autorizarPagos === true,
         organizationId,
       });
       res.status(201).json({ success: true, data: result });
