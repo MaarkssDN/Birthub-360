@@ -9,6 +9,7 @@ import {
   type ToolDefinition,
   type ToolExecutionContext,
   ToolExecutionEngine,
+  toolEngine,
   ToolPermissionError,
   ToolTimeoutError,
 } from '../../voice-runtime/ToolEngine.js';
@@ -22,4 +23,11 @@ export {
   ToolTimeoutError,
 };
 
-export const toolRegistry = new ToolExecutionEngine();
+/**
+ * B-08: `toolRegistry` é alias do engine canônico `toolEngine` (voice-runtime).
+ * Antes existiam DUAS instâncias de `ToolExecutionEngine`: tools registradas numa
+ * nunca eram visíveis para `executeTool` chamado pela outra (`Tool not found`).
+ * Um único registry por processo é o comportamento correto — registro e execução
+ * devem compartilhar o mesmo Map de tools.
+ */
+export const toolRegistry = toolEngine;
