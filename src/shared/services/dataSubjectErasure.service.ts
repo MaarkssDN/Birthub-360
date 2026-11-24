@@ -272,19 +272,14 @@ export async function eraseDataSubject(target: ErasureTarget): Promise<ErasureRe
           },
         });
 
-        // 1.5. Expurgo físico de logs de auditoria anteriores contendo PII do titular (LGPD Art. 18 / Agente 08 - Dora)
-        let priorAuditLogsPurged = 0;
-        if (tx.auditLog && typeof tx.auditLog.deleteMany === 'function') {
-          const deleteResult = await tx.auditLog.deleteMany({
-            where: {
-              tenantId: target.organizationId,
-              entity: 'Contact',
-              entityId: target.contactId,
-              action: { not: 'ERASURE_LGPD_ART_18' },
-            },
-          });
-          priorAuditLogsPurged = deleteResult?.count ?? 0;
-        }
+        // 1.5. Conservação regulatória de logs de auditoria (LGPD Art. 16, I / Agente 08 - Dora):
+        // AuditLog é estritamente append-only e imutável por gatilho de banco (auditlog_no_mutation /
+        // migration 20261114160000_auditlog_append_only_immutability).
+        // Sob a LGPD (Art. 16, I), os registros de auditoria são mantidos para cumprimento de obrigação
+        // legal pelo controlador. A imutabilidade do log é preservada sem mutação/deleção, e a comprovação
+        // do exercício do direito é garantida pelo append do evento ERASURE_LGPD_ART_18 abaixo (sem PII direta,
+        // apenas hash criptográfico SHA-256 do titular).
+        const priorAuditLogsPurged = 0;
 
         // 2. Registro de auditoria imutável (sem PII direta) comprovando data, hora e hash do titular expurgado
         if (tx.auditLog && typeof tx.auditLog.create === 'function') {
