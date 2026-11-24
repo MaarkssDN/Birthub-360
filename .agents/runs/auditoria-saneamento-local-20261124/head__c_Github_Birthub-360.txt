@@ -1,0 +1,3 @@
+a60a76b5e docs(handoff): encerramento forense sessao Experience 360 — missao E-00 (devin->00)
+774a977e5 docs(handoff): continuidade Experience 360 — baseline, ownership e NO-GO (devin->00)
+38fa289d8 docs(onda-1): baseline CI Linux, matriz de ownership e prontidao NO-GO

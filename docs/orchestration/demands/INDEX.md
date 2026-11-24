@@ -16,6 +16,7 @@
 
 | DEM-20261114-007 | Backlog de Ondas — Onda 6 (APIs, filas, resiliência — MEL-41..48) | 00 → 16/06/18/14/08 | EM_ANDAMENTO | 2026-11-15 |
 | DEM-20261116-001 | Backlog Ondas — Onda 5 backlog (UX/forms/a11y/API) | 00 → 02/03/18 | EM_ANDAMENTO | 2026-11-16 |
+| DEM-20261118-001 | Etapa 0 do Plano de Saneamento — Reconciliação PRs × Achados | 00 | CONCLUÍDA | 2026-11-20 |
 
 ## Sessões conhecidas
 | Agente | Sessão | Estado confirmado |
