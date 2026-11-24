@@ -1,7 +1,7 @@
 De: Agente 14 (Ambiente de Execução e Test Harness)
 Para: Agente 01 (Plataforma, Segurança e Dados)
 Onda: 1
-Status: aberto
+Status: em-andamento (schema+migração implementados; aguardando parecer 09 e decisão humana de retenção)
 Prioridade: alto
 Bloqueador-ref: B-09/B-11 (erro visível sem causa tratada; funcionalidade de rota `/app/characters` quebrada)
 Sprint destino: Onda 1
@@ -36,3 +36,18 @@ usuário da org B recebe `logs: []` (acesso cruzado). Org nova sem logs retorna 
 
 ## Contexto adicional
 Não corrigi: schema pertence ao 01 (AGENTS.md §15). `/api/agent/characters` (lista) NÃO falha: retorna 200.
+
+## Resolução (Agentes 11 Pietro / 12 Vera — branch agente/11-12-swarm-audit-log)
+- IMPLEMENTADO: `model SwarmAuditLog` em `prisma/schema.prisma` (cuid, FK Organization onDelete Cascade, índice
+  `(organizationId, createdAt)`); migração `20261120120000_swarm_audit_log` (CREATE TABLE/FK/INDEX + ENABLE/FORCE RLS
+  + policy `tenant_isolation` no padrão da DSR). ADITIVA, tabela nova: zero downtime; deploy sem a migração
+  continua com o 500 atual (B-05: rodar `prisma migrate deploy` antes/junto do código).
+- Serviço: cast `as unknown as` removido; usa `prisma.swarmAuditLog` tipado (`parameters` com cast a `Prisma.InputJsonObject`).
+- TESTADO: `prisma validate`, `prisma generate`, `npm run verify:rls-coverage` (OK, 138 tabelas), `tsc --noEmit` (sem erros),
+  `biome format src` (limpo), vitest characters + intelligence/routes (140 passed).
+- NÃO EXECUTADO: aplicação da migração em Postgres e teste de acesso cruzado A/B (sem banco em localhost:5434);
+  teste de integração pedido neste handoff.
+- DECISÃO HUMANA (LGPD): `ipAddress`/`userAgent` são dado pessoal. Proposta (não decidida): reter 90 dias e depois
+  anonimizar (null) os dois campos, mantendo o restante do log; execução pelo 15 (Olavo), base legal/finalidade
+  (segurança/auditoria) a confirmar pelo 07 (Íris). Sem job de expurgo hoje; registrar no inventário do 21.
+- Handoffs: 07 (Íris) e 15 (Olavo) — retenção; 14 — escrever o teste de integração A/B quando houver banco.
