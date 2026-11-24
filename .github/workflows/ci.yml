@@ -57,7 +57,10 @@ jobs:
         with:
           fail-on-severity: high
           comment-summary-in-pr: on-failure
-          allow-ghsas: GHSA-fc5q-39xc-vjpf, GHSA-FC5Q-39XC-VJPF
+          # allow-ghsas espelha "## Waivers ativos" de docs/security/AUDIT_WAIVERS.md.
+          # 2026-11-24 (triagem POS4, Agente 99): nenhum waiver ativo — lista esvaziada;
+          # novos waivers exigem registro em AUDIT_WAIVERS.md e espelho aqui.
+          allow-ghsas: ''
 
   trivy-scan:
     name: Central Birth Hub 360 / trivy scan

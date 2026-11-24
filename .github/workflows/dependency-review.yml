@@ -11,11 +11,16 @@ name: Security - Dependency Review
 # repositório em vez de dois limiares divergentes.
 #
 # `allow-ghsas` replica os waivers ativos hoje em docs/security/AUDIT_WAIVERS.md
-# (após a poda de 2026-11-24, Agente 99: restam apenas os 2 IDs do picomatch —
-# GHSA-FC5Q-39XC-VJPF, único waiver ainda válido). AUDIT_WAIVERS.md é a fonte de verdade única para dono/motivo/data de reavaliação de cada
-# waiver — qualquer mudança nele (nova entrada, expiração, remoção) precisa ser refletida aqui na
-# mesma alteração, senão este action volta a bloquear PRs que só tocam uma dependência já aceita,
-# ou passa a aceitar silenciosamente um waiver que já expirou lá.
+# ("## Waivers ativos"). AUDIT_WAIVERS.md é a fonte de verdade única para dono/motivo/data de
+# reavaliação de cada waiver — qualquer mudança nele (nova entrada, expiração, remoção) precisa
+# ser refletida aqui na mesma alteração, senão este action volta a bloquear PRs que só tocam uma
+# dependência já aceita, ou passa a aceitar silenciosamente um waiver que já expirou lá.
+#
+# 2026-11-24 (triagem POS4 do Agente 99): NENHUM waiver ativo — todos os advisory IDs
+# anteriormente listados aqui (GHSA-ggr8-5vv4-36mx/deepmerge-ts, brace-expansion, nodemailer,
+# picomatch) foram verificados como resolvidos nos lockfiles (pacotes em versão corrigida;
+# advisory de picomatch retirado upstream). `allow-ghsas` fica vazio: qualquer HIGH/CRITICAL
+# novo no diff de dependências volta a bloquear este gate normalmente.
 
 on:
   pull_request:
@@ -45,9 +50,8 @@ jobs:
           comment-summary-in-pr: on-failure
           # Ver comentário no topo do arquivo — mantido em sincronia manual com
           # docs/security/AUDIT_WAIVERS.md ("## Waivers ativos").
-          # Atualizado em 2026-09-25: removidos waivers resolvidos em 2026-09-11
-          # (GHSA-3f6p-5ww8-9rcr, GHSA-rgwj-5xj2-c3m3, GHSA-RGJ7-G3M4-5G8C, GHSA-2883-XCG3-V3HH,
-          # GHSA-WC9G-MQFW-JRWM, GHSA-QFVM-CV95-JQJF, GHSA-QVFW-J98X-7Q72, GHSA-535W-7CP7-47Q4,
-          # GHSA-8M3C-C648-2XJJ, GHSA-WMMP-3585-3RMP, GHSA-2X7J-588G-CCC2, GHSA-CC9R-2J5M-2M83)
-          # conforme histórico em AUDIT_WAIVERS.md.
-          allow-ghsas: GHSA-fc5q-39xc-vjpf, GHSA-FC5Q-39XC-VJPF
+          # Atualizado em 2026-11-24 (triagem POS4, Agente 99): lista esvaziada — todos os
+          # waivers foram encerrados como obsoletos (pacotes corrigidos nos lockfiles /
+          # advisory retirado upstream). Ao registrar um waiver novo em AUDIT_WAIVERS.md,
+          # adicione o GHSA ID aqui na mesma alteração.
+          allow-ghsas: ''

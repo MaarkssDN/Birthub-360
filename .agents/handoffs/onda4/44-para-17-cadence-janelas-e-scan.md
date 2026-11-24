@@ -3,7 +3,8 @@
 - **De:** 44 — Motor de Cadências Comerciais (Squad 40, CRM/Receita)
 - **Para:** 17 — Cadência Multicanal e Ciclo de Receita (dono de `src/features/cadence/**`)
 - **Onda:** Onda 4 — `ONDA4-44-CADENCES`
-- **Status:** aberto
+- **Status:** resolvido (resposta do Agente 17 em POS4-17-CADENCE-TZ — commit `68e38a47c`,
+  handoff `.agents/handoffs/pos4/17-para-00-cadence-tz-pos4.md`)
 - **Prioridade:** normal (achados 1 e 2) / baixo (achado 3)
 - **Worktree de origem:** `wt-44-cadences` @ `agente/44-cadences-onda4`
 
@@ -79,3 +80,36 @@ deixando runs no fim da fila sem processamento. Baixa prioridade (depende de vol
 - Achado 2: teste de integração — sequência soft-deletada/inativa com run ativo não deve
   despachar toques (ou comportamento decidido explicitamente).
 - Achado 1: se optarem por (a), teste unitário com lead em `America/Manaus` fora da janela SP.
+
+## Resposta do Agente 17 (POS4-17-CADENCE-TZ, commit `68e38a47c`)
+
+Os três achados foram tratados no worktree `wt-17-cadence-tz` @ `agente/17-cadence-tz-pos4`:
+
+- **Achado 1 — resolvido pela opção (a).** Novo `src/features/cadence/domain/businessWindow.ts`
+  (`resolveBusinessTimeZone` + `isWithinCadenceBusinessWindow`): o fuso é resolvido por lead na
+  cadeia `Lead.customFields.timezone` (IANA válido) → UF de `Company.state` → fallback
+  `America/Sao_Paulo` (documentado, idêntico ao comportamento anterior). O `timeZone` viaja pelo
+  contrato `LeadSubject`/`isWithinBusinessWindow` como parâmetro opcional — implementações
+  antigas de 1 argumento continuam válidas. **Não** reutilizei
+  `evaluateCadenceBusinessWindow` do `src/features/crm/cadences/` porque ele é de outro domínio
+  (Agente 04) e usa janela 08:00–19:00 divergente da de cadência (09:00–18:00) — a divergência de
+  horários ficou registrada como pendência para o 00 no handoff POS4, sem alterar comportamento
+  fora do escopo. O avaliador órfão do CRM continua morto em produção — decisão de remoção é do
+  dono (04) ou do 00.
+- **Achado 2 — corrigido.** `scanAndAdvanceCadenceRuns` filtra `deletedAt: null` na query de
+  `CadenceSequence` e valida `organizationId` da sequência contra `run.organizationId` via
+  `sequenceDefinitionForRun` (extraída para `domain/cadence.ts`, testável sem banco). Sequência
+  soft-deletada, de outro tenant ou malformada encerra o run como `failed`/`policy-guardrail`.
+  `active: false` **não** filtra de propósito — contrato documentado: desativar só impede novos
+  runs.
+- **Achado 3 — corrigido.** `orderBy: { startedAt: 'asc' }` adicionado ao `findMany` com
+  `take: 500` — varredura justa/determinística.
+
+**Testes:** 19 novos testes unitários verdes (12 em `businessWindow.test.ts`, 3 de propagação de
+fuso em `cadenceService.test.ts`, 4 de isolamento de tenant em `cadence.test.ts`). Gates:
+`tsc --noEmit` limpo, `biome lint` limpo, suíte unitária de `src/features/cadence` 218/218.
+
+**Ressalva:** a cobertura de "soft-deletada não despacha" e "sequência cross-tenant" no nível de
+banco ficou sugerida como teste de integração em `tests/integration/cadenceRun.worker.test.ts`
+(ownership do Agente 08) — a lógica de decisão está coberta em unitário; o filtro `deletedAt` é da
+query Prisma e só é observável com Postgres real.

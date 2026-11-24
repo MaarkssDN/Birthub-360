@@ -6,21 +6,30 @@
  * para o titular nas filas de mensageria (WhatsApp, Cadência, Notificações), prevenindo disparos indevidos.
  */
 
-import type { Queue, JobType } from 'bullmq';
+import type { JobType, Queue } from 'bullmq';
 import { logger } from '../../../lib/logger.js';
 import {
-  whatsappCommandQueue,
   type WhatsAppCommand,
+  whatsappCommandQueue,
 } from '../../../lib/queue/whatsappCommand.queue.js';
+import { hasAnyIdentifier, normalizeOptOutSubject } from '../../../shared/domain/optOut.js';
 import {
-  recordOptOut,
-  type RecordOptOutInput,
   type OptOutRecord,
   type OptOutRepository,
+  type RecordOptOutInput,
+  recordOptOut,
 } from '../../../shared/services/optOutService.js';
 
 export interface CancelPendingJobsParams {
   organizationId: string;
+  /**
+   * Sujeito identificável — NENHUM campo é obrigatório isoladamente, mas pelo menos um
+   * identificador aproveitável (leadId, telefone ou e-mail) precisa existir para a purga
+   * ter o que casar. Um opt-out por contato SEM lead aberto (ex.: STOP de número que só
+   * existe como Contact, ou telefone ainda não sincronizado) é válido: `leadId` fica
+   * `null` e o casamento acontece por `phoneE164`/`email` — mesma regra de
+   * `normalizeOptOutSubject`/`hasAnyIdentifier` usada na persistência do `OptOutRecord`.
+   */
   leadId?: string | null;
   phoneE164?: string | null;
   email?: string | null;
@@ -50,12 +59,7 @@ function extractSignificantDigits(phone: string | null | undefined): string | nu
  * 'waiting-children' deixaria escapar exatamente os envios comerciais mais "quentes" do opt-out —
  * a revogação precisa ser a trava mais forte (LGPD).
  */
-const PENDING_JOB_STATES: JobType[] = [
-  'waiting',
-  'delayed',
-  'prioritized',
-  'waiting-children',
-];
+const PENDING_JOB_STATES: JobType[] = ['waiting', 'delayed', 'prioritized', 'waiting-children'];
 
 /** Extrai string de forma defensiva — payloads de fila não são contratualmente confiáveis. */
 function asNonEmptyString(value: unknown): string | null {
@@ -66,11 +70,28 @@ function asNonEmptyString(value: unknown): string | null {
 
 export async function cancelPendingJobsForOptOut(
   params: CancelPendingJobsParams,
-  queueInstance: Queue<any> = whatsappCommandQueue as Queue<any>,
+  // `null` explícito é aceito (e tratado com WARN + purga vazia abaixo): callers como
+  // `recordOptOutAndPurgePendingJobs` repassam filas que podem estar desabilitadas
+  // (`whatsappCommandQueue` é `null` quando ENABLE_QUEUES=false).
+  queueInstance: Queue<any> | null = whatsappCommandQueue as Queue<any>,
 ): Promise<CancelJobsResult> {
   const { organizationId, leadId, phoneE164, email } = params;
   const targetPhoneSuffix = extractSignificantDigits(phoneE164);
   const targetEmail = email ? email.trim().toLowerCase() : null;
+
+  // Sem NENHUM identificador aproveitável não há o que casar — evita varrer a fila inteira
+  // à toa (e mantém simetria com `recordOptOut`, que também não grava registro inerte).
+  // `hasAnyIdentifier` espera a forma normalizada; aqui os alvos já são derivadas
+  // (sufixo de telefone/e-mail normalizado), então a checagem equivalente é direta.
+  const hasMatchableIdentifier =
+    (leadId?.trim().length ?? 0) > 0 || targetPhoneSuffix !== null || targetEmail !== null;
+  if (!hasMatchableIdentifier) {
+    logger.warn(
+      { organizationId },
+      'Opt-Out Real: purga de jobs ignorada — sujeito sem identificador aproveitável (leadId, telefone ou e-mail).',
+    );
+    return { cancelledJobsCount: 0, jobIds: [] };
+  }
 
   const cancelledJobIds: string[] = [];
 
@@ -173,26 +194,64 @@ export async function cancelPendingJobsForOptOut(
 
 /**
  * Ponto de entrada unificado: registra o opt-out e purga mensagens agendadas simultaneamente.
+ *
+ * Sujeito identificável SEM lead: `input.subject` aceita `phoneE164`/`email` sem `leadId`
+ * (ex.: STOP inbound de um número que só existe como Contact, ou ainda não sincronizado).
+ * O registro é persistido por esses identificadores (`OptOutRecord.leadId` fica `null`) e a
+ * purga casa os jobs pendentes pelos mesmos identificadores normalizados — a normalização
+ * (`normalizeOptOutSubject`: E.164 via `toE164BR`, e-mail minúsculo/trim) é a MESMA aplicada
+ * por `recordOptOut` na gravação, garantindo que o que foi persistido é o que a purga persegue.
+ *
+ * `queueInstance` aceita uma fila única, um array de filas (ex.: whatsapp-command + futuras
+ * filas de envio comercial) ou `null`/`undefined` (queues desabilitadas — purga vazia, WARN).
  */
 export async function recordOptOutAndPurgePendingJobs(
   repo: OptOutRepository,
   input: RecordOptOutInput,
-  queueInstance?: Queue<any>,
+  queueInstance?: Queue<any> | Queue<any>[] | null,
 ): Promise<{ record: OptOutRecord | null; purgeResult: CancelJobsResult }> {
   const record = await recordOptOut(repo, input);
 
-  const purgeResult = await cancelPendingJobsForOptOut(
-    {
-      organizationId: input.organizationId,
-      leadId: input.subject.leadId,
-      phoneE164: input.subject.phoneE164,
-      email: input.subject.email,
-    },
-    queueInstance,
-  );
+  const normalized = normalizeOptOutSubject(input.subject);
+
+  // Sem identificador aproveitável não há registro nem o que purgar — `recordOptOut` já
+  // devolveu `null` com WARN; pular a varredura da fila é só higiene (mesmo resultado).
+  if (!hasAnyIdentifier(normalized)) {
+    return {
+      record,
+      purgeResult: { cancelledJobsCount: 0, jobIds: [] },
+    };
+  }
+
+  // Retrocompatível: argumento omitido (`undefined`) mantém o default histórico —
+  // `whatsappCommandQueue` (que pode ser `null` com queues desabilitadas; a função de
+  // purga trata isso com WARN + resultado vazio). `null` explícito = "não purgar fila".
+  const queues =
+    queueInstance === undefined
+      ? [whatsappCommandQueue as Queue<any>]
+      : Array.isArray(queueInstance)
+        ? queueInstance
+        : [queueInstance];
+
+  const jobIds: string[] = [];
+  for (const queue of queues) {
+    const result = await cancelPendingJobsForOptOut(
+      {
+        organizationId: input.organizationId,
+        leadId: normalized.leadId,
+        phoneE164: normalized.phoneE164,
+        email: normalized.email,
+      },
+      queue,
+    );
+    jobIds.push(...result.jobIds);
+  }
 
   return {
     record,
-    purgeResult,
+    purgeResult: {
+      cancelledJobsCount: jobIds.length,
+      jobIds,
+    },
   };
 }
