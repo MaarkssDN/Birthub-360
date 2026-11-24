@@ -1,6 +1,6 @@
-# Parecer de Revisão Independiente — Agente 09 (Silas)
+# Parecer de Revisão Independente — Agente 09 (Silas)
 
-Auditor (Agente 09): Silas — Auditor Independiente e Gate Final
+Auditor (Agente 09): Silas — Auditor Independente e Gate Final
 Runtime da Auditoria (Devin/Claude/etc): Devin subagent
 Agente Avaliado (ID): 65 — Lena (Voice Hub UI e Landing Inovadora)
 Runtime do Avaliado: Devin subagent
