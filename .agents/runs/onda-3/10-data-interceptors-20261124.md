@@ -56,4 +56,5 @@ Testes de integração (`tests/integration/**`, ex.: `cadence-*.test.ts`, `rls-t
 
 ## Commits
 
-(registrados abaixo após commit — ver `git log agente/10-data-interceptors-onda3`)
+- `c789435e0` — fix(onda-3): TimelineEvent auditavel + soft delete tolerante a models sem deletedBy
+- `238cd3f1d` — docs(onda-3): relatorio agente 10 + handoff defeito B schema pendente
