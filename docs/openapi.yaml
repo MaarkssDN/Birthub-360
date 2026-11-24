@@ -827,95 +827,6 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
 
-  /market-intelligence/companies:
-    get:
-      tags: [Market Intelligence]
-      summary: Pesquisa empresas do snapshot CNPJ publicado
-      description: Filtros, ordenação e paginação são executados no PostgreSQL. pageSize máximo 200.
-      parameters:
-        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
-        - {
-            name: pageSize,
-            in: query,
-            schema: { type: integer, minimum: 1, maximum: 200, default: 50 },
-          }
-        - { name: cnpj, in: query, schema: { type: string } }
-        - { name: razaoSocial, in: query, schema: { type: string, minLength: 2 } }
-        - { name: nomeFantasia, in: query, schema: { type: string, minLength: 2 } }
-        - { name: cnae, in: query, schema: { type: string } }
-        - {
-            name: cnaeScope,
-            in: query,
-            schema: { type: string, enum: [principal, all], default: all },
-          }
-        - { name: municipio, in: query, schema: { type: string } }
-        - { name: municipioIbge, in: query, schema: { type: string, pattern: '^\d{7}$' } }
-        - { name: uf, in: query, schema: { type: string, pattern: '^[A-Z]{2}$' } }
-        - {
-            name: situacaoCadastral,
-            in: query,
-            schema: { type: string, enum: [ATIVA, SUSPENSA, INAPTA, BAIXADA, NULA] },
-          }
-        - {
-            name: icpMinimo,
-            in: query,
-            schema: { type: string, enum: [MUITO_ALTO, ALTO, MEDIO, BAIXO, FORA_DO_ICP] },
-          }
-        - { name: matrizFilial, in: query, schema: { type: string, enum: [MATRIZ, FILIAL] } }
-        - { name: rntrc, in: query, schema: { type: boolean } }
-        - { name: porte, in: query, schema: { type: string } }
-        - { name: simples, in: query, schema: { type: string, enum: [SIM, NAO, NAO_INFORMADO] } }
-        - { name: mei, in: query, schema: { type: string, enum: [SIM, NAO, NAO_INFORMADO] } }
-        - { name: capitalSocialMin, in: query, schema: { type: number, minimum: 0 } }
-        - { name: capitalSocialMax, in: query, schema: { type: number, minimum: 0 } }
-        - {
-            name: sort,
-            in: query,
-            schema:
-              {
-                type: string,
-                enum: [razaoSocial, nomeFantasia, capitalSocial, icpScore, dataInicioAtividade],
-              },
-          }
-        - { name: order, in: query, schema: { type: string, enum: [asc, desc] } }
-      responses:
-        '200': { description: Página de empresas e metadados da competência }
-        '400': { description: Filtro inválido }
-        '503': { description: Nenhum snapshot READY publicado }
-  /market-intelligence/companies/{cnpj}:
-    get:
-      tags: [Market Intelligence]
-      summary: Abre o detalhe empresarial de um CNPJ
-      parameters:
-        - name: cnpj
-          in: path
-          required: true
-          schema: { type: string }
-      responses:
-        '200':
-          { description: 'Identificação, CNAE, endereço, contato público, ICP, RNTRC e proveniência' }
-        '400': { description: CNPJ inválido }
-        '404': { description: CNPJ ausente no snapshot publicado }
-  /market-intelligence/companies/{cnpj}/approve-to-pipeline:
-    parameters:
-      - name: cnpj
-        in: path
-        required: true
-        schema: { type: string }
-    post:
-      tags: [Market Intelligence]
-      summary: >-
-        Promove uma empresa do catálogo público de Market Intelligence para o pipeline comercial
-        do tenant (cria/vincula `Company` no CRM) — Agente 18, achado de auditoria: endpoint real,
-        sem entrada aqui.
-      responses:
-        '201':
-          description: Empresa aprovada e promovida ao pipeline
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DataEnvelope'
-        '400': { description: CNPJ inválido }
   /market-intelligence/data-quality-report:
     get:
       tags: [Market Intelligence]
@@ -4193,39 +4104,6 @@ paths:
                     items:
                       type: object
 
-  /intelligence/swarm/schedule:
-    post:
-      tags: [Intelligence]
-      summary: Disparo do ciclo do Swarm Scheduler para avaliar leads e acionar cadências (Onda 15)
-      description: >-
-        Executa o ciclo de agendamento do Enxame Comercial Autônomo, avaliando oportunidades
-        estagnadas e enfileirando ações multicanal via CadenceExecutionPort com rate-limiting e
-        respeito às janelas comerciais (handoff 13-para-17).
-      responses:
-        '200':
-          description: Ciclo do scheduler disparado com sucesso
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DataEnvelope'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-
-  /intelligence/swarm/status:
-    get:
-      tags: [Intelligence]
-      summary: Consulta status de execução e métricas do Swarm Scheduler (Onda 15)
-      description: >-
-        Retorna o estado operacional do agendador autônomo, última execução, organizações ativas
-        e volume de recomendações geradas.
-      responses:
-        '200':
-          description: Status operacional do Swarm Scheduler
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SwarmSchedulerStatusResponse'
-
   # ─────────────────── Intelligence Suite (catálogo de 16 ações de IA) ───────────────────
   # Montado em intelligence.routes.ts (`router.use('/suite', aiSuiteRouter)`), restrito a
   # ADMIN/GESTOR/CLOSER/SDR (ver src/features/intelligence/routes/ai-suite.routes.ts). A maioria
@@ -4680,78 +4558,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-
-  /agent/chat:
-    post:
-      tags: [Agent]
-      summary: Copiloto de vendas conversacional (modo padrão/objeções)
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ConversationRequest'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ConversationResponse'
-
-  /agent/groq:
-    post:
-      tags: [Agent]
-      summary: Assistente de consulta rápida (sem contexto de base interna)
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ConversationRequest'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ConversationResponse'
-
-  /agent/roleplay:
-    post:
-      tags: [Agent]
-      summary: Simulação de comprador B2B para treino de objeções
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ConversationRequest'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ConversationResponse'
-
-  /agent/qualification:
-    post:
-      tags: [Agent]
-      summary: Gera de 4 a 6 perguntas de qualificação (SPIN/BANT) para o vendedor
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ConversationRequest'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ConversationResponse'
 
   /agent/tts:
     post:
@@ -6823,50 +6629,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
 
-  /usage/quota:
-    get:
-      tags: [Usage]
-      summary: Consulta de quota de tokens, franquia mensal e telemetria FinOps (Onda 15)
-      description: >-
-        Retorna o teto mensal de tokens por tier de organização, consumo acumulado no mês corrente,
-        percentual utilizado, estado de alerta (Normal, Warning 80%, Crítico 100%) e indicador de
-        ativação de fallback para modelos econômicos (handoff 10-para-23). Restrito a ADMIN e GESTOR.
-      responses:
-        '200':
-          description: Métricas de quota e FinOps da organização
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TokenQuotaFinOps'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-
-  /usage/quota/alert:
-    post:
-      tags: [Usage]
-      summary: Configuração de limiares de alerta e ações preventivas de FinOps (Onda 15)
-      description: >-
-        Configura limiares de aviso (80% e 100%) e ações automatizadas (notificação por email/webhook,
-        ativação forçada de fallback para LLMs mais econômicos, ou throttling defensivo) para a franquia
-        de IA da organização. Restrito a ADMIN.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TokenQuotaAlertConfig'
-      responses:
-        '200':
-          description: Configuração de alerta de FinOps atualizada
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DataEnvelope'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-
   /gamification/leaderboard:
     get:
       tags: [Gamification]
@@ -7097,33 +6859,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-
-  /cadence/opt-outs/check:
-    get:
-      tags: [Cadence]
-      summary: Valida status de opt-out/supressão antes do disparo multicanal (Onda 15 / B-13)
-      description: >-
-        Interceptor pré-envio `checkOptOutStatus`. Garante que nenhum toque multicanal (WhatsApp, e-mail,
-        voz) é disparado para titular em lista de supressão, revogação de consentimento ou exclusão LGPD
-        Art. 18. Bloqueador B-13 e Regra Global §27.
-      parameters:
-        - name: contactId
-          in: query
-          required: true
-          schema: { type: string }
-        - name: channel
-          in: query
-          required: true
-          schema: { type: string, enum: [email, whatsapp, voice] }
-      responses:
-        '200':
-          description: Status de opt-out avaliado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CadenceOptOutCheckResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
 
@@ -7391,34 +7126,6 @@ paths:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
         '404':
           description: Execução não encontrada nesta organização
-
-  /cadence/runs/{id}/events:
-    parameters:
-      - $ref: '#/components/parameters/IdParam'
-    post:
-      tags: [Cadence]
-      summary: Notifica status de entrega e engajamento do toque de cadência (Onda 15 / CadenceExecutionPort)
-      description: >-
-        Recebe atualizações de status de entrega (`delivered`, `bounced`, `replied`, `failed`) emitidas pelos
-        despachantes multicanal (WhatsApp, e-mail, SDR Voice) para alimentar o Swarm e a máquina de estados do
-        run (handoff 13-para-17).
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CadenceTouchEventRequest'
-      responses:
-        '200':
-          description: Evento registrado com sucesso
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DataEnvelope'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
 
   /cadence/leads/{leadId}/schedule-meeting:
     post:
@@ -12261,70 +11968,6 @@ paths:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
         '404': { $ref: '#/components/responses/NotFound' }
-
-  /copiloto-ia/conversations/{id}/live-insights:
-    parameters:
-      - $ref: '#/components/parameters/IdParam'
-    post:
-      tags: [Copiloto IA]
-      summary: Ingestão de insight em tempo real (sentimento e objeção) durante chamada ativa (Onda 15)
-      description: >-
-        Emite eventos de detecção de sentimento, objeções comerciais e intenções de compra durante chamadas
-        LiveKit/WebRTC ativas. Alimenta o Live HUD do closer (<800ms) e o cálculo de risco de fechamento do deal
-        (handoffs 07-para-04 e 07-para-02).
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LiveCallInsight'
-      responses:
-        '201':
-          description: Live insight registrado e contorno sugerido calculado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DataEnvelope'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-    get:
-      tags: [Copiloto IA]
-      summary: Lista insights e objeções capturados em tempo real durante a chamada (Onda 15)
-      description: >-
-        Retorna a linha do tempo cronológica de insights em tempo real de uma conversa/ligação ativa ou encerrada.
-      responses:
-        '200':
-          description: Lista de live insights
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LiveCallInsightListResponse'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  /copiloto-ia/live-hud/{callId}:
-    parameters:
-      - name: callId
-        in: path
-        required: true
-        schema: { type: string }
-    get:
-      tags: [Copiloto IA]
-      summary: Snapshot em tempo real para o HUD flutuante do vendedor durante a chamada (Onda 15)
-      description: >-
-        Fornece o estado atualizado para o componente LiveCopilotHUD (sentimento predominante, objeção ativa,
-        sugestão de contorno recomendada e alerta de risco).
-      responses:
-        '200':
-          description: Estado do Live HUD
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LiveHudStatus'
-        '404':
-          $ref: '#/components/responses/NotFound'
 
   # ───────────────────────────── Webhooks (corpo cru) ─────────────────────────────
   # Montados em server.ts ANTES do express.json() global — corpo não é JSON parseado pelo
