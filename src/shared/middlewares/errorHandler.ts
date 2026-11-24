@@ -187,7 +187,8 @@ function sendError(
 ): void {
   const code = options?.code ?? codeForStatus(status);
   const codeSlug = code.toLowerCase().replace(/_/g, '-');
-  const instance = req.originalUrl || req.url || '/';
+  const rawInstance = req.originalUrl || req.url || '/';
+  const instance = rawInstance.split('?')[0] || '/';
 
   const body: ApiResponse = {
     success: false,

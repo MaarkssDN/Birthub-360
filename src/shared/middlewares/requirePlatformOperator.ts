@@ -3,7 +3,6 @@ import type { NextFunction, Request, Response } from 'express';
 import { env } from '../../config/env.js';
 
 const HEADER_NAME = 'x-platform-operator-token';
-const QUERY_NAME = 'operator_token';
 const COOKIE_NAME = 'platform_operator_token';
 // Só o suficiente para não obrigar o operador a repassar o token em toda navegação dentro do
 // BullBoard (que faz várias sub-requisições de AJAX sob /admin/queues/**) — curto o bastante para
@@ -76,12 +75,10 @@ export function requirePlatformOperator(req: Request, res: Response, next: NextF
   }
 
   const headerToken = req.headers[HEADER_NAME];
-  const queryToken = req.query[QUERY_NAME];
   const cookieToken = readRawCookie(req, COOKIE_NAME);
 
   const candidate =
     (typeof headerToken === 'string' && headerToken) ||
-    (typeof queryToken === 'string' && queryToken) ||
     (typeof cookieToken === 'string' && cookieToken) ||
     null;
 
@@ -90,8 +87,9 @@ export function requirePlatformOperator(req: Request, res: Response, next: NextF
     return;
   }
 
-  // Renova/seta o cookie só quando o token chegou por header ou query — evita reescrever o
+  // Renova/seta o cookie só quando o token chegou por header — evita reescrever o
   // cookie a cada requisição quando ele já é a própria fonte da validação.
+  // Query parameter ?operator_token= foi proibido para evitar vazamento em logs/Referer/histórico.
   if (candidate !== cookieToken) {
     res.cookie(COOKIE_NAME, candidate, {
       httpOnly: true,
