@@ -4,10 +4,29 @@
 **Autoridade:** Orquestrador Humano  
 **Coordenador Global:** Agente 00 — Astra  
 **Repositório Canônico:** `C:\Github\Birthub-360`  
-**Worktree do Coordenador:** `C:\Github\Birthub-360-worktrees\dem-20261123-onda3\wt-00-integracao` (`integracao/onda-3-dem20261123` @ `027f42b18`)  
+**Worktree do Coordenador:** `C:\Github\Birthub-360-worktrees\dem-20261123-onda3\wt-00-integracao` (`integracao/onda-3-dem20261123` @ `871d4b16d`)  
 **Baseline Homologada:** `integracao/onda-2-dem20261123` @ `32d07c3750c370b63da8b720019413c9a40e0e68`  
-**Data/Hora de Consolidação:** 2026-11-24 12:46 BRT  
+**Data/Hora de Consolidação:** 2026-11-24 14:06 BRT  
 **Postura de Release:** **NO-GO** (mantido até homologação integral e decisão humana)
+
+---
+
+## 0. Consolidação da Onda 3 (Rodadas 1 e 2) — 17/17 Entregas Auditadas e Integradas (`871d4b16d`)
+
+- **Rodada 1 (Lotes 1, 2 e 3 + Ressincronização Postman):**
+  - `20 — Ciro` (`23b1d31cd` → merge `ff91eb049`, parecer `APROVADO`)
+  - `45 — Otto` (`8e2c0d1e0` → merge `df731231f`, parecer `APROVADO`; Rodada 2 não-autorizada `2bf6ffe31` `REPROVADA` por colisão de ownership com `41 — Cadu`)
+  - `96 — Nera` (`dd8351072` → merge `63f0f1725`, parecer `APROVADO`)
+  - `42 — Lívia` (`47846b442` → merge `928cf1b3e`, parecer `APROVADO`)
+  - `34 — Ari` (`27924c7cf` → merge `013149429`, parecer `APROVADO`)
+  - `21 — Zara` (`2ea541871` + fix `af91a3e0d` → merges `f8e4a86b0` e `c7afe10db`, parecer `APROVADO`)
+  - `65 — Lena` (`b8a39713e` → merge `4cddf9eb6`, parecer `APROVADO`)
+  - `99 — Vito` (`97856cb13` → merge `c3a3f33c3`, parecer `APROVADO`)
+- **Rodada 2 (Levas 4A, 4B, 5A e 5B):**
+  - **Leva 4A (`c7afe10db`):** `22 — Hugo` (`d82f93e42` → merge `2c9770b7a`, `APROVADO` — diagnóstico/handoffs), `97 — Rocco` (`33f6cf1e7` → merge `c6218ce97`, `APROVADO` — código + reconciliação de teste com 03), `21 — Zara` (`af91a3e0d` → merge `c7afe10db`, `APROVADO` — resync spec Postman). Gate: 28/28 testes RBAC/Auth verdes + `verify:openapi-drift` 0 deriva.
+  - **Leva 4B (`49d1f38cd`):** `31 — Noa` (`8865247c7` → merge `c3626b3f8`, `APROVADO` — código `MainLayout.tsx` + handoff), `44 — Lola` (`aeb9004f4` → merge `49d1f38cd`, `APROVADO` — diagnóstico/handoffs). Gate: 6/6 testes `SkipLink.test.tsx` verdes.
+  - **Leva 5A (`b54b59fee`):** `10 — Mara` (`d13f08892` → merge `9d9bfca2f`, `APROVADO` — `TimelineEvent` em `AUDITABLE_MODELS` + `buildSoftDeleteData` via DMMF), `23 — Pina` (`82a50d0c9` → merge `b54b59fee`, `APROVADO` — dedup outbound queues + remoção `idempotencyManager.ts`). Gate: 56/56 testes unitários (`prisma-interceptors` + `outboundPushDedup`) verdes.
+  - **Leva 5B (`871d4b16d`):** `40 — Ravi` (`f3fc2f203` → merge `930ee7b7b`, `APROVADO` — remoção `role="button"` órfão em `crm/components/KanbanBoard.tsx`), `41 — Cadu` (`59738d5cf` → merge `732d7fd08`, `APROVADO` — `activities` data civil, `leadOwnership` anti-IDOR cross-tenant e `feed.ics` self-only), `43 — Amon` (`2fc7570d0` → merge `d737b6f62`, `APROVADO` — `tasks.routes.ts` authz e prevenção de IDOR no prospecting outbound), `09 — Silas` (`e426979a7` → merge `871d4b16d`, todos os pareceres da Onda 3 incorporados). Gate: 37/37 testes unitários verdes + `npx tsc --noEmit` exit 0.
 
 ---
 
