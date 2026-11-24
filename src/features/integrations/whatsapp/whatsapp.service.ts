@@ -10,6 +10,7 @@ import makeWASocket, {
 } from '@whiskeysockets/baileys';
 import pino from 'pino';
 import qrcode from 'qrcode';
+import { whatsAppAntiBanThrottler } from '../../../lib/integrations/whatsapp/baileys.client.js';
 import { requestContext } from '../../../lib/async-context.js';
 import { withTimeout } from '../../../lib/http.js';
 import { logger } from '../../../lib/logger.js';
@@ -476,6 +477,22 @@ export async function sendWhatsAppMessage(
   const result = results?.[0];
   if (!result?.exists) {
     throw new AppError('O número fornecido não está registrado no WhatsApp.', 422);
+  }
+
+  // Anti-ban (B-08, Agente 56): delay humanizado serializado por organização antes do disparo
+  // + sinal de "digitando..." — sem isso, envios em rajada via Baileys têm perfil robótico e o
+  // número arrisca bloqueio. O throttler é no-op no 1º disparo da org e serializa chamadas
+  // concorrentes da MESMA org (ver WhatsAppAntiBanThrottler); orgs diferentes seguem paralelas.
+  // Cobre tanto o envio direto do worker quanto o reenviado via fila — todos convergem aqui.
+  await whatsAppAntiBanThrottler.throttle(organizationId);
+  try {
+    await withTimeout(
+      sock.sendPresenceUpdate('composing', result.jid),
+      BAILEYS_CALL_TIMEOUT_MS,
+    );
+  } catch (err: any) {
+    // Presença é cosmética — uma falha aqui nunca pode impedir o envio da mensagem em si.
+    logger.warn({ err, organizationId }, '[whatsapp] Falha ao enviar presença (composing)');
   }
 
   try {
