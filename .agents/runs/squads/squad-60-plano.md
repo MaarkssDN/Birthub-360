@@ -23,6 +23,8 @@
 
 ## 2. Decisões Pendentes — Documento de Decisão para o Orquestrador Humano
 
+> **Documento canônico atualizado (v2, 2026-11-24):** `.agents/runs/squads/squad-60-decisoes-voicehub.md` — D1–D3 com texto técnico completo e evidências; preparação técnica da migração autorizada pelo Orquestrador §9 em `.agents/runs/squads/squad-60-migracao-voicehub.md`. O esboço original segue abaixo para histórico.
+
 > **NÃO EXECUTAR sem aprovação humana.** Consolidado pela coordenação do squad; evidências verificadas na base `93e82c220`.
 
 ### D1 — Reabertura do `legacyModuleGate` para `/api/voice-hub/*` (`src/bootstrap/routes.ts:211`)
