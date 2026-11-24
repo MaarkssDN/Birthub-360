@@ -83,6 +83,19 @@ Detalhes e pedido de contestação: `.agents/handoffs/onda-3/21-para-00-paths-fa
   Isso é triagem nova — recomendo baseline/`--exclude-checks` progressivo
   (ver handoff 18→08 backlog-5).
 
+## 4.1 Commits preexistentes no branch (execução paralela do 21)
+
+Durante a sessão, o branch recebeu dois commits de outra execução da mesma
+missão (ONDA3-21), que este trabalho complementa sem conflito:
+
+- `ae5988377` — `security: []` em 13 operações públicas/webhook + ressincronia
+  do spec Postman (`postman/specs/.../openapi.yaml`).
+- `e73b17c91` — run report `.agents/runs/onda3-21-api-contracts.md` + handoff
+  `21-para-08-teste-conformidade-security-openapi.md`.
+
+Este relatório (`21-relatorio.md`) cobre o diagnóstico Schemathesis/CI e a
+limpeza de paths fantasma — frentes não abordadas por aquela execução.
+
 ## 5. Arquivos alterados
 
 - `docs/openapi.yaml` (modificado)
