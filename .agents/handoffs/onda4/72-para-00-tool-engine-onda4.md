@@ -54,7 +54,7 @@ Auditoria encontrou a causa raiz estrutural:
   → **12/12 passou**.
 - Regressão: `toolEngineTimeout.test.ts` + `HttpToolExecutor.test.ts` → **16/16 passou**.
 - `npx tsc --noEmit` → limpo (exit 0). `npx biome lint src/lib/ai/tools/` → limpo.
-- SHAs: (preencher após commit)
+- SHAs: commit `a6807f9f6` (branch `agente/72-tool-engine-onda4`, base `32d07c375`)
 
 ## Achados fora do ownership → handoffs
 
