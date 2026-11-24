@@ -9,12 +9,17 @@ import {
 } from '../../../lib/enumMap.js';
 import { prisma } from '../../../lib/prisma.js';
 import type { ActivityStatus, ActivityType } from '../../../lib/zod.js';
+import {
+  civilDayRangeInZoneToUtcIso,
+  normalizeActivityDateToUtcIso,
+} from '../../crm/tasks/calendar.utils.js';
 import type {
   Activity,
   ActivityListFilters,
   ActivityPage,
   ActivityRepository,
 } from '../domain/Activity.js';
+import { assertLeadInOrganization } from './leadScopeGuard.js';
 
 function serializeActivity<
   T extends {
@@ -46,6 +51,25 @@ function serializeActivity<
   };
 }
 
+/**
+ * Filtro `?date=`: date-only (`YYYY-MM-DD`) cobre o dia civil inteiro no fuso do usuário
+ * (America/Sao_Paulo) — antes usava `setHours` no fuso do SERVIDOR, que em produção (UTC)
+ * deslocava a janela em -3h e podia excluir/incluir atividades da borda do dia. Formatos
+ * com hora/offset mantêm o comportamento anterior (dia do servidor).
+ */
+function activityDateFilter(dateStr: string): Prisma.ActivityWhereInput['date'] {
+  const trimmed = dateStr.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const { start, end } = civilDayRangeInZoneToUtcIso(trimmed);
+    return { gte: new Date(start), lt: new Date(end) };
+  }
+  const searchDate = new Date(trimmed);
+  return {
+    gte: new Date(new Date(searchDate).setHours(0, 0, 0, 0)),
+    lt: new Date(new Date(searchDate).setHours(23, 59, 59, 999)),
+  };
+}
+
 export class PrismaActivityRepository implements ActivityRepository {
   async findAllPaginated(
     organizationId: string,
@@ -56,11 +80,7 @@ export class PrismaActivityRepository implements ActivityRepository {
   ): Promise<ActivityPage> {
     const where: Prisma.ActivityWhereInput = { organizationId, deletedAt: null };
     if (dateStr) {
-      const searchDate = new Date(dateStr);
-      where.date = {
-        gte: new Date(new Date(searchDate).setHours(0, 0, 0, 0)),
-        lt: new Date(new Date(searchDate).setHours(23, 59, 59, 999)),
-      };
+      where.date = activityDateFilter(dateStr);
     }
     if (filters.leadId) where.leadId = filters.leadId;
     if (filters.status)
@@ -101,11 +121,7 @@ export class PrismaActivityRepository implements ActivityRepository {
   async findAllWithFilters(organizationId: string, dateStr?: string): Promise<Activity[]> {
     const where: Prisma.ActivityWhereInput = { organizationId, deletedAt: null };
     if (dateStr) {
-      const searchDate = new Date(dateStr);
-      where.date = {
-        gte: new Date(searchDate.setHours(0, 0, 0, 0)),
-        lt: new Date(searchDate.setHours(23, 59, 59, 999)),
-      };
+      where.date = activityDateFilter(dateStr);
     }
     const activities = await prisma.activity.findMany({
       where,
@@ -124,6 +140,13 @@ export class PrismaActivityRepository implements ActivityRepository {
       date: string | Date;
     },
   ): Promise<Activity> {
+    // leadId precisa ser do mesmo tenant e não soft-deletado — sem isso a Activity gravava
+    // com organizationId próprio mas o TimelineEvent (policy por lead do tenant) falhava,
+    // derrubando a $transaction inteira com 500 ou deixando estado inconsistente.
+    await assertLeadInOrganization(organizationId, data.leadId);
+    // date-only (YYYY-MM-DD) é interpretada como dia civil no fuso do usuário, não UTC —
+    // senão a atividade criada pela Agenda caía no dia anterior (off-by-one de fuso).
+    const activityDate = new Date(normalizeActivityDateToUtcIso(data.date));
     // biome-ignore lint/plugin/no-prisma-tx-escape: uso legado congelado no baseline (parecer 15 #40 L1); migrar para runInTransaction
     const [activity] = await prisma.$transaction([
       prisma.activity.create({
@@ -134,14 +157,14 @@ export class PrismaActivityRepository implements ActivityRepository {
             data.status,
           ) as unknown as Prisma.ActivityCreateInput['status'],
           organizationId,
-          date: new Date(data.date),
+          date: activityDate,
           lead: undefined,
         } as unknown as Prisma.ActivityCreateInput,
       }),
       prisma.timelineEvent.create({
         data: {
           type: 'activity',
-          description: `Atividade '${data.type}' agendada para ${new Date(data.date).toLocaleDateString()}`,
+          description: `Atividade '${data.type}' agendada para ${activityDate.toLocaleDateString()}`,
           leadId: data.leadId,
         },
       }),
@@ -159,11 +182,16 @@ export class PrismaActivityRepository implements ActivityRepository {
       date?: string | Date;
     },
   ): Promise<Activity> {
-    const currentActivity = await prisma.activity.findFirst({ where: { id, organizationId } });
+    // deletedAt: null impede "ressuscitar"/atualizar atividade soft-deletada (ex.: snooze).
+    const currentActivity = await prisma.activity.findFirst({
+      where: { id, organizationId, deletedAt: null },
+    });
     if (!currentActivity) throw new Error('Activity not found');
+    // Trocar o lead também exige lead do mesmo tenant (mesma brecha do create).
+    if (data.leadId) await assertLeadInOrganization(organizationId, data.leadId);
 
     const updateData: Prisma.ActivityUpdateInput = { ...data } as Prisma.ActivityUpdateInput;
-    if (data.date) updateData.date = new Date(data.date);
+    if (data.date) updateData.date = new Date(normalizeActivityDateToUtcIso(data.date));
     if (data.type)
       updateData.type = toPrismaActivityType(
         data.type,
