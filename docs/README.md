@@ -21,6 +21,9 @@ do controle de versão em 22/08/2026; ver [`docs/REMOVED-DOCS.md`](REMOVED-DOCS.
   padrão, ou em qualquer ambiente com `EXPOSE_API_DOCS=true`). Verificação automatizada de deriva
   estrutural entre este documento e as rotas reais: `npm run verify:openapi-drift` (ver
   `scripts/verify-openapi-drift.ts`).
+- [API — índice de contratos](api/README.md) — política de versionamento/depreciação
+  ([API_VERSIONING_POLICY.md](api/API_VERSIONING_POLICY.md), ADR-011) e changelog de
+  contrato ([CHANGELOG.md](api/CHANGELOG.md)).
 
 ## Arquitetura
 

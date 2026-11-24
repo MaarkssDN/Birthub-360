@@ -45,6 +45,12 @@ info:
       válida **e** papel `ADMIN` (`authenticateToken, requireTenant, requireRole(['ADMIN'])`).
       Expõe jobs de todas as organizações (as filas são globais, não por tenant) — risco residual
       documentado em `docs/security/SECURITY_GUIDE.md`.
+
+    **Versionamento**: `info.version` é a versão de contrato publicada (semver de API).
+    Todas as rotas sob `/api/*` constituem a "API v1" — não existe prefixo `/api/vN`.
+    Política completa de versão e depreciação em `docs/api/API_VERSIONING_POLICY.md`;
+    changelog de contrato em `docs/api/CHANGELOG.md`. Operações a descontinuar são
+    marcadas `deprecated: true` aqui e anunciadas no changelog antes da remoção.
   contact:
     name: Birth Hub 360
     email: comercial@birthhub360.com.br
@@ -12814,6 +12820,25 @@ components:
       in: path
       required: true
       schema: { type: string }
+
+  headers:
+    Deprecation:
+      description: >-
+        Header RFC 8594 emitido em respostas de endpoints/versões deprecadas.
+        Formato `@<unix-timestamp>` (ou HTTP-date). Presente somente quando o
+        middleware de depreciação estiver montado — ver
+        `docs/api/API_VERSIONING_POLICY.md` §4.
+      schema: { type: string, example: '@1767225600' }
+    Sunset:
+      description: >-
+        Header RFC 8594/9745 com a data HTTP após a qual o endpoint deprecado
+        pode ser removido (responder 410/404). Só aparece junto de `Deprecation`.
+      schema: { type: string, example: 'Thu, 15 Jan 2027 00:00:00 GMT' }
+    LinkDeprecation:
+      description: >-
+        Header `Link` com `rel="deprecation"` apontando o endpoint/documento
+        substituto, quando houver um direto.
+      schema: { type: string, example: '</api/new-resource>; rel="deprecation"' }
 
   responses:
     AccountIntelligenceBadRequest:

@@ -5,6 +5,15 @@ import { attachSseKeepAlive } from '../../lib/sseKeepAlive.js';
 
 const clients = new Set<{ id: string; orgId: string; res: Response }>();
 
+/**
+ * Backpressure (MEL-47, Onda 6 — ADR-011): `res.write()` retorna false quando o socket está
+ * lento, mas o Node continua aceitando writes e bufferizando no heap do processo — um cliente
+ * que para de ler (aba em background, rede ruim) transformaria cada notificação em memória
+ * retida para sempre. Acima deste limite o cliente é desconectado; o `EventSource` do browser
+ * reconecta sozinho e o `req.on('close')` abaixo faz a limpeza do Set.
+ */
+const MAX_SSE_BUFFERED_BYTES = 1024 * 1024; // 1 MiB
+
 type AppNotification =
   | {
       type: 'voice-qualified';
@@ -21,10 +30,19 @@ type AppNotification =
     };
 
 function deliverLocally(payload: AppNotification) {
+  const frame = `data: ${JSON.stringify(payload)}\n\n`;
   for (const client of clients) {
-    if (client.orgId === payload.organizationId) {
-      client.res.write(`data: ${JSON.stringify(payload)}\n\n`);
+    if (client.orgId !== payload.organizationId) continue;
+    if (client.res.writableLength > MAX_SSE_BUFFERED_BYTES) {
+      logger.warn(
+        { clientId: client.id, orgId: client.orgId, buffered: client.res.writableLength },
+        'Cliente SSE com buffer acima do limite — conexão descartada (backpressure).',
+      );
+      client.res.destroy();
+      clients.delete(client);
+      continue;
     }
+    client.res.write(frame);
   }
 }
 
