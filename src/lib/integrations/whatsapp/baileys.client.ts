@@ -30,6 +30,12 @@ export function calculateAntiBanDelay(
 
 export class WhatsAppAntiBanThrottler {
   private organizationRecords = new Map<string, AntiBanThrottleRecord>();
+  // Fila por organização: o worker de comandos roda com concurrency > 1 (BullMQ), então duas
+  // chamadas `throttle()` para a MESMA org podem chegar em paralelo. Sem serialização, ambas
+  // leem o mesmo `lastDispatchedAt` e nenhuma dorme — o anti-ban seria contornado exatamente no
+  // cenário de rajada que ele existe para prevenir. Cada org tem sua própria cadeia de promises;
+  // orgs diferentes continuam paralelas entre si.
+  private organizationChains = new Map<string, Promise<unknown>>();
 
   /**
    * Pausa a execução com o delay especificado.
@@ -42,7 +48,25 @@ export class WhatsAppAntiBanThrottler {
    * Aplica throttling com jitter humanizado antes do próximo disparo para a organização especificada.
    * Retorna os milissegundos esperados.
    */
-  public async throttle(organizationId: string, customDelayMs?: number): Promise<number> {
+  public throttle(organizationId: string, customDelayMs?: number): Promise<number> {
+    const previous = this.organizationChains.get(organizationId) ?? Promise.resolve();
+    const run = previous.then(() => this.throttleSerialized(organizationId, customDelayMs));
+    // A cauda da cadeia nunca rejeita: uma falha inesperada numa chamada não pode travar as
+    // próximas (o erro continua propagando para quem chamou `throttle`).
+    this.organizationChains.set(
+      organizationId,
+      run.then(
+        () => undefined,
+        () => undefined,
+      ),
+    );
+    return run;
+  }
+
+  private async throttleSerialized(
+    organizationId: string,
+    customDelayMs?: number,
+  ): Promise<number> {
     const record = this.organizationRecords.get(organizationId);
     const now = Date.now();
     const plannedDelay = customDelayMs ?? calculateAntiBanDelay();
