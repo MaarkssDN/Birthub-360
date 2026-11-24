@@ -13,6 +13,9 @@ vi.mock('@/lib/prisma', () => ({
       update: vi.fn(),
       delete: vi.fn(),
     },
+    lead: {
+      findFirst: vi.fn(),
+    },
     timelineEvent: {
       create: vi.fn(),
     },
@@ -24,6 +27,9 @@ vi.mock('@/lib/prisma', () => ({
 describe('ActivityService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default: lead existe no tenant (assertLeadInOrganization passa). Testes de
+    // rejeição cross-tenant sobrescrevem com mockResolvedValue(null).
+    vi.mocked(prisma.lead.findFirst).mockResolvedValue({ id: 'lead-1' } as never);
   });
 
   const mockActivity = {
@@ -40,7 +46,8 @@ describe('ActivityService', () => {
     vi.mocked(prisma.activity.count).mockResolvedValue(1);
     const result = await activityService.findAll('test-org-id');
     expect(prisma.activity.findMany).toHaveBeenCalledWith({
-      where: { organizationId: 'test-org-id' },
+      // deletedAt: null — alinhado ao repositório: soft-deletadas não voltam pro serviço legado.
+      where: { organizationId: 'test-org-id', deletedAt: null },
       include: { lead: { include: { company: true, contact: true } } },
       orderBy: { date: 'asc' },
       skip: 0,
@@ -59,7 +66,11 @@ describe('ActivityService', () => {
     const result = await activityService.findAll('test-org-id', dateStr);
     expect(prisma.activity.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { date: expect.any(Object), organizationId: 'test-org-id' },
+        where: expect.objectContaining({
+          date: expect.any(Object),
+          organizationId: 'test-org-id',
+          deletedAt: null,
+        }),
       }),
     );
     expect(result.data).toEqual([mockActivity]);
@@ -90,7 +101,7 @@ describe('ActivityService', () => {
     );
   });
 
-  it('should create an activity and a timeline event', async () => {
+  it('should create an activity and a timeline event in a single transaction', async () => {
     const input = {
       type: 'Ligação' as const,
       owner: 'John',
@@ -100,9 +111,47 @@ describe('ActivityService', () => {
     };
     vi.mocked(prisma.activity.create).mockResolvedValue(mockActivity as never);
     const result = await activityService.create('test-org-id', input);
+    // Activity + TimelineEvent vão na MESMA $transaction — antes eram awaits soltos e uma
+    // falha no timeline deixava a Activity gravada sem evento (estado inconsistente).
+    expect(prisma.$transaction).toHaveBeenCalled();
     expect(prisma.activity.create).toHaveBeenCalled();
     expect(prisma.timelineEvent.create).toHaveBeenCalled();
     expect(result).toEqual(mockActivity);
+  });
+
+  it('should interpret date-only (YYYY-MM-DD) as civil day in the user timezone, not UTC', async () => {
+    const input = {
+      type: 'Ligação' as const,
+      owner: 'John',
+      date: '2026-11-23',
+      leadId: 'lead-1',
+      status: 'Pendente' as const,
+    };
+    vi.mocked(prisma.activity.create).mockResolvedValue(mockActivity as never);
+    await activityService.create('test-org-id', input);
+    // Regressão off-by-one: '2026-11-23' NÃO pode virar 2026-11-23T00:00:00Z (que em
+    // America/Sao_Paulo renderiza 22/11). O correto é 03:00Z (meia-noite local).
+    expect(prisma.activity.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ date: new Date('2026-11-23T03:00:00.000Z') }),
+      }),
+    );
+  });
+
+  it('should reject leadId from another tenant (or soft-deleted) before writing', async () => {
+    vi.mocked(prisma.lead.findFirst).mockResolvedValue(null);
+    const input = {
+      type: 'Ligação' as const,
+      owner: 'John',
+      date: '2024-01-01T10:00:00Z',
+      leadId: 'lead-de-outro-tenant',
+      status: 'Pendente' as const,
+    };
+    await expect(activityService.create('test-org-id', input)).rejects.toThrow(
+      /não encontrado nesta organização/,
+    );
+    expect(prisma.activity.create).not.toHaveBeenCalled();
+    expect(prisma.timelineEvent.create).not.toHaveBeenCalled();
   });
 
   // Achado da auditoria de forecast/BI (Onda 7): ferramenta de IA em
@@ -154,11 +203,29 @@ describe('ActivityService', () => {
     ).rejects.toThrow('Activity not found');
   });
 
-  it('should delete an activity', async () => {
+  it('should delete an activity with soft delete (deletedAt), not hard delete', async () => {
     vi.mocked(prisma.activity.findFirst).mockResolvedValue(mockActivity as never);
+    vi.mocked(prisma.activity.update).mockResolvedValue({
+      ...mockActivity,
+      deletedAt: new Date(),
+    } as never);
     await activityService.delete('test-org-id', '1');
-    expect(prisma.activity.delete).toHaveBeenCalledWith({
-      where: { id: '1', organizationId: 'test-org-id' },
-    });
+    // Soft delete preserva a trilha (retenção/LGPD) e some das leituras — findAll e
+    // findRange agora filtram deletedAt: null. Hard delete divergía do repositório.
+    expect(prisma.activity.delete).not.toHaveBeenCalled();
+    expect(prisma.activity.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: '1', organizationId: 'test-org-id' },
+        data: { deletedAt: expect.any(Date) },
+      }),
+    );
+  });
+
+  it('should not delete an already soft-deleted activity', async () => {
+    vi.mocked(prisma.activity.findFirst).mockResolvedValue(null);
+    await expect(activityService.delete('test-org-id', '1')).rejects.toThrow(
+      'Activity not found',
+    );
+    expect(prisma.activity.update).not.toHaveBeenCalled();
   });
 });

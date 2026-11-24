@@ -15,6 +15,9 @@ vi.mock('@/lib/prisma', () => ({
   prisma: {
     activity: { findFirst: vi.fn(), update: vi.fn() },
     timelineEvent: { create: vi.fn() },
+    // update() passou a gravar Activity + TimelineEvent na mesma $transaction
+    // (padrão do repositório) — o mock resolve as ops como Promise.all.
+    $transaction: vi.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
   },
 }));
 

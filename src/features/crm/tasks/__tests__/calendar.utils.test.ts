@@ -132,9 +132,7 @@ describe('normalizeActivityDateToUtcIso', () => {
     expect(() => normalizeActivityDateToUtcIso(new Date('lixo'))).toThrow(
       'Data de atividade inválida',
     );
-    expect(() => normalizeActivityDateToUtcIso('não é data')).toThrow(
-      'Data de atividade inválida',
-    );
+    expect(() => normalizeActivityDateToUtcIso('não é data')).toThrow('Data de atividade inválida');
     expect(() => normalizeActivityDateToUtcIso('2026-02-30')).toThrow(
       'Data de tarefa inexistente no calendário',
     );
