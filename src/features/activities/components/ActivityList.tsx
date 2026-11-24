@@ -36,6 +36,7 @@ import type { PaletteIntent } from '../../../lib/paletteIntent.js';
 import { SoundFX } from '../../../lib/soundEffects.js';
 import { toast } from '../../../lib/toast.js';
 import type { Activity, Lead } from '../../../types/index.js';
+import { localDateOnlyToIso, toLocalDateInputValue } from '../domain/activityDate.js';
 
 const TYPE_ICONS: Record<string, React.JSX.Element> = {
   ligação: <Phone className="w-4 h-4" />,
@@ -205,7 +206,8 @@ export function ActivityList() {
 
   const [form, setForm] = useState<NewActivityForm>({
     type: 'Ligação',
-    date: new Date().toISOString().split('T')[0],
+    // toISOString().split('T')[0] escorregava um dia em fusos negativos à noite (vira UTC).
+    date: toLocalDateInputValue(new Date()),
     time: '',
     owner: currentUser?.name || '',
     observations: '',
@@ -262,7 +264,7 @@ export function ActivityList() {
     targetDate.setDate(targetDate.getDate() + tpl.suggestedOffsetDays);
     setForm({
       type: tpl.type,
-      date: targetDate.toISOString().split('T')[0],
+      date: toLocalDateInputValue(targetDate),
       time: tpl.defaultTime,
       owner: currentUser?.name || form.owner,
       observations: `[${tpl.title}] ${tpl.description}`,
@@ -303,7 +305,10 @@ export function ActivityList() {
     try {
       await createActivity({
         type: form.type as import('../../../lib/zod.js').ActivityType,
-        date: form.date,
+        // `form.date` é YYYY-MM-DD do <input type="date"> — enviá-lo cru virava meia-noite UTC
+        // no backend e a atividade caía no dia anterior em America/Sao_Paulo. Envia o instante
+        // da meia-noite NO FUSO LOCAL do usuário.
+        date: localDateOnlyToIso(form.date),
         time: form.time || null,
         owner: form.owner || currentUser?.name || 'Vendedor',
         observations: form.observations || null,
@@ -313,7 +318,7 @@ export function ActivityList() {
       setIsFormOpen(false);
       setForm({
         type: 'Ligação',
-        date: new Date().toISOString().split('T')[0],
+        date: toLocalDateInputValue(new Date()),
         time: '',
         owner: currentUser?.name || '',
         observations: '',
@@ -400,12 +405,14 @@ export function ActivityList() {
             {/* Baixar Agenda (.ics) — /api/activities/feed.ics exige sessão autenticada (cookie);
                 um app externo fazendo *subscribe* por URL nunca envia esse cookie, então copiar o
                 link e prometer "sincronizar" funcionava só na primeira busca manual, nunca de
-                verdade como assinatura periódica. Ver mesma correção em Calendar.tsx. */}
+                verdade como assinatura periódica. Ver mesma correção em Calendar.tsx.
+                O servidor ignora `?owner=` (feed é sempre do usuário autenticado — ver
+                ActivityController.getIcalFeed), então o download vai sem query string. */}
             <button
               type="button"
               onClick={() => {
                 SoundFX.play('confirm');
-                const icsUrl = `${window.location.origin}/api/activities/feed.ics${currentUser?.name ? `?owner=${encodeURIComponent(currentUser.name)}` : ''}`;
+                const icsUrl = `${window.location.origin}/api/activities/feed.ics`;
                 downloadFile(icsUrl, 'agenda.ics').catch((err) => {
                   toast.error(err instanceof Error ? err.message : 'Falha ao baixar a agenda.');
                 });
@@ -489,13 +496,18 @@ export function ActivityList() {
               const typeColor = TYPE_COLORS[typeKey] ?? 'bg-surface-2 text-ink-2 border-line';
               const statusStyle = STATUS_STYLES[a.status] ?? 'bg-surface-2 text-ink-2 border-line';
               const isDone = a.status === 'Concluída';
-              const formattedDate = a.date
-                ? new Date(`${a.date}T12:00:00`).toLocaleDateString('pt-BR', {
-                    weekday: 'short',
-                    day: '2-digit',
-                    month: 'short',
-                  })
-                : '—';
+              // `a.date` chega como ISO completo do banco — `new Date(`${a.date}T12:00:00`)`
+              // gerava "Invalid Date" em todo card. O instante gravado já é a meia-noite local
+              // do dia combinado, então formatar direto no fuso do navegador dá o dia certo.
+              const activityInstant = a.date ? new Date(a.date) : null;
+              const formattedDate =
+                activityInstant && !Number.isNaN(activityInstant.getTime())
+                  ? activityInstant.toLocaleDateString('pt-BR', {
+                      weekday: 'short',
+                      day: '2-digit',
+                      month: 'short',
+                    })
+                  : '—';
 
               return (
                 <motion.div

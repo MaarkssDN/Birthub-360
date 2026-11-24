@@ -108,8 +108,16 @@ export class ActivityController {
       const user = (req as AuthRequest).user;
       const orgId = user.organizationId;
       const userName = (user as unknown as { name?: string }).name || user.email;
-      const { owner } = req.query as { owner?: string };
-      const ics = await this.activityUseCases.generateIcalFeed(orgId, owner || userName);
+      // `?owner=` era string livre: qualquer autenticado exportava a agenda de qualquer colega
+      // (vazamento cross-user, handoff 45 item 4). O feed passa a ser sempre a agenda do
+      // próprio usuário autenticado — parâmetro ignorado de propósito.
+      if (!userName) {
+        res
+          .status(400)
+          .json({ success: false, error: 'Usuário sem nome/e-mail para gerar a agenda.' });
+        return;
+      }
+      const ics = await this.activityUseCases.generateIcalFeed(orgId, userName);
       res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
       res.setHeader('Content-Disposition', 'attachment; filename="agenda.ics"');
       res.send(ics);

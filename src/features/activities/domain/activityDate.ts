@@ -169,6 +169,28 @@ export function civilDayRangeUtc(
 }
 
 /**
+ * Dia civil (`YYYY-MM-DD`) em que um instante cai dentro do `timeZone` — usado para reconstruir
+ * "o dia que o usuário combinou" a partir do instante gravado (ex.: feed iCal, onde `time` é
+ * horário de parede separado do `date`).
+ */
+export function civilDateInZone(
+  instant: Date,
+  timeZone: string = ACTIVITY_DEFAULT_TIME_ZONE,
+): string {
+  if (Number.isNaN(instant.getTime())) {
+    throw new AppError('Instante inválido para conversão de fuso.', 400);
+  }
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(instant);
+  const get = (type: string): string => parts.find((p) => p.type === type)?.value ?? '';
+  return `${get('year')}-${get('month')}-${get('day')}`;
+}
+
+/**
  * `YYYY-MM-DD` → instante ISO da meia-noite NO FUSO LOCAL do navegador (frontend).
  * É o que o `<input type="date">` significa para o usuário: o dia que ele vê no próprio
  * calendário, não "meia-noite UTC" nem "meia-noite em America/Sao_Paulo" fixo.
