@@ -2,14 +2,14 @@ import { describe, expect, it, vi } from 'vitest';
 import type {
   DatabaseMutationRunner,
   VoiceCommandPayload,
-} from '../../../../src/features/voice-hub/commands/command.processor.js';
-import { VoiceCommandConfirmationManager } from '../../../../src/features/voice-hub/commands/confirmation.manager.js';
-import { parseVoiceTranscript } from '../../../../src/features/voice-hub/commands/intent.parser.js';
-import type { VoiceCommandActor } from '../../../../src/features/voice-hub/commands/permission.guard.js';
+} from '../command.processor.js';
+import { VoiceCommandConfirmationManager } from '../confirmation.manager.js';
+import { parseVoiceTranscript } from '../intent.parser.js';
+import type { VoiceCommandActor } from '../permission.guard.js';
 import {
   createVoiceCommandRouter,
   type VoiceCommandExecutorRegistry,
-} from '../../../../src/features/voice-hub/commands/voice-command-router.js';
+} from '../voice-command-router.js';
 
 const ORG = 'tenant-voice-hub';
 
@@ -267,6 +267,48 @@ describe('Voice Command Router — confirmação ativa para comandos críticos',
     });
 
     expect(result.status).toBe('confirmation_expired');
+    expect(executors.update_deal_stage!.mutate).not.toHaveBeenCalled();
+  });
+
+  it('confirmação de OUTRA organização é rejeitada — sem mutação cross-tenant (Silas A2)', async () => {
+    const executors = allExecutors();
+    const { router, pending } = await startCritical(executors);
+
+    const foreignActor: VoiceCommandActor = {
+      userId: 'u-intruso',
+      organizationId: 'tenant-outra-org',
+      role: 'admin', // papel alto não compensa tenant divergente
+    };
+
+    const denied = await router.processVoiceCommand({
+      transcript: 'confirmo',
+      actor: foreignActor,
+      confirmation: { confirmationId: pending.confirmationId!, decision: 'confirm' },
+    });
+
+    expect(denied.status).toBe('confirmation_denied');
+    expect(denied.reason).toContain('organização');
+    expect(executors.update_deal_stage!.mutate).not.toHaveBeenCalled();
+  });
+
+  it('confirmação por OUTRO usuário da mesma organização é rejeitada (Silas A2)', async () => {
+    const executors = allExecutors();
+    const { router, pending } = await startCritical(executors);
+
+    const colleague: VoiceCommandActor = {
+      userId: 'u-outro-manager',
+      organizationId: ORG,
+      role: 'manager',
+    };
+
+    const denied = await router.processVoiceCommand({
+      transcript: 'confirmo',
+      actor: colleague,
+      confirmation: { confirmationId: pending.confirmationId!, decision: 'confirm' },
+    });
+
+    expect(denied.status).toBe('confirmation_denied');
+    expect(denied.reason).toContain('outro usuário');
     expect(executors.update_deal_stage!.mutate).not.toHaveBeenCalled();
   });
 

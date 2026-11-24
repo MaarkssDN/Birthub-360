@@ -172,6 +172,47 @@ export function createVoiceCommandRouter(options: VoiceCommandRouterOptions) {
 
     const pendingCommand = consumed.pending.command;
 
+    // Tenancy binding (revisão Silas A2): a confirmação só pode ser usada por
+    // um ator do MESMO tenant E do MESMO usuário que originou o comando.
+    // Sem isso, um confirmationId válido poderia disparar mutação em outro tenant.
+    if (pendingCommand.organizationId !== actor.organizationId) {
+      logger.warn(
+        {
+          commandId: pendingCommand.commandId,
+          type: pendingCommand.type,
+          confirmationId: decision.confirmationId,
+          pendingOrganizationId: pendingCommand.organizationId,
+          actorOrganizationId: actor.organizationId,
+        },
+        'VoiceHub [B-07]: confirmação rejeitada — organização do ator difere da organização criadora',
+      );
+      return baseResult('confirmation_denied', actor.organizationId, {
+        commandId: pendingCommand.commandId,
+        type: pendingCommand.type,
+        confirmationId: decision.confirmationId,
+        reason: 'Confirmação não pertence à organização do ator. Execução bloqueada.',
+      });
+    }
+
+    if (pendingCommand.userId !== actor.userId) {
+      logger.warn(
+        {
+          commandId: pendingCommand.commandId,
+          type: pendingCommand.type,
+          confirmationId: decision.confirmationId,
+          pendingUserId: pendingCommand.userId,
+          actorUserId: actor.userId,
+        },
+        'VoiceHub [B-07]: confirmação rejeitada — usuário do ator difere do usuário criador',
+      );
+      return baseResult('confirmation_denied', actor.organizationId, {
+        commandId: pendingCommand.commandId,
+        type: pendingCommand.type,
+        confirmationId: decision.confirmationId,
+        reason: 'Confirmação emitida para outro usuário. Somente o criador do comando pode confirmá-lo.',
+      });
+    }
+
     // Autorização revalidada no momento da confirmação (ator/papel podem ter mudado).
     const authorization = authorizeVoiceCommand(actor, pendingCommand.type);
     if (!authorization.allowed) {
