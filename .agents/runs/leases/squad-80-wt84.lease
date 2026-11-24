@@ -1,0 +1,4 @@
+session_id: devin-subagent-pia-s80	squad: 80
+holder: agente/84-pia-deeplinks
+timestamp: 2026-11-24
+escopo: squads/squad-80/wt-84 worktree; portas 22800-22899; branch agente/84-deeplinks-s80; base integracao/onda-3-dem20261123 @ 5422d99c3e

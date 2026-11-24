@@ -1,3 +1,5 @@
+import { isValidCnpj, sanitizeCnpj } from '../../cnpj.js';
+
 export const CNPJ_CACHE_TTL_DAYS = 30;
 export const CNPJ_CACHE_TTL_MS = CNPJ_CACHE_TTL_DAYS * 24 * 60 * 60 * 1000;
 
@@ -9,9 +11,13 @@ export interface CnpjCompanyProfile {
 }
 
 export function normalizeCnpjDigits(rawCnpj: string): string {
-  const digits = rawCnpj.replace(/\D+/g, '');
-  if (digits.length !== 14) {
-    throw new Error(`CNPJ inválido ("${rawCnpj}"): deve conter 14 dígitos numéricos.`);
+  const digits = sanitizeCnpj(rawCnpj);
+  // Valida o dígito verificador ANTES de qualquer chamada ao provider: um CNPJ malformado ou com
+  // dígito errado nunca deve consumir cota da fonte externa (Receita/bureau) nem entrar no cache.
+  if (digits.length !== 14 || !isValidCnpj(digits)) {
+    throw new Error(
+      `CNPJ inválido ("${rawCnpj}"): deve ser um CNPJ de 14 dígitos com dígitos verificadores válidos.`,
+    );
   }
   return digits;
 }
