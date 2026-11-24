@@ -191,7 +191,10 @@ function LandingInnovativeContent() {
           </Link>
 
           <nav className="hidden lg:flex items-center gap-8">
-            {['Plataforma', 'Inteligência', 'Segurança', 'Integrações'].map((item, i) => (
+            {/* Apenas seções que existem na página — "Integrações" foi removido porque não há
+              <section id="integrações"> e o clique era um no-op silencioso. O índice do item
+              precisa bater com a ordem das sections observadas pelo scroll-spy. */}
+            {['Plataforma', 'Inteligência', 'Segurança'].map((item, i) => (
               <button
                 type="button"
                 key={item}
@@ -394,7 +397,7 @@ function LandingInnovativeContent() {
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </MagneticButton>
               </Link>
-              <MagneticButton variant="secondary">
+              <MagneticButton variant="secondary" onClick={() => scrollToSection('inteligência')}>
                 <Play className="h-4 w-4 mr-2" />
                 Ver como funciona
               </MagneticButton>
@@ -647,7 +650,12 @@ function LandingInnovativeContent() {
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </MagneticButton>
               </Link>
-              <MagneticButton variant="secondary">Falar com Especialista</MagneticButton>
+              {/* "/" é a landing principal (Landing360), que contém o formulário real de
+                solicitação de sessão com especialista (#demonstracao). Sem formulário próprio
+                nesta página, o CTA honesto é navegar para lá em vez de ser um botão morto. */}
+              <Link to="/">
+                <MagneticButton variant="secondary">Falar com Especialista</MagneticButton>
+              </Link>
             </div>
           </motion.div>
         </div>
