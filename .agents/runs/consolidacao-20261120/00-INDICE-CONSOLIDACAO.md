@@ -31,8 +31,8 @@ Este acervo documental unifica todo o conhecimento operacional das sessões ante
 ### 2. Análises Complementares de Homologação (Preservação Local)
 | # | Arquivo | Conteúdo Principal |
 |---|---|---|
-| **13** | `13-INVENTARIO-ANALITICO-HANDOFFS.md` | Inventário analítico dos handoffs (históricos e ativos em reconciliação) |
-| **14** | `14-RELATORIO-VALIDACAO-ESTADO-REAL.md` | Auditoria forense por 8 camadas (código, testes, banco, segurança, tenancy, UI, CI) |
+| **13** | `13-INVENTARIO-ANALITICO-HANDOFFS.md` | Inventário analítico dos 607 handoffs (580 históricos, 27 em reconciliação ativa) |
+| **14** | `14-RELATORIO-VALIDACAO-ESTADO-REAL.md` | Auditoria forense por 8 camadas (código, testes, banco, segurança, tenancy, UI, CI, gates) |
 | **15** | `15-CHECKLIST-MESTRE-HOMOLOGACAO.md` | Checklist integral de 46 itens em 17 domínios técnicos rumo ao release |
 | **16** | `16-PLANO-INTEGRACAO-PRS.md` | Estratégia de saneamento e integração assistida dos PRs abertos em 4 levas |
 | **17** | `17-PLANO-TESTES-HOMOLOGACAO.md` | Protocolo de testes de integração, k6 carga, Schemathesis, RLS e E2E |
