@@ -630,3 +630,116 @@ describe('advanceCadenceRun — DEBT-0008/0009', () => {
     expect(updated.status).toBe('completed');
   });
 });
+
+// POS4-17-CADENCE-TZ — a janela comercial passa a receber o fuso do destinatário resolvido pelo
+// `LeadSubjectResolver` (customFields.timezone → UF da empresa → fallback SP). Estes testes
+// provam que o `timeZone` do sujeito chega ao `isWithinBusinessWindow` injetado, e que um
+// resolvedor antigo (sem `timeZone`) continua funcionando com `null` — fallback do avaliador.
+describe('advanceCadenceRun — janela comercial por fuso do lead (POS4-17-CADENCE-TZ)', () => {
+  function resolverWithTimeZone(timeZone: string | null): LeadSubjectResolver {
+    return {
+      async resolve() {
+        return { leadId: LEAD, email: 'lead@empresa.com', phoneE164: '+5511999998888', timeZone };
+      },
+    };
+  }
+
+  function seedRun() {
+    const runRepo = new InMemoryCadenceRunRepository();
+    runRepo.seed(
+      startCadenceRun({
+        id: 'run-1',
+        organizationId: ORG,
+        leadId: LEAD,
+        sequenceId: 'seq-1',
+        startedAt: NOW,
+      }),
+    );
+    return runRepo;
+  }
+
+  it('repassa o timeZone resolvido do lead para isWithinBusinessWindow', async () => {
+    const runRepo = seedRun();
+    const optOutRepo = new InMemoryOptOutRepository();
+    const dispatcher = new ScriptedDispatcher({ result: 'sent' });
+    const seenTimeZones: Array<string | null | undefined> = [];
+
+    const { decision } = await advanceCadenceRun(
+      {
+        runRepo,
+        optOutRepo,
+        subjectResolver: resolverWithTimeZone('America/Manaus'),
+        dispatcher,
+        lock: noopLock(),
+        rateLimit: noopRateLimit(),
+        isWithinBusinessWindow: (_now, leadTimeZone) => {
+          seenTimeZones.push(leadTimeZone);
+          return true;
+        },
+        hasLeadReplied: async () => false,
+      },
+      ORG,
+      'run-1',
+      SEQUENCE,
+      NOW,
+    );
+
+    expect(decision.type).toBe('dispatch');
+    expect(seenTimeZones).toEqual(['America/Manaus']);
+  });
+
+  it('resolvedor sem timeZone (legado) passa null — avaliador aplica o próprio fallback', async () => {
+    const runRepo = seedRun();
+    const optOutRepo = new InMemoryOptOutRepository();
+    const dispatcher = new ScriptedDispatcher({ result: 'sent' });
+    const seenTimeZones: Array<string | null | undefined> = [];
+
+    await advanceCadenceRun(
+      {
+        runRepo,
+        optOutRepo,
+        subjectResolver: alwaysResolveSubject(),
+        dispatcher,
+        lock: noopLock(),
+        rateLimit: noopRateLimit(),
+        isWithinBusinessWindow: (_now, leadTimeZone) => {
+          seenTimeZones.push(leadTimeZone);
+          return leadTimeZone == null; // só despacha quando o fuso é desconhecido
+        },
+        hasLeadReplied: async () => false,
+      },
+      ORG,
+      'run-1',
+      SEQUENCE,
+      NOW,
+    );
+
+    expect(seenTimeZones).toEqual([null]);
+  });
+
+  it('implementação legada (now) => boolean continua compatível — ignora o fuso', async () => {
+    const runRepo = seedRun();
+    const optOutRepo = new InMemoryOptOutRepository();
+    const dispatcher = new ScriptedDispatcher({ result: 'sent' });
+
+    const { decision } = await advanceCadenceRun(
+      {
+        runRepo,
+        optOutRepo,
+        subjectResolver: resolverWithTimeZone('America/Manaus'),
+        dispatcher,
+        lock: noopLock(),
+        rateLimit: noopRateLimit(),
+        isWithinBusinessWindow: () => true, // assinatura antiga de 1 argumento
+        hasLeadReplied: async () => false,
+      },
+      ORG,
+      'run-1',
+      SEQUENCE,
+      NOW,
+    );
+
+    expect(decision.type).toBe('dispatch');
+    expect(dispatcher.calls).toHaveLength(1);
+  });
+});

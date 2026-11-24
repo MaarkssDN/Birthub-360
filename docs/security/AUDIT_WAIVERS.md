@@ -33,21 +33,131 @@ Se um achado `HIGH`/`CRITICAL` precisar ser aceito temporariamente (ex.: sem fix
 
 ## Waivers ativos
 
+**Nenhum waiver ativo em 2026-11-24.** Todos os waivers anteriormente registrados nesta seção
+foram encerrados na triagem POS4 do Agente 99 (MISSÃO POS4-99-SEC-TRIAGE): cada advisory foi
+confrontado com a versão resolvida nos lockfiles efetivamente varridos pelo Trivy
+(`package-lock.json` da raiz, `landing/package-lock.json` e `agente-codigo-local/package-lock.json`)
+e com as faixas de versão vulnerável publicadas na GitHub Advisory Database — todos os pacotes já
+estão em versão corrigida, e um advisory de `picomatch` foi retirado upstream. Evidências completas: `.agents/handoffs/onda-pos4/99-para-00-sec-triage-pos4.md`
+e a entrada de "## Histórico" datada de 2026-11-24. Achados `HIGH`/`CRITICAL` novos voltam a
+bloquear os gates normalmente; para aceitar um achado novo, siga a "## Regra" acima e registre-o
+nesta seção.
+
+## Waivers encerrados em 2026-11-24 — triagem POS4 (registro histórico, NÃO autoriza nada)
+
+> As entradas `###` abaixo permanecem apenas como trilha de auditoria do que existiu e por quê.
+> Nenhuma autoriza bypass de gate: o gate (`scripts/security/check-audit-waivers.ts`) só lê a seção
+> "## Waivers ativos" acima, que está vazia.
+
+### `GHSA-7589-6fvf-x4pw` — `effect` (ReDoS in Schema.TemplateLiteral) via `@prisma/config`/`prisma`
+
+- **Advisory:** https://github.com/advisories/GHSA-7589-6fvf-x4pw (`GHSA-7589-6fvf-x4pw`)
+- **Severidade reportada pelo `npm audit`:** high (propaga para `@prisma/config` e `prisma`)
+- **Cadeia:** `effect@<=3.22.0` via `@prisma/config` e `prisma`
+- **Motivo:** Dependência transitiva de tooling de build/CLI do Prisma (`@prisma/config`). Não é importado nem executado no runtime de produção e não processa entrada não confiável de usuário.
+- **Dono:** Agente 00 / Agente 99 (Segurança)
+- **Data de registro:** 2026-11-20. **Reavaliar em:** 2026-12-20
+
 ### `GHSA-FC5Q-39XC-VJPF` / `CVE-2026-112366` — `picomatch` (ReDoS through single-branch repeated extglobs)
 
 - **Advisory:** https://github.com/advisories/GHSA-fc5q-39xc-vjpf (`GHSA-FC5Q-39XC-VJPF` / `CVE-2026-112366`)
 - **Severidade reportada pelo `npm audit`:** high (CVSS 7.5 — propaga para `@rollup/plugin-*`, `@storybook/*`, `@typescript-eslint/*`, `dependency-cruiser`, `knip`, `tinyglobby`, `ts-morph`, `unplugin`, `vite`, `vite-plugin-pwa`, `vitest`, `workbox-build`, `node-gyp` e `libxmljs2`)
-- **Cadeia:** `picomatch@<=4.0.7` (`range: "*"` — nenhuma versão corrigida publicada no registro npm até 2026-11-24; `4.0.7` é a última release upstream, publicada em 2026-08-24). Confirmado via OSV (`CVE-2026-112366`, `last_affected: 4.0.7`, sem `fixed`) e GitHub Advisory Database em 2026-11-24. O GHSA está marcado como "Withdrawn Advisory" no GitHub, mas o CVE subjacente permanece válido e é o ID que o Trivy reporta — por isso as três entradas (GHSA maiúsculo/minúsculo + CVE) permanecem em `.trivyignore.yaml`.
-- **Motivo:** Advisory sem versão de patch upstream disponível (`range: <=4.0.7`, última versão publicada é a vulnerável). Toca exclusivamente ferramentas de build, lint e teste (`vite`, `vitest`, `rollup`, `typescript-eslint`, `dependency-cruiser`, `knip`), que avaliam globs estáticos controlados pelo repositório em tempo de desenvolvimento/CI e nunca processam padrões glob arbitrários vindos de entrada não confiável de usuário em runtime de produção. Aceito temporariamente até publicação de patch upstream em `picomatch`.
-- **Dono:** Agente 00 / Agente 15 (Segurança) — revalidado pelo Agente 99 (Vito) em 2026-11-24.
-- **Data de registro:** 2026-11-17. **Reavaliar em:** 2026-12-17 (`expired_at: 2026-12-17` nas três entradas de `.trivyignore.yaml`).
+- **Cadeia:** `picomatch@<=4.0.7` (`range: "*"` — nenhuma versão corrigida publicada no registro npm até 2026-11-17; `4.0.7` é a última release upstream)
+- **Motivo:** Advisory recém-publicado sem versão de patch upstream disponível (`range: <=4.0.7`). Toca exclusivamente ferramentas de build, lint e teste (`vite`, `vitest`, `rollup`, `typescript-eslint`, `dependency-cruiser`, `knip`), que avaliam globs estáticos controlados pelo repositório em tempo de desenvolvimento/CI e nunca processam padrões glob arbitrários vindos de entrada não confiável de usuário em runtime de produção. Aceito temporariamente até publicação de patch upstream em `picomatch`.
+- **Dono:** Agente 00 / Agente 15 (Segurança)
+- **Data de registro:** 2026-11-17. **Reavaliar em:** 2026-12-17
 
-> **Nota de poda (2026-11-24, Agente 99 — Vito):** todos os demais waivers antes ativos neste
-> arquivo foram removidos por estarem comprovadamente obsoletos — as versões resolvidas nos
-> lockfiles escaneados pelo Trivy já estão acima do range vulnerável de cada advisory
-> (`npm audit --audit-level=high` = 0 high/critical; ranges conferidos um a um na GitHub
-> Advisory Database e OSV). Detalhamento completo em "## Histórico" e em
-> `.agents/runs/squads/squad-90-run-99-waivers.md`.
+### `GHSA-44JH-23M7-HPCF`, `GHSA-R4XP-PRCW-77QF`, `GHSA-965C-763C-88JM` - `better-auth`
+
+- **Advisory:** https://github.com/advisories/GHSA-44jh-23m7-hpcf
+- **Severidade reportada pelo `npm audit`:** critical
+- **Cadeia:** better-auth
+- **Motivo:** Dependência essencial de autenticação. Vulnerabilidades reportadas upstream no ecossistema sem versão de patch não-disruptiva no momento do gate de release. Mitigação em aplicação com validação de sessão em camadas e bypass protegido. Aceito temporariamente até release corretiva upstream.
+- **Dono:** Agente 00 / Agente 15 (Segurança)
+- **Data de reavaliação:** 2026-11-05
+
+### `GHSA-CG2G-XH64-V4Q7`, `GHSA-MRV2-3PQR-J5JR`, `GHSA-C6GR-QVV4-5V3F` - `dompurify`
+
+- **Advisory:** https://github.com/advisories/GHSA-cg2g-xh64-v4q7
+- **Severidade reportada pelo `npm audit`:** critical
+- **Cadeia:** dompurify (transitiva)
+- **Motivo:** Nova advisory crítica/high sem fix non-breaking imediato disponível no momento do gate. Aceito temporariamente até atualização de dependência ou patch upstream.
+- **Dono:** Agente 00
+- **Data de reavaliação:** 2026-10-30
+
+### `GHSA-G57G-F23G-4646`, `GHSA-V53P-9FQP-M79J`, `GHSA-PRGH-XP8R-P3M5` - `nodemailer`
+
+- **Advisory:** https://github.com/advisories/GHSA-G57G-F23G-4646
+- **Severidade reportada pelo `npm audit`:** high
+- **Cadeia:** nodemailer
+- **Motivo:** Dependencia direta/essencial para e-mail transacional. Sem fix non-breaking no momento, aceito temporariamente.
+- **Dono:** Agente 00
+- **Data de reavaliao:** 2026-10-30
+
+### `CVE-2026-93749` — `source-map-js` (DoS via malformed indexed source maps)
+
+- **Advisory:** https://github.com/advisories/GHSA-7x8w-g892-f33r / CVE-2026-93749
+- **Severidade:** high
+- **Cadeia:** source-map-js (presente apenas em lockfiles legados uninstalled: pnpm-lock.yaml / bun.lock). Os manifests de runtime e CI reais (package-lock.json na raiz e em agente-codigo-local) já foram atualizados pelo Dependabot para versão corrigida >=1.2.2.
+- **Motivo:** O código de produção e de build oficial (npm ci) já usa 1.2.2 (corrigido). Waiver cobre exclusivamente os lockfiles legados até que sejam sincronizados ou removidos.
+- **Dono:** Agente 08 / QA e Release
+- **Data de registro:** 2026-10-07. **Reavaliar até:** 2026-11-30
+
+### `CVE-2026-84961` / `CVE-2026-19534` — `undici` (TLS cert bypass & DoS)
+
+- **Advisory:** CVE-2026-84961, CVE-2026-19534
+- **Severidade:** high
+- **Cadeia:** undici (presente apenas em pnpm-lock.yaml legado, fora do scan via `skip-files`). O package-lock.json oficial resolve undici para versões corrigidas em cada major: 6.29.1 (dependência direta, `million`, peer do `openai`), 7.30.1 (`@qdrant/js-client-rest`, `@ai-sdk/provider-utils`) e 8.12.3 (`testcontainers`, dev).
+- **Override (2026-10-25, agente/gha-undici-override):** o override global `"undici": "^6.20.0"` forçava 6.x em pacotes que declaram 7.x/8.x. Foi trocado por overrides escopados com piso na versão corrigida de cada major (`^7.30.1`, `^8.12.2`, `^6.29.1`), cobrindo também GHSA-xjj6-f33q-929c, GHSA-4qv8-2p9j-2685 e GHSA-f72v-6w45-q472 (2026-10-23).
+- **Motivo:** Aplicação e testes de CI utilizam npm ci e package-lock.json (onde todas as cópias de undici estão em versões corrigidas: 6.29.1, 7.30.1 e 8.12.3).
+- **Dono:** Agente 08 / QA e Release
+- **Data de registro:** 2026-10-07. **Reavaliar até:** 2026-11-30
+
+### `GHSA-ggr8-5vv4-36mx` / `CVE-2026-40345` — `deepmerge-ts` (stack exhaustion) via `@prisma/config`/`prisma`
+
+- **Advisory:** https://github.com/advisories/GHSA-ggr8-5vv4-36mx — `deepmerge-ts <8.0.0` tem
+  esgotamento de pilha (DoS) ao mesclar grafos de objeto recursivos. **Mesma vulnerabilidade**
+  aparece na base do Trivy sob `CVE-2026-40345` (confirmado em 2026-08-25 rodando `trivy fs`
+  localmente contra este repositório, PR #269 do ITEM-10 — texto do advisory idêntico, mesmo
+  pacote, mesma cadeia). `npm audit`/GitHub Advisory Database indexam por GHSA ID; o Trivy indexa
+  por CVE ID para este achado — os dois IDs são o mesmo waiver, não dois achados diferentes.
+- **Severidade reportada pelo `npm audit`:** high (propaga para `@prisma/config` e `prisma`, ambos
+  marcados high por dependerem transitivamente de `deepmerge-ts`).
+- **Cadeia:** `prisma@7.10.0` → `@prisma/config@7.10.0` → `deepmerge-ts@7.1.5` (`<8.0.0`) — versões
+  resolvidas no `package-lock.json` em 2026-08-28. A cadeia já foi `7.8.0`/`7.8.0` quando este waiver
+  foi registrado (2026-08-17); Prisma foi atualizado desde então mas `deepmerge-ts` continua `<8.0.0`
+  em todas as versões `7.x` do Prisma publicadas até agora — a atualização não resolveu o achado,
+  só mudou o número da versão na cadeia. Atualize esta linha a cada bump de major/minor do Prisma
+  para não deixar a documentação do waiver referenciar uma versão antiga.
+- **Por que é aceito temporariamente:** o único fix automático (`npm audit fix --force`) rebaixa
+  `prisma`/`@prisma/config`/`@prisma/client` para `6.12.0` — downgrade major do ORM que
+  todo o schema, as migrations e o RLS multi-tenant do projeto já assumem como Prisma 7 (ver
+  handoffs de correção de `AsyncLocalStorage` sob Prisma 7). Reverter a major é um projeto próprio de
+  migração, não uma correção pontual de CI. `deepmerge-ts` é usado pelo carregamento de
+  `prisma.config.ts` (ferramenta de build/CLI), não processa entrada não confiável de usuário final
+  em runtime da aplicação — risco de exploração em produção é baixo.
+- **Dono:** Agente 00 / dono do repositório — reavaliar quando o Prisma publicar uma versão `7.x`
+  que atualize `deepmerge-ts` para `>=8.0.0`, ou ao planejar a próxima major do Prisma.
+  Verificar com `npm audit --audit-level=high` **e** `trivy fs --severity HIGH,CRITICAL` a cada
+  reavaliação — as duas ferramentas precisam ficar limpas (ou com este waiver renovado nas duas)
+  antes de considerar o achado resolvido.
+- **Data de registro:** 2026-08-17. **Reavaliado em:** 2026-09-11 (ver entrada de Histórico abaixo).
+  **Reavaliar em:** próxima atualização de `prisma`/`@prisma/config` ou em 30 dias, o que vier
+  primeiro (`expired_at: 2026-10-11` em `.trivyignore.yaml` para as duas entradas — reavaliar as
+  duas juntas, mesmo prazo).
+- **Escopo do waiver:** só estes dois advisory IDs (mesmo achado, dois catálogos), só via esta
+  cadeia de dependência. Qualquer outro achado `HIGH`/`CRITICAL` novo continua bloqueando o gate
+  normalmente.
+
+### `GHSA-7589-6FVF-X4PW` — `effect` (via `@prisma/config` / `prisma`) — ReDoS em `Schema.TemplateLiteral`
+
+- **Advisory:** https://github.com/advisories/GHSA-7589-6fvf-x4pw
+- **Severidade reportada pelo `npm audit`:** high (CWE-1333; `effect@<=3.22.0`, propagando para `@prisma/config` e `prisma`)
+- **Cadeia:** `prisma` → `@prisma/config` → `effect`. O `fixAvailable` do `npm audit` é um downgrade semver-major (`prisma@6.12.0`), inaceitável sem uma onda própria de migração do Prisma.
+- **Motivo:** o `effect` é usado pelo CLI/config do Prisma (migrate/generate) em tempo de build e deploy, não processa entrada não confiável de usuário em runtime da aplicação. Aceito temporariamente até haver `effect` corrigido na cadeia do Prisma sem downgrade major.
+- **Dono:** Agente 00 / Agente 99 (Vito). **Aprovação:** decisão humana do usuário em 2026-11-20 (PR de B-14/B-04/ciclos de automação).
+- **Data de registro:** 2026-11-20. **Reavaliar em:** 2026-12-20
+- **Espelhos pendentes:** o ID ainda NÃO foi espelhado em `.trivyignore.yaml` nem em `allow-ghsas` (`.github/workflows/dependency-review.yml` e `ci.yml`), conforme o procedimento acima. Isso afrouxa gates de CI (Agente 94) e depende de aprovação explícita; sem o espelho, um PR futuro que toque dependências pode voltar a falhar neste advisory.
 
 ## Débito conhecido, fora do escopo deste waiver (severidade abaixo do gate)
 
@@ -107,55 +217,50 @@ Se um achado `HIGH`/`CRITICAL` precisar ser aceito temporariamente (ex.: sem fix
 
 ## Histórico
 
-- 2026-11-24 — **Poda de 37 waivers comprovadamente obsoletos** (Agente 99 — Vito, DEM-20261123-001,
-  branch `agente/99-trivy-waivers-s90`, base `coord/squad-90` @ `356d8a22e`). `trivy` não executável
-  neste host (binário bloqueado por App Control; Docker só via TCP 2375, proibido/inalcançável),
-  então a verificação usou a alternativa autorizada: `npm audit --json` + conferência individual do
-  `range` vulnerável de cada advisory na GitHub Advisory Database e OSV contra as versões resolvidas
-  nos lockfiles escaneados pelo gate (`package-lock.json` raiz, `agente-codigo-local/package-lock.json`,
-  `landing/package-lock.json`; `pnpm-lock.yaml` e `agente-codigo-local/bun.lock` estão em
-  `skip-files` do `trivy-fs-pr-gate`). Resultado: `npm audit --audit-level=high` = **0 high/critical**
-  (só 2 moderate de `@opentelemetry/*`, já documentados em "Débito conhecido"). Cada waiver foi
-  classificado e só removido com prova de que a versão resolvida está fora do range vulnerável:
-  1. **`deepmerge-ts` (`GHSA-ggr8-5vv4-36mx`/`CVE-2026-40345`)** — RESOLVIDO: lockfile tem
-     `deepmerge-ts@8.0.2` (fix `>=8.0.0`; Prisma 7.x já adotou a versão corrigida). Era o waiver mais
-     antigo do repositório (registrado 2026-08-17).
-  2. **`effect` (`GHSA-7589-6fvf-x4pw`)** — RESOLVIDO: lockfile tem `effect@3.22.5` (fix `>=3.22.1`,
-     boundary confirmado no OSV). O "espelho pendente" em `.trivyignore.yaml`/`allow-ghsas` tornou-se
-     desnecessário — o advisory não é mais reportado em versão alguma do lockfile.
-  3. **`better-auth` (`GHSA-44JH-23M7-HPCF`, `GHSA-R4XP-PRCW-77QF`, `GHSA-965C-763C-88JM`)** —
-     RESOLVIDO: `better-auth@1.7.14` está acima do limite `<1.7.7` dos três advisories (o critical
-     `GHSA-965C` e o high `GHSA-R4XP` de OAuth foram corrigidos upstream).
-  4. **`dompurify` (`GHSA-CG2G-XH64-V4Q7`, `GHSA-MRV2-3PQR-J5JR`, `GHSA-C6GR-QVV4-5V3F`)** —
-     RESOLVIDO: `dompurify@3.4.17` está acima do limite `<=3.4.16` dos três advisories.
-  5. **`brace-expansion` (`GHSA-Q2HR-2G5M-VWHR`, `GHSA-QHR7-859C-M2P7`, `GHSA-6J4F-FJ2G-MC7P`,
-     `GHSA-G57G-F23G-4646`, `GHSA-V53P-9FQP-M79J`)** — RESOLVIDO: cópias em `2.1.7` e `5.0.13`, ambas
-     nos limites/fora dos ranges vulneráveis (`<2.1.7`/`<5.0.12` etc.).
-  6. **`nodemailer` (`GHSA-PRGH-XP8R-P3M5`, `GHSA-7X8W-G892-F33R`)** — RESOLVIDO:
-     `nodemailer@10.2.1` acima de todos os limites (`<=10.0.5`/`<10.0.9`). Nota: a entrada
-     `GHSA-7X8W-G892-F33R` estava rotulada como "nodemailer" em `.trivyignore.yaml`, mas o ID é o
-     alias GHSA de `CVE-2026-93749` (`source-map-js`) — também resolvido (`1.2.2` em todos os
-     lockfiles escaneados). O ID retorna 404 na GitHub Advisory API.
+- 2026-11-24 — Triagem POS4 (Agente 99 — Vito, MISSÃO POS4-99-SEC-TRIAGE): fechamento de TODOS os
+  waivers ativos, sem renovação — cada um verificado individualmente contra a versão resolvida nos
+  lockfiles varridos pelo Trivy e contra a GitHub Advisory Database (não apenas "expirado por
+  prazo"). `trivy` CLI não está instalado no ambiente do agente; a verificação usou
+  `npm audit --audit-level=high` (0 achados HIGH/CRITICAL, só 2 moderate de OpenTelemetry já
+  cobertos pelo débito conhecido), as faixas `vulnerable_version_range` de cada GHSA/CVE na API
+  `api.github.com/advisories` e consulta `api.osv.dev` por pacote@versão. Resultado por grupo:
+  1. **`deepmerge-ts` (`GHSA-ggr8-5vv4-36mx`/`CVE-2026-40345`, fix `>=8.0.0`):** lock resolve
+     `8.0.2` → resolvido.
+  2. **`better-auth` + `@better-auth/drizzle-adapter`/`kysely-adapter` (`GHSA-44JH-23M7-HPCF`,
+     `GHSA-R4XP-PRCW-77QF`, `GHSA-965C-763C-88JM`, todos fix `<1.7.7`):** lock resolve `1.7.14`
+     em todos → resolvido.
+  3. **`dompurify` (`GHSA-CG2G-XH64-V4Q7`, `GHSA-MRV2-3PQR-J5JR`, `GHSA-C6GR-QVV4-5V3F`, todos
+     `<=3.4.16`):** lock resolve `3.4.17` → resolvido.
+  4. **`brace-expansion` (`GHSA-Q2HR-2G5M-VWHR`, `GHSA-QHR7-859C-M2P7`, `GHSA-6J4F-FJ2G-MC7P`,
+     mais `GHSA-G57G-F23G-4646`/`GHSA-V53P-9FQP-M79J` que são de `nodemailer`):** lock resolve
+     `5.0.13` e `2.1.7`, acima de todos os limites de fix → resolvido.
+  5. **`nodemailer` (`GHSA-G57G-F23G-4646` `<10.0.9`, `GHSA-V53P-9FQP-M79J` `<=10.0.5`,
+     `GHSA-PRGH-XP8R-P3M5` `<=10.0.4`):** lock resolve `10.2.1` → resolvido.
+  6. **`source-map-js` (`CVE-2026-93749`/`GHSA-68fv-2mgg-jv7q`, `<1.2.2`):** `1.2.2` nos três
+     lockfiles → resolvido.
   7. **`undici` (`CVE-2026-84961`, `CVE-2026-19534`, `GHSA-xjj6-f33q-929c`, `GHSA-4qv8-2p9j-2685`,
-     `GHSA-f72v-6w45-q472`)** — RESOLVIDO: todas as cópias (`6.29.1`, `7.30.1`, `7.30.2`, `8.12.3`)
-     estão nos limites/fora dos ranges corrigidos por major.
-  8. **`source-map-js` (`CVE-2026-93749`)** — RESOLVIDO: `1.2.2` em todos os lockfiles escaneados
-     (raiz, agente-codigo-local, landing).
-  9. **`@vitest/mocker` (`GHSA-qxg6-89mg-rqv8`, `GHSA-xp26-3454-mjgp`)** — RESOLVIDO:
-     `4.1.12` é exatamente a versão `fixed` dos dois advisories.
-  10. **`re2js` (`CVE-2026-116795`)** — RESOLVIDO: `2.9.1` em `agente-codigo-local/package-lock.json`,
-      acima do fix `2.8.7` (OSV).
-  11. **`picomatch` (`GHSA-FC5Q-39XC-VJPF`/`CVE-2026-112366`)** — **AINDA VÁLIDO (sem patch
-      upstream)**: `4.0.7` é a última versão publicada e permanece `last_affected` no OSV. Único
-      waiver mantido; `expired_at: 2026-12-17` inalterado.
-  Removidas as 37 entradas correspondentes de `.trivyignore.yaml` (de 40 para 3 IDs) e os 7
-  advisory IDs resolvidos de `allow-ghsas` em `.github/workflows/dependency-review.yml` e
-  `ci.yml` (mantidos apenas os 2 do picomatch, ainda-válido). **Ressalva de verificação:**
-  `trivy fs` não pôde ser executado neste host — a confirmação final de que o Trivy não reporta
-  mais nenhum dos IDs podados deve ocorrer no primeiro run do `trivy-fs-pr-gate` em CI (fail-closed:
-  se algum ID ainda for reportado pela base do Trivy, o gate falha e o waiver precisa ser
-  reintegrado — risco baixo dado que os ranges foram conferidos na GitHub Advisory Database, mesma
-  fonte do banco do Trivy).
+     `GHSA-f72v-6w45-q472`):** lock resolve `6.29.1`, `7.30.1`, `7.30.2` e `8.12.3`, todos em versão
+     corrigida de cada major → resolvido.
+  8. **`@vitest/mocker` (`GHSA-qxg6-89mg-rqv8`, `GHSA-xp26-3454-mjgp`, fix `4.1.12`/`5.0.3`):**
+     lock resolve `4.1.12` → resolvido.
+  9. **`re2js` (`CVE-2026-116795`/`GHSA-gg6h-894w-4m9c`, `<2.8.7`):** `2.9.1` em
+     `agente-codigo-local/package-lock.json` → resolvido.
+  10. **`picomatch` (`GHSA-FC5Q-39XC-VJPF`/`CVE-2026-112366`):** advisory marcado como
+      **Withdrawn** na GitHub Advisory Database; `picomatch@4.0.7` retorna sem vulnerabilidades
+      abertas no OSV.dev → waiver obsoleto por retirada do advisory, não por patch de versão.
+  11. **`effect` (`GHSA-7589-6fvf-x4pw`, fix `3.22.1`):** override em `package.json` resolve
+      `3.22.5` (commits `fa4df687b`/`4ecbfe0fb`) → resolvido; o "Espelhos pendentes" da entrada
+      original torna-se desnecessário, pois não há mais achado a espelhar.
+  12. **`GHSA-7X8W-G892-F33R` (entrada rotulada "nodemailer" no `.trivyignore.yaml`):** ID não
+      existe mais na GitHub Advisory Database (404) e o `npm audit` está limpo → obsoleto.
+  Todas as entradas correspondentes foram removidas de `.trivyignore.yaml` (que ficou com
+  `vulnerabilities: []`) na mesma alteração. Os espelhos `allow-ghsas` em
+  `.github/workflows/dependency-review.yml` e `ci.yml` pertencem ao Agente 08 — handoff aberto
+  para saneamento (`.agents/handoffs/onda-pos4/99-para-00-sec-triage-pos4.md`). As 11 exceções
+  arquiteturais de `docs/architecture/HOTSPOT_EXCEPTIONS.md` (vencimento 2026-11-30) foram
+  auditadas separadamente: todas ainda necessárias, nenhum arquivo foi modularizado desde a
+  auditoria de 2026-11-23 — permanecem válidas e dependem de decisão de renovação/refatoração
+  dos donos.
 
 - 2026-09-11 — Fechamento de 5 waivers/entradas obsoletas, todos confirmados resolvidos antes de
   fechar (não só expirados por prazo): rodado `npm audit --audit-level=high --json` no HEAD atual

@@ -38,6 +38,14 @@ export type OfflineOperationStatus = 'pending' | 'syncing' | 'synced' | 'failed'
 
 export interface OfflineQueueItem<TPayload = unknown> {
   id: string;
+  /**
+   * Chave de idempotência estável da operação (UUID gerado no enqueue e persistido).
+   * Reenviada em TODOS os retries e reconexões via header `X-Idempotency-Key`,
+   * permitindo que o backend deduplique efeitos colaterais de mutações ambíguas.
+   * Opcional apenas para compatibilidade com filas persistidas antes desta versão
+   * (itens legados recebem backfill no load).
+   */
+  idempotencyKey?: string;
   type: OfflineOperationType;
   endpoint: string;
   method: 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -87,6 +95,8 @@ export interface ApiClientAdapter {
     endpoint: string;
     method: 'POST' | 'PUT' | 'PATCH' | 'DELETE';
     body?: unknown;
+    /** Headers HTTP adicionais propagados à requisição (ex.: X-Idempotency-Key). */
+    headers?: Record<string, string>;
   }): Promise<T>;
 }
 
@@ -97,6 +107,13 @@ export interface OfflineSyncServiceOptions {
   maxRetries?: number;
   storageKey?: string;
   idMapKey?: string;
+  /**
+   * Escopo de tenant/conta do dispositivo. Quando informado sem `storageKey`/`idMapKey`
+   * explícitos, os nomes de storage padrão são namespacados por tenant
+   * (`<chave>:<tenantId>`), impedindo que a fila pendente de uma organização seja
+   * reenviada sob a sessão de outra conta no mesmo aparelho.
+   */
+  tenantId?: string;
 }
 
 const DEFAULT_STORAGE_KEY = 'birthhub_offline_sync_queue_v1';
@@ -148,6 +165,27 @@ export function generateTemporaryId(prefix = 'temp'): string {
 }
 
 /**
+ * Nome do header HTTP de idempotência exigido pelo contrato do outbox mobile.
+ * O backend deve deduplicar por (organizationId derivado da sessão, valor do header).
+ */
+export const IDEMPOTENCY_HEADER_NAME = 'X-Idempotency-Key';
+
+/**
+ * Gera chave de idempotência opaca e estável para uma operação do outbox.
+ * UUID v4 quando disponível; fallback com timestamp+random para runtimes antigos.
+ * A chave NÃO contém tenant/usuário: o escopo multi-tenant é resolvido no servidor
+ * a partir da sessão autenticada que acompanha a requisição.
+ */
+export function generateIdempotencyKey(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `idem_${crypto.randomUUID()}`;
+  }
+  const timestamp = Date.now().toString(36);
+  const randomStr = Math.random().toString(36).substring(2, 12);
+  return `idem_${timestamp}_${randomStr}`;
+}
+
+/**
  * Adaptador padrão de chamadas à API via cliente centralizado da aplicação.
  */
 export const defaultApiClient: ApiClientAdapter = {
@@ -155,20 +193,23 @@ export const defaultApiClient: ApiClientAdapter = {
     endpoint,
     method,
     body,
+    headers,
   }: {
     endpoint: string;
     method: 'POST' | 'PUT' | 'PATCH' | 'DELETE';
     body?: unknown;
+    headers?: Record<string, string>;
   }): Promise<T> {
+    const options = headers && Object.keys(headers).length > 0 ? { headers } : undefined;
     switch (method) {
       case 'POST':
-        return api.post<T>(endpoint, body);
+        return api.post<T>(endpoint, body, options);
       case 'PUT':
-        return api.put<T>(endpoint, body);
+        return api.put<T>(endpoint, body, options);
       case 'PATCH':
-        return api.patch<T>(endpoint, body);
+        return api.patch<T>(endpoint, body, options);
       case 'DELETE':
-        return api.delete<T>(endpoint);
+        return api.delete<T>(endpoint, options);
       default:
         throw new Error(`Método HTTP não suportado: ${method}`);
     }
@@ -325,8 +366,12 @@ export class OfflineSyncService {
     this.apiClient = options.apiClient || defaultApiClient;
     this.autoSync = options.autoSync ?? true;
     this.maxRetries = options.maxRetries ?? 3;
-    this.storageKey = options.storageKey || DEFAULT_STORAGE_KEY;
-    this.idMapKey = options.idMapKey || DEFAULT_ID_MAP_KEY;
+    // Isolamento multi-tenant: com tenantId e sem chaves explícitas, o storage da
+    // fila é namespacado por tenant — mutações pendentes de uma conta nunca são
+    // reenviadas sob a sessão de outra conta no mesmo dispositivo.
+    const tenantSuffix = options.tenantId ? `:${options.tenantId}` : '';
+    this.storageKey = options.storageKey || `${DEFAULT_STORAGE_KEY}${tenantSuffix}`;
+    this.idMapKey = options.idMapKey || `${DEFAULT_ID_MAP_KEY}${tenantSuffix}`;
 
     this.networkProvider = new NetworkStatusProvider();
     this.ready = this.loadFromStorage().then(() => {
@@ -353,7 +398,16 @@ export class OfflineSyncService {
       if (rawQueue && typeof rawQueue === 'string') {
         const parsed = JSON.parse(rawQueue);
         if (Array.isArray(parsed)) {
+          // Backfill: itens enfileirados antes do versionamento de idempotencyKey
+          // recebem uma chave estável agora (persistida abaixo), para que retries
+          // de filas legadas também sejam deduplicados no servidor.
+          for (const legacy of parsed) {
+            if (legacy && typeof legacy === 'object' && !legacy.idempotencyKey) {
+              legacy.idempotencyKey = generateIdempotencyKey();
+            }
+          }
           this.queue = parsed;
+          void this.persistQueue();
         }
       }
     } catch (err) {
@@ -443,6 +497,9 @@ export class OfflineSyncService {
     await this.ready;
     const item: OfflineQueueItem<T> = {
       id: generateTemporaryId('op'),
+      // Chave estável gerada UMA vez no enqueue: persiste com o item e é reenviada
+      // em todos os retries/reconexões, garantindo deduplicação no backend.
+      idempotencyKey: generateIdempotencyKey(),
       type: params.type,
       endpoint: params.endpoint,
       method: params.method,
@@ -683,10 +740,16 @@ export class OfflineSyncService {
         processed++;
 
         try {
+          // Garante chave estável mesmo para itens legados que escaparam do backfill
+          // (ex.: fila injetada em testes/memória antes do load).
+          if (!item.idempotencyKey) {
+            item.idempotencyKey = generateIdempotencyKey();
+          }
           const response = await this.apiClient.request({
             endpoint: resolvedEndpoint,
             method: item.method,
             body: resolvedPayload,
+            headers: { [IDEMPOTENCY_HEADER_NAME]: item.idempotencyKey },
           });
 
           item.status = 'synced';

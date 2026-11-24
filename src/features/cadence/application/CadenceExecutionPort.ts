@@ -146,6 +146,8 @@ export interface CadenceExecutionPort {
 
   /**
    * Valida se a data/hora fornecida está dentro da janela comercial permitida.
+   * `leadTimeZone` (POS4-17-CADENCE-TZ): fuso IANA do destinatário; implementações antigas que
+   * só recebem `now` continuam compatíveis — o fuso é opcional.
    */
-  isWithinBusinessWindow(now: Date): boolean;
+  isWithinBusinessWindow(now: Date, leadTimeZone?: string | null): boolean;
 }
