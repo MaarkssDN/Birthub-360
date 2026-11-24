@@ -21,7 +21,12 @@ export interface DiarizedUtterance {
   startSec: number;
   endSec: number;
   text: string;
-  confidence: number;
+  /**
+   * Confiança reportada pelo transcritor; AUSENTE quando o motor não informa.
+   * Nunca fabricar um valor default — consumidores (ex.: contrato STT do
+   * Agente 63) propagam `undefined` em vez de um número inventado.
+   */
+  confidence?: number;
 }
 
 export interface WhisperChannelTranscriberPort {
@@ -87,7 +92,7 @@ export async function diarizeStereoAudioChannels(
       startSec: seg.startSec,
       endSec: seg.endSec,
       text: cleanText,
-      confidence: seg.confidence ?? 0.95,
+      ...(seg.confidence !== undefined ? { confidence: seg.confidence } : {}),
     });
   }
 
@@ -100,7 +105,7 @@ export async function diarizeStereoAudioChannels(
       startSec: seg.startSec,
       endSec: seg.endSec,
       text: cleanText,
-      confidence: seg.confidence ?? 0.95,
+      ...(seg.confidence !== undefined ? { confidence: seg.confidence } : {}),
     });
   }
 
