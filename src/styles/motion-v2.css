@@ -1,0 +1,49 @@
+/* ==========================================================================
+   MOTION V2 — Agente 35 (Mia), Onda ONDA-DESIGN-PREMIUM-2026-11-24
+   Utilitários CSS de motion do design v2. Animações primárias vivem em
+   src/lib/motion-v2.ts (Framer Motion); este arquivo cobre os poucos casos
+   CSS-only e a guarda global de prefers-reduced-motion.
+   ========================================================================== */
+
+/* Transição de hover/touch padronizada para elementos v2 que não usam
+   Framer Motion. Somente transform/opacity — GPU accelerated. */
+.motion-v2-interactive {
+  transition:
+    transform var(--duration-fast) var(--ease-standard),
+    opacity var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-normal) var(--ease-standard);
+}
+
+.motion-v2-interactive:hover {
+  transform: translateY(-1px);
+}
+
+.motion-v2-interactive:active {
+  transform: translateY(0);
+  transition-duration: var(--duration-instant);
+}
+
+/* Spinner minimalista para loading states v2 — rotação única, sem bounce. */
+@keyframes motion-v2-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.motion-v2-spinner {
+  animation: motion-v2-spin 800ms linear infinite;
+}
+
+/* ==========================================================================
+   GUARDA GLOBAL — prefers-reduced-motion
+   Zera durações e iterações de qualquer animação/transição v2 (e legadas que
+   dependam destas classes), mantendo o estado final visível.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-v2-interactive,
+  .motion-v2-spinner {
+    animation: none;
+    transition: none;
+  }
+}

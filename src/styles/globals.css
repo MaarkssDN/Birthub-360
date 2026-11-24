@@ -8,6 +8,9 @@
    Somente @theme/@property — nenhuma utility manual, zero colisão com o
    Tailwind. Coexiste com os tokens v1; adoção via src/components/ui/v2/**. */
 @import "./design-v2.css";
+/* Motion V2 — utilitários CSS-only e guarda prefers-reduced-motion.
+   Agente 35 (Mia), Onda ONDA-DESIGN-PREMIUM. Tokens em src/lib/motion-v2.ts. */
+@import "./motion-v2.css";
 /* Birth Hub 360 — Tipografia Oficial Exclusiva:
    - Sora: Títulos, Heros, Ações e Display
    - Inter: Interface, Menus, Formulários, Tabelas e Corpo de Texto (com toque arredondado)

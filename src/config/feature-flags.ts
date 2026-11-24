@@ -18,6 +18,8 @@ export const DESIGN_V2_FLAGS = {
   NEW_ONBOARDING: "design.newOnboarding",
   /** Novos dashboards */
   NEW_DASHBOARDS: "design.newDashboards",
+  /** Novo sistema de motion v2 */
+  NEW_MOTION: "design.newMotion",
   /** Novos assets de marca */
   NEW_BRAND_ASSETS: "design.newBrandAssets",
   /** Flag global para design v2 */
