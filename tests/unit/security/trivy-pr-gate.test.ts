@@ -36,18 +36,25 @@ describe('Trivy PR gate policy', () => {
       vulnerabilities?: Array<{ id?: string; expired_at?: string }>;
     };
 
-    const ignoreIds = (ignoreFile.vulnerabilities ?? []).map((item) => item.id).filter(Boolean);
+    // Estado verificado em 2026-11-24 (triagem POS4 do Agente 99): todos os waivers foram
+    // encerrados — cada pacote já resolve em versão corrigida nos lockfiles varridos e o
+    // advisory de `picomatch` foi retirado upstream. Zero waivers ativos é o estado
+    // ESPERADO; qualquer waiver novo exige registro em docs/security/AUDIT_WAIVERS.md
+    // ("## Waivers ativos") e atualização deste teste na mesma alteração.
+    expect(ignoreFile.vulnerabilities).toEqual([]);
 
-    expect(ignoreIds).toEqual(expect.arrayContaining(['GHSA-ggr8-5vv4-36mx', 'CVE-2026-40345']));
-
+    // Se um waiver for (re)introduzido, ele precisa manter a disciplina mínima: ID
+    // identificável e `expired_at` (fail-closed automático quando a data vencer).
     for (const item of ignoreFile.vulnerabilities ?? []) {
+      expect(item.id).toBeTruthy();
       expect(item.expired_at).toBeTruthy();
       expect(typeof item.expired_at).toBe('string');
+      expect(Number.isNaN(Date.parse(item.expired_at as string))).toBe(false);
     }
 
     const waiverDoc = readFileSync('docs/security/AUDIT_WAIVERS.md', 'utf8');
-    expect(waiverDoc).toContain('GHSA-ggr8-5vv4-36mx');
-    expect(waiverDoc).toContain('CVE-2026-40345');
+    expect(waiverDoc).toContain('## Waivers ativos');
+    expect(waiverDoc).toContain('Nenhum waiver ativo');
   });
 
   it('keeps the blocking PR gate from silently ignoring findings', () => {
