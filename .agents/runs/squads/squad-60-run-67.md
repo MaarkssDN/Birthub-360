@@ -7,6 +7,38 @@
 **Lease:** `.agents/runs/leases/squad-60-wt67.lease` (portas 22600–22699)
 **node_modules:** symlink → `C:/Github/Birthub-360/node_modules`
 
+## Rodada 2 — correção do parecer REPROVADO do Silas (SHA auditado `adae9741f1`)
+
+Parecer: `.agents/reviews/squad-60-67-teca-templates-pii-20261124.md` (no worktree do auditor).
+Dois achados bloqueantes corrigidos no mesmo ownership:
+
+- **ACH-01 (bypass fail-open por tags HTML):** `sanitizeFreeTextVariable`,
+  `sanitizeOutboundMessageBody`, `sanitizeWhatsAppTemplatePayload` e `detectPiiCategories`
+  agora normalizam marcação (`stripMarkup`: remove `<...>` e `{{ }}`) **antes** da varredura
+  PII. Em `stripHtml=false`, uma versão "shadow" sem marcação é comparada: se revelar
+  categorias ausentes na varredura direta, o corpo é devolvido normalizado (fail-closed
+  vence preservação de HTML). Regressões adicionadas para CPF/telefone/e-mail fragmentados
+  por tags nos modos `stripHtml=true` e `false` — todas falhavam antes da correção
+  (8 testes vermelhos reproduzidos) e passam depois.
+- **ACH-02 (telefone +55 classificado como cartão):** `phone` movido para antes de
+  `credit_card` em `PII_PATTERNS` e o padrão de cartão passou a exigir **validação Luhn**
+  (`isLuhnValidCard`) — `'+55 11 99999-8888'` e `'+5511999998888'` agora saem como
+  `[PHONE_REDACTED]`/categoria `phone`; cartão real (`4111 1111 1111 1111`) segue
+  `credit_card`.
+
+**Novo SHA de código submetido à re-revisão:** `047de6f4cae431c2f0f992be6d6184f19b080bf6`
+(`fix(squad-60/agente-67): ACH-01 ... ACH-02 ... (r2 Silas)`).
+
+### Comandos rodada 2
+
+| Comando | Resultado |
+|---|---|
+| `npx vitest run tests/unit/features/notifications/templates/sanitizer.test.ts tests/unit/features/voice-hub/onda3VoiceSquad60.test.ts` | ✅ 23/23 verdes (18 sanitizer + 5 squad) |
+| `npx tsc --noEmit` | ✅ exit 0 |
+| `npx biome check --write` nos 2 arquivos | ✅ format aplicado, check limpo |
+
+## Rodada 1 — entrega original (REPROVADA em `adae9741f1`)
+
 ## Missão
 
 Prevenção de PII em templates/mensagens (handoff previsto para 07-Íris/LGPD):
