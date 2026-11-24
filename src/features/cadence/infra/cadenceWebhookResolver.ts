@@ -44,8 +44,10 @@ export async function resolveCadencePendingVoiceTouch(
     );
     if (!hasPending) continue;
 
-    const sequenceRow = await prisma.cadenceSequence.findUnique({
-      where: { id: row.sequenceId },
+    // Defesa em profundidade (auditoria ONDA3-44): a FK run→sequence não é composta por
+    // tenant — o lookup precisa do mesmo organizationId do run, nunca só o id.
+    const sequenceRow = await prisma.cadenceSequence.findFirst({
+      where: { id: row.sequenceId, organizationId },
       select: { id: true, name: true, touches: true },
     });
     if (!sequenceRow) continue;
