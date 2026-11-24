@@ -10,10 +10,10 @@ import makeWASocket, {
 } from '@whiskeysockets/baileys';
 import pino from 'pino';
 import qrcode from 'qrcode';
-import { whatsAppAntiBanThrottler } from '../../../lib/integrations/whatsapp/baileys.client.js';
 import { requestContext } from '../../../lib/async-context.js';
 import { CircuitOpenError, circuitGuard } from '../../../lib/circuitGuard.js';
 import { withTimeout } from '../../../lib/http.js';
+import { whatsAppAntiBanThrottler } from '../../../lib/integrations/whatsapp/baileys.client.js';
 import { logger } from '../../../lib/logger.js';
 import { toE164BR } from '../../../lib/phone.js';
 import { recordDeadLetter } from '../../../lib/queue/deadLetter.js';
@@ -22,7 +22,10 @@ import {
   type DistributedLock,
 } from '../../../lib/queue/distributedLock.js';
 import { cacheConnection, isDedicatedWorkerProcess } from '../../../lib/queue/redis.js';
-import { enqueueWhatsAppCommand } from '../../../lib/queue/whatsappCommand.queue.js';
+import {
+  enqueueWhatsAppCommand,
+  type SendWhatsAppMessageContext,
+} from '../../../lib/queue/whatsappCommand.queue.js';
 import { AppError } from '../../../shared/middlewares/errorHandler.js';
 import { isOptedOut } from '../../cadence/application/optOutService.js';
 import { prismaOptOutRepository } from '../../cadence/infra/PrismaOptOutRepository.js';
@@ -392,13 +395,6 @@ export async function shutdownWhatsAppSessions(): Promise<void> {
       await persistStatusToRedis(organizationId, session);
     }),
   );
-}
-
-export interface SendWhatsAppMessageContext {
-  leadId?: string | null;
-  email?: string | null;
-  skipOptOutCheck?: boolean;
-  fromWorker?: boolean;
 }
 
 export async function sendWhatsAppMessage(
