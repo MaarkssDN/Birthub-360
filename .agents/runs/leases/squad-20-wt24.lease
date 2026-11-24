@@ -1,0 +1,7 @@
+lease: squad-20-wt24
+agent: 24-ivo
+branch: agente/24-resilience-dlq-s20
+worktree: C:/Github/Birthub-360-worktrees/squads/squad-20/wt-24
+scope: src/lib/resilience/**, src/lib/queue/dlq/** (read-only inventory: src/lib/queue/**, src/lib/retry|circuit|dlq)
+mission: DEM-20261123-001
+ports: 22200-22299
