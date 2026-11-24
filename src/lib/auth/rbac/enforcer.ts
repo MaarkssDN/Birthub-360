@@ -69,6 +69,15 @@ export function enforceRole(allowedRoles: readonly Role[]) {
       return;
     }
 
+    // Defesa em profundidade B-01/B-02 (ONDA3-97-RBAC): `enforceRole` é export público e não
+    // pode depender exclusivamente de `requireTenant`/`authenticateToken` upstream para garantir
+    // o vínculo de tenant. Um `req.user` sem `organizationId` (mount futuro sem o middleware
+    // canônico, ou contexto de autenticação parcial) nunca deve passar na checagem de papel.
+    if (!authReq.user.organizationId) {
+      sendForbiddenResponse(res, allowedRoles, authReq.user.role);
+      return;
+    }
+
     if (!hasRequiredRole(authReq.user.role, allowedRoles)) {
       sendForbiddenResponse(res, allowedRoles, authReq.user.role);
       return;
