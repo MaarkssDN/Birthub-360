@@ -2,83 +2,63 @@
 
 - **Entrega auditada:** `agente/64-voice-commands-onda4` — Agente 64 (Tito), pipeline de comandos de voz B-07
 - **Base SHA:** `32d07c3750c370b63da8b720019413c9a40e0e68`
-- **SHAs auditados:** `965fc4bf5` (feat), `b46224334` (docs handoff)
+- **SHAs auditados:** `965fc4bf5` (feat), `b46224334` (handoff r1), `8b7a9ab1d` (fix parecer Silas), `425271b5c` (handoff r2)
 - **Runtime auditor:** Devin subagent (diferente do autor — Devin subagent)
 - **Data:** 2026-11-24
 
-## Veredito: REPROVADO
+## Veredito: APROVADO (rodada 2 — ver histórico abaixo)
 
-## Escopo auditado
+## Escopo auditado (estado final, ponta `425271b5c`)
 
 ```
  .agents/handoffs/onda4/64-para-00-voice-commands-onda4.md      | docs
+ src/features/voice-hub/commands/__tests__/voiceCommandRouter.test.ts | ~390 (novo, movido p/ ownership)
  src/features/voice-hub/commands/command.processor.ts           |  25 +
  src/features/voice-hub/commands/confirmation.manager.ts        |  87 + (novo)
  src/features/voice-hub/commands/intent.parser.ts               | 185 + (novo)
  src/features/voice-hub/commands/permission.guard.ts            |  58 + (novo)
- src/features/voice-hub/commands/voice-command-router.ts        | 286 + (novo)
- tests/unit/features/voice-hub/voiceCommandRouter.test.ts       | 337 + (novo)  ← FORA DO OWNERSHIP
+ src/features/voice-hub/commands/voice-command-router.ts        | 286 + (novo) +41 (binding)
 ```
 
-## Achados
+## Histórico do parecer
 
-### A1 — Arquivo fora do ownership declarado (violação de escopo/propriedade)
+- **Rodada 1 (`b46224334`): REPROVADO** — dois achados:
+  - **A1:** teste em `tests/unit/features/voice-hub/` fora do ownership
+    `src/features/voice-hub/commands/**` (`tests/unit/**` é do Agente 03).
+  - **A2:** `resolveConfirmation` não vinculava a confirmação ao tenant/usuário
+    criador — `mutate(command.organizationId)` usava a org do comando
+    pendente, permitindo mutação cross-tenant dado um `confirmationId` válido.
+- **Rodada 2 (`8b7a9ab1d` + `425271b5c`): correções verificadas → APROVADO.**
 
-A missão ONDA4-64 declarou ownership exclusivo
-`src/features/voice-hub/commands/**`. O arquivo
-`tests/unit/features/voice-hub/voiceCommandRouter.test.ts` está fora desse
-path. Pela `.agents/MATRIZ_PROPRIEDADE.md`, `tests/unit/**` pertence ao
-Agente 03; o handoff do Agente 56 nesta mesma onda trata `tests/**` como
-propriedade de outro agente e colocalizou seu teste corretamente em
-`src/lib/integrations/whatsapp/__tests__/`. O Agente 85 fez o mesmo em
-`src/mobile/offline/__tests__/`.
+## Verificação das correções (rodada 2)
 
-**Correção exigida:** mover o teste para
-`src/features/voice-hub/commands/__tests__/voiceCommandRouter.test.ts` (ou
-obter autorização explícita do 00 para `tests/unit/**`). Sem isso, o merge
-conflita com a governança de propriedade (AGENTS.md §15/§36, P3).
+- **A1 resolvido:** teste movido para
+  `src/features/voice-hub/commands/__tests__/voiceCommandRouter.test.ts` —
+  dentro do ownership; diff final não contém mais nenhum arquivo fora de
+  `src/features/voice-hub/commands/**` + handoff próprio.
+- **A2 resolvido:** `resolveConfirmation` agora rejeita com
+  `confirmation_denied` quando `pendingCommand.organizationId !==
+  actor.organizationId` **e** quando `pendingCommand.userId !== actor.userId`,
+  com logs `warn` contendo ambos os lados (sem vazar payload). Novos testes
+  de regressão cobrem explicitamente: "confirmação de OUTRA organização é
+  rejeitada — sem mutação cross-tenant (Silas A2)" e "confirmação por OUTRO
+  usuário da mesma organização é rejeitada (Silas A2)". O caso de admin de
+  outro tenant confirma que papel alto não compensa tenant divergente.
+- Handoff atualizado com evidências da rodada 2: vitest no novo path +
+  `commandProcessor.test.ts` existente, `tsc --noEmit` limpo, `biome lint`
+  limpo.
 
-### A2 — Confirmação ativa não vinculada ao ator/tenant que a criou (risco de tenancy)
-
-Em `voice-command-router.ts` → `resolveConfirmation()`:
-
-1. `confirmations.consume(confirmationId)` retorna o comando pendente **sem
-   verificar** se `actor.organizationId`/`actor.userId` correspondem aos do
-   criador (`pending.command.organizationId`/`userId`).
-2. `executeVoiceCommandWithCommit` executa `dbRunner.mutate(command.organizationId, command)`
-   — ou seja, a mutação usa o `organizationId` **do comando pendente original**,
-   não o do ator que confirmou.
-
-Cenário: usuário da org B que obtenha um `confirmationId` válido (UUID,
-TTL 2min, gerenciador em memória) da org A consegue disparar a mutação **no
-tenant da org A**. A revalidação de `authorizeVoiceCommand` no momento da
-confirmação é boa, mas autoriza o papel do ator B — não o vínculo com a org
-criadora. A exploração é difícil (ID não adivinhável + TTL curto + mesmo
-processo), mas é uma lacuna real de tenancy em código novo: defesa em
-profundidade exige `pending.command.organizationId === actor.organizationId`
-(e idealmente `userId`) antes de executar.
-
-**Correção exigida:** em `resolveConfirmation`, após `consume` retornar
-`found`, rejeitar com `confirmation_denied`/`not_found` quando
-`consumed.pending.command.organizationId !== actor.organizationId` (e avaliar
-binding por `userId`). Adicionar teste cross-tenant.
-
-## Análise do restante (positivo)
+## Análise do restante (positivo, mantida das rodadas anteriores)
 
 - Pipeline bem desenhado: parser determinístico que nunca executa,
-  autorização por papel mínimo por tipo de comando (viewer não muta),
-  confirmação de uso único com TTL, revalidação de autorização no confirm,
-  executor simulado/ausente → falha honesta (nunca `confirmed: true` sem
-  commit real), resposta só após commit.
-- `organizationId` sempre derivado de `actor.organizationId` no caminho de
-  comando novo — correto.
+  autorização por papel mínimo por tipo (viewer não muta), confirmação de
+  uso único com TTL de 2min, revalidação de autorização + agora binding
+  tenant/usuário no confirm, executor simulado/ausente → falha honesta
+  (nunca `confirmed: true` sem commit real).
 - Sem segredos/PII; dados de teste sintéticos.
-- Handoff e evidência de testes presentes (337 linhas de teste).
+- Escopo final 100% dentro do ownership declarado.
 
 ## Conclusão
-
-A qualidade técnica do código é boa, mas a entrega viola o ownership
-declarado (A1) e apresenta lacuna de tenancy na confirmação (A2). Por ser a
-primeira iteração da branch, **REPROVADO** — correções cirúrgicas e reenvio do
-SHA para nova auditoria. Após mover o teste e adicionar o binding
-ator↔confirmação, o parecer pode ser revisto para APROVADO.
+As duas correções exigidas foram implementadas de forma cirúrgica, com
+testes de regressão dedicados e evidência de gates. **APROVADO** para o SHA
+`425271b5c` (ponta da branch no momento da auditoria).
