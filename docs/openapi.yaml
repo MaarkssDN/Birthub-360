@@ -14,6 +14,15 @@ info:
     lib, mas o contrato completo (inclusive `/api/auth/sign-in/social`,
     `/api/auth/sign-out`, `/api/auth/get-session`, etc.) é o padrão do Better Auth.
 
+    **Exceções de autenticação**: operações marcadas com `security: []` não exigem
+    cookie de sessão. Isso cobre (a) webhooks de entrada de integrações
+    (`/webhooks/*`, `/integrations/*/webhook*`), cuja autenticidade é provada por
+    assinatura HMAC ou segredo por conexão — montados antes do `express.json()`
+    global em `src/bootstrap/webhooks.ts` — e (b) endpoints públicos de
+    captação/agendamento/DSR (`/public/*`, `/calendar/book/{slug}`,
+    `/public/proposals/{token}/view`), protegidos por rate limit e/ou token
+    opaco na URL, montados sem `authenticateToken`/`requireTenant`.
+
     **Multi-tenant**: toda rota autenticada (exceto `/api/auth/*`) roda sob
     `requireTenant`, que resolve o `organizationId` da sessão. Recursos operacionais
     são filtrados pelo tenant. O catálogo público oficial de Market Intelligence é
@@ -2571,13 +2580,20 @@ paths:
           type: string
     get:
       tags: [Activities]
-      summary: Retorna detalhes públicos de um link de agendamento (host, horários disponíveis)
+      security: []
+      summary: >-
+        Retorna detalhes públicos de um link de agendamento (host, horários disponíveis).
+        Rota pública — montada em `/api/calendar/book` sem `authenticateToken`/`requireTenant`
+        (`publicBookingRouter`), protegida apenas por rate limit dedicado.
       responses:
         '200':
           description: Detalhes do link de agendamento
     post:
       tags: [Activities]
-      summary: Realiza um agendamento público de reunião com o consultor
+      security: []
+      summary: >-
+        Realiza um agendamento público de reunião com o consultor. Rota pública —
+        mesmo mount sem autenticação do GET acima.
       requestBody:
         required: true
         content:
@@ -2607,6 +2623,7 @@ paths:
   /public/demo-leads:
     post:
       tags: [Landing]
+      security: []
       summary: Captura pública de lead da landing 360° (demonstração)
       description: |
         Endpoint público, sem autenticação. O tenant é resolvido exclusivamente
@@ -2722,6 +2739,7 @@ paths:
   /public/lead-capture:
     post:
       tags: [Landing]
+      security: []
       summary: Captura pública de lead da landing 360° (formulário "Reserve sua Demonstração", envio por e-mail)
       description: |
         Endpoint público, sem autenticação, distinto de `/public/demo-leads`
@@ -6565,6 +6583,9 @@ paths:
         (`BUG_REPORT_RATE_LIMIT_MAX`, default 10/15min). O campo `context` é
         sanitizado no backend (redação de token/segredo, truncamento) antes de
         persistir — ver `src/features/bug-reports/domain/bugReport.sanitize.ts`.
+        `title`/`description` acima do `maxLength` são truncados no servidor
+        (não rejeitados); `severity` fora do enum é coagido para `MEDIUM`
+        (ver `BugReportUseCases.createBugReport`).
       requestBody:
         required: true
         content:
@@ -8357,6 +8378,7 @@ paths:
         description: publicToken opaco do documento comercial — é a credencial, não há autenticação de sessão nesta rota
     get:
       tags: [CRM 360]
+      security: []
       summary: >-
         Visualização pública de uma proposta (CYC-005) — sem `authenticateToken`/`requireTenant`,
         montada fora do bloco autenticado (mesmo lugar dos webhooks de integração). Registra a
@@ -12311,6 +12333,7 @@ paths:
   /integrations/birth-voice/webhook:
     post:
       tags: [Webhooks]
+      security: []
       summary: >-
         Webhook de resultado de chamada do Birth Voices Hub (Agente 18, achado de auditoria de
         contrato: path documentado estava incompleto — faltava o segmento `/webhook`; o mount é em
@@ -12336,6 +12359,7 @@ paths:
   /integrations/3cx/webhook:
     post:
       tags: [Webhooks]
+      security: []
       summary: >-
         Webhook de evento de chamada do PABX 3CX (Call Flow). Corpo cru (`express.raw`),
         assinatura HMAC no header `x-3cx-signature`, segredo `THREECX_WEBHOOK_SECRET`.
@@ -12666,6 +12690,7 @@ paths:
   /webhooks/voice-result:
     post:
       tags: [Webhooks]
+      security: []
       summary: >-
         Webhook de resultado de ligação de voz (Bland AI). JSON parseado com parser próprio (não
         depende do `express.json()` global, montado antes dele), segredo comparado em tempo
@@ -12686,6 +12711,7 @@ paths:
   /webhooks/email/webhook:
     post:
       tags: [Webhooks]
+      security: []
       summary: >-
         Webhook de e-mail de ENTRADA (CYC-003, onda 26) — stub de transporte: aceita diretamente o
         payload que um provedor real de inbound-parse (SendGrid/Postmark/Mailgun) entregaria depois
@@ -12730,6 +12756,7 @@ paths:
   /webhooks/signature/webhook:
     post:
       tags: [Webhooks]
+      security: []
       summary: >-
         Webhook de status de assinatura eletrônica de ENTRADA (CYC-006, onda 28). O ENVIO da
         solicitação é um stub (nenhuma credencial de integrador gov.br configurada, ver
@@ -12778,6 +12805,7 @@ paths:
         schema: { type: string }
     post:
       tags: [Webhooks]
+      security: []
       summary: >-
         Webhook de entrada do Bitrix24 ("исходящий вебхук") — leads/eventos criados no Bitrix
         chegam aqui (Agente 18, achado de auditoria de contrato: path documentado estava errado —
@@ -12801,6 +12829,7 @@ paths:
   /integrations/chatwoot/webhook:
     post:
       tags: [Webhooks]
+      security: []
       summary: Webhook de entrada do Chatwoot
       responses:
         '200':
@@ -12818,6 +12847,7 @@ paths:
         schema: { type: string }
     post:
       tags: [Webhooks]
+      security: []
       summary: >-
         Webhook de entrada da Stripe (BILLING-007) — eventos assíncronos de pagamento (confirmação,
         estorno, falha) que `createStripeCharge`/`getStripeCharge` (caminho síncrono) não cobrem.
