@@ -227,7 +227,7 @@ jobs:
       - name: Rodar Schemathesis contra docs/openapi.yaml
         run: |
           .venv-schemathesis/bin/schemathesis run docs/openapi.yaml \
-            -u http://127.0.0.1:3000 \
+            --origin http://127.0.0.1:3000 \
             -H "Cookie: $SESSION_COOKIE" \
             -H "Origin: http://127.0.0.1:3000" \
             --report junit \
