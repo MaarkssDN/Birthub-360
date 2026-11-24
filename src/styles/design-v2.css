@@ -1,0 +1,193 @@
+/* ==========================================================================
+   BIRTH HUB 360 — DESIGN TOKENS V2
+   Premium, Elegant, Anti-SaaS-Generic
+   Implementado por Agente 33 (Célia) — Fase 1: Fundação
+   Onda: ONDA-DESIGN-PREMIUM-2026-11-24
+   ==========================================================================
+   NOTA: este arquivo NÃO define utilities manuais — todas as classes
+   utilitárias são geradas pelo Tailwind v4 a partir do bloco @theme
+   abaixo, evitando colisão com as utilities nativas do framework.
+   ========================================================================== */
+
+:root {
+  /* ==========================================================================
+     CORES PREMIUM — Navy Foundation + Gold Accent + Off-White Clarity
+     ========================================================================== */
+
+  /* Navy Foundation — base de autoridade (não reativo a tema: é a cor da marca v2) */
+  --navy-900: #0a0f1e;
+  --navy-800: #0f172a;
+  --navy-700: #1e293b;
+  --navy-600: #334155;
+  --navy-500: #475569;
+
+  /* Gold Accent — sofisticação e ação. -500 é o acento; -700 é a versão
+     escurecida para uso como TEXTO sobre tintes claros (mesmo idioma de
+     --color-brand-ink do globals.css). */
+  --gold-700: #b45309;
+  --gold-500: #d97706;
+  --gold-400: #f59e0b;
+  --gold-300: #fbbf24;
+  --gold-200: #fde68a;
+  --gold-100: #fef3c7;
+
+  /* Off-White — neutros quentes. Escala INVERTIDA no .dark (50 vira fundo,
+     500 vira texto secundário), por isso os componentes v2 devem preferir
+     os tokens semânticos --v2-* abaixo em vez das cores diretas. */
+  --offwhite-50: #fafaf9;
+  --offwhite-100: #f5f5f4;
+  --offwhite-200: #e7e5e4;
+  --offwhite-300: #d6d3d1;
+  --offwhite-400: #a8a29e;
+  --offwhite-500: #78716c;
+
+  /* Semantic Colors — significado, não decoração.
+     -500 = superfície/acento, -700 = texto sobre o tint -100.
+     Escolhas calibradas para contraste AA: texto escuro (--v2-fg) sobre
+     os tintes -100, nunca branco sobre cores saturadas. */
+  --success-700: #047857;
+  --success-500: #10b981;
+  --success-400: #34d399;
+  --success-100: #d1fae5;
+
+  --warning-700: #b45309;
+  --warning-500: #f59e0b;
+  --warning-400: #fbbf24;
+  --warning-100: #fef3c7;
+
+  --danger-700: #b91c1c;
+  --danger-500: #dc2626;
+  --danger-400: #f87171;
+  --danger-100: #fee2e2;
+
+  --info-700: #1d4ed8;
+  --info-500: #2563eb;
+  --info-400: #60a5fa;
+  --info-100: #dbeafe;
+
+  /* ==========================================================================
+     SUPERFÍCIES SEMÂNTICAS V2 — reativas a tema
+     Usadas pelos componentes em src/components/ui/v2/**
+     ========================================================================== */
+  --v2-bg: var(--offwhite-50);
+  --v2-fg: var(--navy-900);
+  --v2-card-bg: #ffffff;
+  --v2-card-fg: var(--navy-900);
+  --v2-muted-fg: var(--offwhite-500);
+  --v2-border-subtle: rgba(10, 15, 30, 0.06);
+  --v2-border-default: rgba(10, 15, 30, 0.12);
+  --v2-border-strong: rgba(10, 15, 30, 0.25);
+  --v2-input-border: rgba(10, 15, 30, 0.35);
+}
+
+.dark {
+  /* Off-White invertido — a escala passa a descer do fundo escuro ao texto claro */
+  --offwhite-50: #0a0f1e;
+  --offwhite-100: #1e293b;
+  --offwhite-200: #334155;
+  --offwhite-300: #475569;
+  --offwhite-400: #64748b;
+  --offwhite-500: #94a3b8;
+
+  /* Semantic Colors — -100 vira tint escuro, -700 vira texto claro */
+  --success-700: #6ee7b7;
+  --success-100: #064e3b;
+
+  --warning-700: #fcd34d;
+  --warning-100: #451a03;
+
+  --danger-700: #fca5a5;
+  --danger-100: #450a0a;
+
+  --info-700: #93c5fd;
+  --info-100: #1e3a8a;
+
+  /* Superfícies semânticas v2 — dark premium.
+     ATENÇÃO: a escala --offwhite-* já está invertida neste bloco (50 = mais
+     escuro), então os tons de TEXTO usam hex explícito claro, não var()
+     da escala invertida. */
+  --v2-bg: var(--navy-900);
+  --v2-fg: #f1f5f9;
+  --v2-card-bg: var(--navy-800);
+  --v2-card-fg: #f1f5f9;
+  --v2-muted-fg: #94a3b8;
+  --v2-border-subtle: rgba(255, 255, 255, 0.06);
+  --v2-border-default: rgba(255, 255, 255, 0.12);
+  --v2-border-strong: rgba(255, 255, 255, 0.25);
+  --v2-input-border: rgba(255, 255, 255, 0.4);
+}
+
+/* ==========================================================================
+   @theme — mapeamento para utilities do Tailwind v4
+   Somente cores novas do v2; tokens semânticos shadcn já existentes
+   (--color-background, --color-ring, --color-input, --color-line etc.)
+   continuam sendo gerados pelo globals.css.
+   ========================================================================== */
+
+@theme {
+  /* Navy scale */
+  --color-navy-900: var(--navy-900);
+  --color-navy-800: var(--navy-800);
+  --color-navy-700: var(--navy-700);
+  --color-navy-600: var(--navy-600);
+  --color-navy-500: var(--navy-500);
+
+  /* Gold scale */
+  --color-gold-700: var(--gold-700);
+  --color-gold-500: var(--gold-500);
+  --color-gold-400: var(--gold-400);
+  --color-gold-300: var(--gold-300);
+  --color-gold-200: var(--gold-200);
+  --color-gold-100: var(--gold-100);
+
+  /* Off-White scale */
+  --color-offwhite-50: var(--offwhite-50);
+  --color-offwhite-100: var(--offwhite-100);
+  --color-offwhite-200: var(--offwhite-200);
+  --color-offwhite-300: var(--offwhite-300);
+  --color-offwhite-400: var(--offwhite-400);
+  --color-offwhite-500: var(--offwhite-500);
+
+  /* Semantic scales */
+  --color-success-700: var(--success-700);
+  --color-success-500: var(--success-500);
+  --color-success-400: var(--success-400);
+  --color-success-100: var(--success-100);
+
+  --color-warning-700: var(--warning-700);
+  --color-warning-500: var(--warning-500);
+  --color-warning-400: var(--warning-400);
+  --color-warning-100: var(--warning-100);
+
+  --color-danger-700: var(--danger-700);
+  --color-danger-500: var(--danger-500);
+  --color-danger-400: var(--danger-400);
+  --color-danger-100: var(--danger-100);
+
+  --color-info-700: var(--info-700);
+  --color-info-500: var(--info-500);
+  --color-info-400: var(--info-400);
+  --color-info-100: var(--info-100);
+
+  /* Superfícies semânticas v2 — bg-card/text-card-foreground/etc. */
+  --color-card: var(--v2-card-bg);
+  --color-card-foreground: var(--v2-card-fg);
+  --color-muted-foreground: var(--v2-muted-fg);
+  --color-border-default: var(--v2-border-default);
+  --color-border-subtle: var(--v2-border-subtle);
+  --color-border-strong: var(--v2-border-strong);
+}
+
+/* ==========================================================================
+   Z-INDEX — Camadas de interface (nomes não colidem com utilitários
+   numéricos do Tailwind, que só gera z-<número>).
+   ========================================================================== */
+
+.z-dropdown { z-index: 1000; }
+.z-sticky { z-index: 1020; }
+.z-fixed { z-index: 1030; }
+.z-modal-backdrop { z-index: 1040; }
+.z-modal { z-index: 1050; }
+.z-popover { z-index: 1060; }
+.z-tooltip { z-index: 1070; }
+.z-toast { z-index: 1080; }

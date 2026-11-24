@@ -3,6 +3,11 @@
    elimina a dependência de rede/OS que tornava os snapshots de regressão visual
    instáveis. As pilhas abaixo apontam apenas para Sora, Inter e IBM Plex Mono. */
 @import "tailwindcss";
+/* Design Tokens V2 — paleta premium (navy/gold/off-white) + superfícies
+   semânticas reativas a tema. Agente 33 (Célia), Onda ONDA-DESIGN-PREMIUM.
+   Somente @theme/@property — nenhuma utility manual, zero colisão com o
+   Tailwind. Coexiste com os tokens v1; adoção via src/components/ui/v2/**. */
+@import "./design-v2.css";
 /* Birth Hub 360 — Tipografia Oficial Exclusiva:
    - Sora: Títulos, Heros, Ações e Display
    - Inter: Interface, Menus, Formulários, Tabelas e Corpo de Texto (com toque arredondado)
