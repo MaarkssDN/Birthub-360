@@ -257,8 +257,11 @@ describe('applySoftDeleteReadFilter / isAuditableModel', () => {
 
 describe('buildSoftDeleteData', () => {
   // ONDA3-10-DATA-INTERCEPTORS / DEM-20261123-001 — Defeito B (handoff 20→11/12):
-  // Agent, AgentSession, CadenceSequence e Workflow têm APENAS deletedAt no schema; escrever
-  // deletedBy/deleteReason neles quebrava delete/deleteMany com "Unknown argument".
+  // Agent, AgentSession, CadenceSequence e Workflow tinham APENAS deletedAt no schema;
+  // escrever deletedBy/deleteReason neles quebrava delete/deleteMany com "Unknown argument".
+  // Resolvido pela migration aditiva (handoff 10→11/12 + missão 11, schema-only): os 4
+  // models ganharam deletedBy/deleteReason nullable → buildSoftDeleteData (DMMF-driven)
+  // passa a escrever os 3 campos neles sem mudança de código.
   it('model completo recebe deletedAt + deletedBy + deleteReason', () => {
     const data = buildSoftDeleteData('Lead', 'user-1', 'Soft delete');
     expect(data.deletedAt).toBeInstanceOf(Date);
@@ -266,11 +269,12 @@ describe('buildSoftDeleteData', () => {
     expect(data.deleteReason).toBe('Soft delete');
   });
 
-  it('models só com deletedAt recebem apenas deletedAt (não escrevem campo inexistente)', () => {
+  it('Agent/AgentSession/CadenceSequence/Workflow recebem os 3 campos após colunas aditivas', () => {
     for (const model of ['Agent', 'AgentSession', 'CadenceSequence', 'Workflow']) {
       const data = buildSoftDeleteData(model, 'user-1', 'Soft delete');
-      expect(Object.keys(data)).toEqual(['deletedAt']);
       expect(data.deletedAt).toBeInstanceOf(Date);
+      expect(data.deletedBy).toBe('user-1');
+      expect(data.deleteReason).toBe('Soft delete');
     }
   });
 
