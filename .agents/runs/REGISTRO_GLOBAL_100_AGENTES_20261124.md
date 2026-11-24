@@ -4,9 +4,9 @@
 **Autoridade:** Orquestrador Humano  
 **Coordenador Global:** Agente 00 — Astra  
 **Repositório Canônico:** `C:\Github\Birthub-360`  
-**Worktree do Coordenador:** `C:\Github\Birthub-360-worktrees\dem-20261123-onda3\wt-00-integracao` (`integracao/onda-3-dem20261123` @ `871d4b16d`)  
+**Worktree do Coordenador:** `C:\Github\Birthub-360-worktrees\dem-20261123-onda3\wt-00-integracao` (`integracao/onda-3-dem20261123`)  
 **Baseline Homologada:** `integracao/onda-2-dem20261123` @ `32d07c3750c370b63da8b720019413c9a40e0e68`  
-**Data/Hora de Consolidação:** 2026-11-24 14:06 BRT  
+**Data/Hora de Consolidação:** 2026-11-24 14:20 BRT  
 **Postura de Release:** **NO-GO** (mantido até homologação integral e decisão humana)
 
 ---
@@ -27,6 +27,7 @@
   - **Leva 4B (`49d1f38cd`):** `31 — Noa` (`8865247c7` → merge `c3626b3f8`, `APROVADO` — código `MainLayout.tsx` + handoff), `44 — Lola` (`aeb9004f4` → merge `49d1f38cd`, `APROVADO` — diagnóstico/handoffs). Gate: 6/6 testes `SkipLink.test.tsx` verdes.
   - **Leva 5A (`b54b59fee`):** `10 — Mara` (`d13f08892` → merge `9d9bfca2f`, `APROVADO` — `TimelineEvent` em `AUDITABLE_MODELS` + `buildSoftDeleteData` via DMMF), `23 — Pina` (`82a50d0c9` → merge `b54b59fee`, `APROVADO` — dedup outbound queues + remoção `idempotencyManager.ts`). Gate: 56/56 testes unitários (`prisma-interceptors` + `outboundPushDedup`) verdes.
   - **Leva 5B (`871d4b16d`):** `40 — Ravi` (`f3fc2f203` → merge `930ee7b7b`, `APROVADO` — remoção `role="button"` órfão em `crm/components/KanbanBoard.tsx`), `41 — Cadu` (`59738d5cf` → merge `732d7fd08`, `APROVADO` — `activities` data civil, `leadOwnership` anti-IDOR cross-tenant e `feed.ics` self-only), `43 — Amon` (`2fc7570d0` → merge `d737b6f62`, `APROVADO` — `tasks.routes.ts` authz e prevenção de IDOR no prospecting outbound), `09 — Silas` (`e426979a7` → merge `871d4b16d`, todos os pareceres da Onda 3 incorporados). Gate: 37/37 testes unitários verdes + `npx tsc --noEmit` exit 0.
+  - **Leva 6 (pós-17/17 — entregas tardias auditadas):** `44 — Lola` cadence-fix (`fea9d698b` → merge desta leva, `APROVADO` — sujeito de opt-out completo `{leadId,email,phoneE164}` + filtro `organizationId` em `CadenceSequence` worker/webhook; ownership `src/features/cadence/**` estendido formalmente pelo 00) e `50 — Atlas` hub-tasks authz (`5a1e85605` → merge desta leva, `APROVADO` — IDOR intra-portal corrigido com `tasks.task.get` + `CREATED_BY`/`RESPONSIBLE_ID`/role; listagem unificada com dedup). Pareceres incorporados via `fb95a7008`. Gates: 20/20 `hubTasks.service.test.ts` + 132 testes unitários `cadence` verdes; testes de integração `cadenceRun.worker`/`cadence-*.routes` não executáveis neste worktree por ausência de Postgres (`:5434`) e Redis (`:6379`) — limitação de ambiente, não regressão.
 
 ---
 
