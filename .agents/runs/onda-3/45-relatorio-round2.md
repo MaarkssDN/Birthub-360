@@ -50,7 +50,7 @@
 - `timeLabel` em `Calendar.tsx` (`src/features/calendar/**`, fora do ownership): sem
   ação — com a escrita corrigida, novos registros renderizam certo; registros legados
   gravados como meia-noite UTC continuam no dia anterior (correção de dados exigiria
-  backfill/migration — proibido nesta onda; decisao do 00 se vira demanda).
+  backfill/migration — proibido nesta onda; decisão do 00 se vira demanda).
 
 ## Novos helpers (src/features/crm/tasks/calendar.utils.ts)
 `normalizeActivityDateToUtcIso`, `civilDateKeyInZone`, `civilDayRangeInZoneToUtcIso`.
