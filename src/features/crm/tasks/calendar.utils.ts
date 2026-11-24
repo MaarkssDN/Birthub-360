@@ -102,6 +102,77 @@ export function wallTimeInZoneToUtcIso(
   }
 }
 
+/**
+ * Chave de data civil (`YYYY-MM-DD`) do instante no fuso informado — o "dia" que o usuário
+ * vê, não o dia UTC. Usada para reagrupar um instante UTC no dia civil correto antes de
+ * recombinar com um horário de parede (ex.: feed iCal, filtros por dia).
+ */
+export function civilDateKeyInZone(
+  instant: Date | string,
+  timeZone: string = 'America/Sao_Paulo',
+): string {
+  const date = typeof instant === 'string' ? new Date(instant) : instant;
+  if (Number.isNaN(date.getTime())) {
+    throw new Error('Instante inválido para chave de data civil.');
+  }
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+}
+
+/**
+ * Intervalo [início, fim) em UTC que cobre o dia civil `YYYY-MM-DD` inteiro no fuso
+ * informado — para filtros `?date=` que precisam do dia do USUÁRIO, não do dia UTC nem
+ * do dia do servidor.
+ */
+export function civilDayRangeInZoneToUtcIso(
+  date: string,
+  timeZone: string = 'America/Sao_Paulo',
+): { start: string; end: string } {
+  // wallTimeInZoneToUtcIso já valida formato e existência do dia civil.
+  wallTimeInZoneToUtcIso(date, '00:00', timeZone);
+  const [y, m, d] = date.trim().split('-').map(Number);
+  const nextDay = new Date(Date.UTC(y, m - 1, d + 1)); // normaliza overflow (31/jan → 01/fev)
+  const nextKey = `${nextDay.getUTCFullYear()}-${String(nextDay.getUTCMonth() + 1).padStart(2, '0')}-${String(nextDay.getUTCDate()).padStart(2, '0')}`;
+  return {
+    start: wallTimeInZoneToUtcIso(date, '00:00', timeZone),
+    end: wallTimeInZoneToUtcIso(nextKey, '00:00', timeZone),
+  };
+}
+
+/**
+ * Normaliza o campo `date` de uma Activity para o instante UTC correto.
+ *
+ * Caso especial: strings date-only (`YYYY-MM-DD`, formato emitido por
+ * `<input type="date">`) NÃO passam por `new Date()` — esse construtor interpreta
+ * date-only como meia-noite UTC, que em fusos negativos (ex.: America/Sao_Paulo)
+ * renderiza no dia ANTERIOR. Date-only é tratada como meia-noite no `timeZone`
+ * informado (relógio de parede do usuário/tenant), nunca como UTC.
+ */
+export function normalizeActivityDateToUtcIso(
+  input: Date | string,
+  timeZone: string = 'America/Sao_Paulo',
+): string {
+  if (input instanceof Date) {
+    if (Number.isNaN(input.getTime())) {
+      throw new Error('Data de atividade inválida para normalização UTC.');
+    }
+    return input.toISOString();
+  }
+  const trimmed = input.trim();
+  if (DATE_ONLY_PATTERN.test(trimmed)) {
+    return wallTimeInZoneToUtcIso(trimmed, null, timeZone);
+  }
+  const parsed = new Date(trimmed);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new Error(`Data de atividade inválida para normalização UTC: "${input}".`);
+  }
+  return parsed.toISOString();
+}
+
 export function formatUtcTaskToClientTimezone(
   utcIsoString: string,
   clientTimezone: string = 'America/Sao_Paulo',
