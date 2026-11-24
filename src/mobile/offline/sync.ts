@@ -27,7 +27,12 @@ export function reconcileOfflineFieldLevelMerge<T extends Record<string, unknown
   remote: VersionedEntitySnapshot<T>;
 }): FieldLevelMergeResult<T> {
   const { base, local, remote } = params;
-  if (local.tenantId !== remote.tenantId || local.id !== remote.id) {
+  if (
+    local.tenantId !== remote.tenantId ||
+    local.id !== remote.id ||
+    base.tenantId !== local.tenantId ||
+    base.id !== local.id
+  ) {
     throw new Error('Não é permitido mesclar registros offline de tenants ou IDs distintos.');
   }
 
@@ -78,6 +83,16 @@ export function reconcileOfflineFieldLevelMerge<T extends Record<string, unknown
           resolvedFromRemote.push(key);
         }
       }
+    }
+  }
+
+  // `undefined` representa campo ausente (JSON não serializa undefined): remove a chave
+  // herdada do spread de `base.fields` para que uma remoção local seja refletida de fato —
+  // caso contrário `'campo' in mergedFields` continuaria true com valor undefined.
+  for (const key of allKeys) {
+    if (mergedFields[key] === undefined) {
+      delete mergedFields[key];
+      delete mergedFieldTimestamps[key];
     }
   }
 
