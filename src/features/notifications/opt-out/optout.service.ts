@@ -6,7 +6,7 @@
  * para o titular nas filas de mensageria (WhatsApp, Cadência, Notificações), prevenindo disparos indevidos.
  */
 
-import type { Queue, Job } from 'bullmq';
+import type { Queue, JobType } from 'bullmq';
 import { logger } from '../../../lib/logger.js';
 import {
   whatsappCommandQueue,
@@ -43,6 +43,27 @@ function extractSignificantDigits(phone: string | null | undefined): string | nu
 /**
  * Cancela jobs pendentes/agendados em uma fila BullMQ que casem com o sujeito que solicitou opt-out.
  */
+/**
+ * Estados BullMQ em que um job ainda NÃO foi executado e pode ser suprimido. Cobre todos os
+ * estados pendentes do BullMQ v6: 'waiting', 'delayed' (backoff/retry agendado), 'prioritized'
+ * (jobs com priority) e 'waiting-children' (jobs bloqueados por filho). Omitir 'prioritized' ou
+ * 'waiting-children' deixaria escapar exatamente os envios comerciais mais "quentes" do opt-out —
+ * a revogação precisa ser a trava mais forte (LGPD).
+ */
+const PENDING_JOB_STATES: JobType[] = [
+  'waiting',
+  'delayed',
+  'prioritized',
+  'waiting-children',
+];
+
+/** Extrai string de forma defensiva — payloads de fila não são contratualmente confiáveis. */
+function asNonEmptyString(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
 export async function cancelPendingJobsForOptOut(
   params: CancelPendingJobsParams,
   queueInstance: Queue<any> = whatsappCommandQueue as Queue<any>,
@@ -53,58 +74,87 @@ export async function cancelPendingJobsForOptOut(
 
   const cancelledJobIds: string[] = [];
 
+  // A fila pode estar nula quando queues estão desabilitadas (ENABLE_QUEUES=false) ou em
+  // contextos de teste — nesse caso não há nada a purgar, mas o registro do opt-out (feito por
+  // recordOptOutAndPurgePendingJobs) continua válido e os gates de envio por canal seguem
+  // bloqueando. Retornar vazio aqui é correto; logar como erro seria falso alarme.
+  if (!queueInstance || typeof queueInstance.getJobs !== 'function') {
+    logger.warn(
+      { organizationId, queueName: queueInstance?.name ?? null },
+      'Opt-Out Real: fila BullMQ indisponível/nula — purga de jobs pendentes ignorada (opt-out permanece registrado).',
+    );
+    return { cancelledJobsCount: 0, jobIds: [] };
+  }
+
   try {
-    // Buscar jobs nos estados que ainda não foram executados: 'waiting', 'delayed'
-    const pendingJobs = await queueInstance.getJobs(['waiting', 'delayed']);
+    // Buscar jobs em TODOS os estados ainda não executados (ver PENDING_JOB_STATES).
+    const pendingJobs = await queueInstance.getJobs(PENDING_JOB_STATES);
 
     for (const job of pendingJobs) {
-      const data = job.data as Partial<WhatsAppCommand> & {
-        organizationId?: string;
-        leadId?: string;
-        email?: string;
-        number?: string;
-        context?: { leadId?: string | null; email?: string | null };
-      };
+      // Isolamento por job: um remove() que falha (ex.: job transitou para 'active' entre o
+      // getJobs e o remove — race real de revogação) ou um payload malformado NÃO pode abortar
+      // a purga dos jobs restantes que também casam com o opt-out.
+      try {
+        const data = job.data as Partial<WhatsAppCommand> & {
+          organizationId?: string;
+          leadId?: string;
+          email?: string;
+          number?: string;
+          context?: { leadId?: string | null; email?: string | null };
+        };
 
-      if (data.organizationId !== organizationId) {
-        continue;
-      }
+        if (data.organizationId !== organizationId) {
+          continue;
+        }
 
-      let matches = false;
+        let matches = false;
 
-      // 1. Casamento por Lead ID
-      const jobLeadId = data.leadId ?? data.context?.leadId;
-      if (leadId && jobLeadId && jobLeadId === leadId) {
-        matches = true;
-      }
-
-      // 2. Casamento por Telefone
-      if (!matches && targetPhoneSuffix && data.number) {
-        const jobPhoneSuffix = extractSignificantDigits(data.number);
-        if (jobPhoneSuffix && jobPhoneSuffix === targetPhoneSuffix) {
+        // 1. Casamento por Lead ID
+        const jobLeadId = asNonEmptyString(data.leadId) ?? asNonEmptyString(data.context?.leadId);
+        if (leadId && jobLeadId && jobLeadId === leadId) {
           matches = true;
         }
-      }
 
-      // 3. Casamento por E-mail
-      if (!matches && targetEmail) {
-        const jobEmail = (data.email ?? data.context?.email ?? '').trim().toLowerCase();
-        if (jobEmail && jobEmail === targetEmail) {
-          matches = true;
+        // 2. Casamento por Telefone
+        if (!matches) {
+          const jobNumber = asNonEmptyString(data.number);
+          if (targetPhoneSuffix && jobNumber) {
+            const jobPhoneSuffix = extractSignificantDigits(jobNumber);
+            if (jobPhoneSuffix && jobPhoneSuffix === targetPhoneSuffix) {
+              matches = true;
+            }
+          }
         }
-      }
 
-      if (matches) {
-        await job.remove();
-        cancelledJobIds.push(job.id ?? 'unknown');
-        logger.info(
-          {
-            organizationId,
-            jobId: job.id,
-            queueName: queueInstance.name,
-            matchedBy: leadId ? 'leadId' : targetPhoneSuffix ? 'phone' : 'email',
-          },
-          'Opt-Out Real: job agendado/pendente cancelado e removido imediatamente da fila BullMQ.',
+        // 3. Casamento por E-mail
+        if (!matches && targetEmail) {
+          const rawJobEmail = asNonEmptyString(data.email) ?? asNonEmptyString(data.context?.email);
+          const jobEmail = rawJobEmail ? rawJobEmail.toLowerCase() : null;
+          if (jobEmail && jobEmail === targetEmail) {
+            matches = true;
+          }
+        }
+
+        if (matches) {
+          await job.remove();
+          cancelledJobIds.push(job.id ?? 'unknown');
+          logger.info(
+            {
+              organizationId,
+              jobId: job.id,
+              queueName: queueInstance.name,
+              matchedBy: leadId ? 'leadId' : targetPhoneSuffix ? 'phone' : 'email',
+            },
+            'Opt-Out Real: job agendado/pendente cancelado e removido imediatamente da fila BullMQ.',
+          );
+        }
+      } catch (jobErr) {
+        // Job que falhou no remove (provavelmente já ativo) ou payload ilegível: registra e
+        // segue para o próximo — a supressão residual fica a cargo do gate de envio por canal
+        // (isOptedOut/checkOptOutStatus), que consulta o registro de opt-out no momento do envio.
+        logger.error(
+          { err: jobErr, organizationId, jobId: job.id, queueName: queueInstance.name },
+          'Opt-Out Real: falha ao remover um job pendente — continuando varredura dos demais.',
         );
       }
     }

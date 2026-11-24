@@ -2,7 +2,9 @@
 
 ## Dono
 
-Agente 01 — Plataforma, Segurança e Dados
+Agente 96 — Nera (Autenticação, Sessões e OAuth, Squad 90), com `src/lib/auth/rbac/**`
+reservado ao Agente 97 — Rocco. Este arquivo declarava "Agente 01" (numeração legada)
+— substituído pela `.agents/MATRIZ_PROPRIEDADE.md` oficial (revisão 2026-11-24).
 
 Este arquivo governa esta pasta e todas as subpastas.
 
