@@ -64,4 +64,6 @@ Não editei `src/lib/queue/**` (propriedade do 23), `rateLimiters.ts`, nem nada 
 
 ## 7. SHA congelado
 
-- **Commit:** `6628adb7200735319dba64570a51f401d40aad9a`
+- **Commit de implementação:** `8de249cf3949f4f636988690933f12660b4da027`
+- **SHA congelado para Silas (tip do branch, inclui este registro):** HEAD de
+  `agente/24-resilience-dlq-s20` no momento da entrega — ver `git rev-parse HEAD`.
