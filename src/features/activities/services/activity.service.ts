@@ -12,8 +12,10 @@ import { logger } from '../../../lib/logger.js';
 import { prisma } from '../../../lib/prisma.js';
 import { type ActivityStatus, type ActivityType, activitySchema } from '../../../lib/zod.js';
 import { automationEngine } from '../../automations/automation.engine.js';
+import { civilDayRangeUtc, parseActivityDate } from '../domain/activityDate.js';
 import type { ActivityListFilters } from '../domain/Activity.js';
 import { assertRealOwner } from '../domain/ownerGuard.js';
+import { assertActivityLeadInTenant } from '../infra/leadOwnership.js';
 
 function serializeActivity<
   T extends {
@@ -55,13 +57,20 @@ export class ActivityService {
     limit: number = 50,
     filters: ActivityListFilters = {},
   ) {
-    const where: Prisma.ActivityWhereInput = { organizationId };
+    // deletedAt: null — este serviço alimenta tools de IA (opsTools/aiPendingAction) e antes
+    // devolvia atividades soft-deletadas pelo repositório (handoff 45 item 3).
+    const where: Prisma.ActivityWhereInput = { organizationId, deletedAt: null };
     if (dateStr) {
-      const searchDate = new Date(dateStr);
-      where.date = {
-        gte: new Date(searchDate.setHours(0, 0, 0, 0)),
-        lt: new Date(searchDate.setHours(23, 59, 59, 999)),
-      };
+      const civilRange = civilDayRangeUtc(dateStr);
+      if (civilRange) {
+        where.date = civilRange;
+      } else {
+        const searchDate = new Date(dateStr);
+        where.date = {
+          gte: new Date(searchDate.setHours(0, 0, 0, 0)),
+          lt: new Date(searchDate.setHours(23, 59, 59, 999)),
+        };
+      }
     }
     if (filters.leadId) where.leadId = filters.leadId;
     if (filters.status)
@@ -111,7 +120,7 @@ export class ActivityService {
     if (from >= to) throw new Error('A data inicial deve ser anterior à final.');
 
     const activities = await prisma.activity.findMany({
-      where: { organizationId, date: { gte: from, lt: to } },
+      where: { organizationId, deletedAt: null, date: { gte: from, lt: to } },
       include: { lead: { include: { company: true, contact: true } } },
       orderBy: { date: 'asc' },
     });
@@ -121,6 +130,9 @@ export class ActivityService {
   async create(organizationId: string, data: z.infer<typeof activitySchema>) {
     const validated = activitySchema.parse(data);
     assertRealOwner(validated.owner);
+    // Mesmo guard do repositório: leadId cross-tenant/soft-deletado não pode ser gravado.
+    await assertActivityLeadInTenant(organizationId, validated.leadId);
+    const activityDate = parseActivityDate(validated.date);
     const activity = await prisma.activity.create({
       data: {
         ...validated,
@@ -129,13 +141,13 @@ export class ActivityService {
           validated.status,
         ) as unknown as Prisma.ActivityCreateInput['status'],
         organizationId,
-        date: new Date(validated.date),
+        date: activityDate,
       },
     });
     await prisma.timelineEvent.create({
       data: {
         type: 'activity',
-        description: `Atividade '${validated.type}' agendada para ${new Date(validated.date).toLocaleDateString()}`,
+        description: `Atividade '${validated.type}' agendada para ${activityDate.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`,
         leadId: validated.leadId,
       },
     });
@@ -143,12 +155,16 @@ export class ActivityService {
   }
 
   async update(organizationId: string, id: string, data: Partial<z.infer<typeof activitySchema>>) {
-    const currentActivity = await prisma.activity.findFirst({ where: { id, organizationId } });
+    // deletedAt no pre-check: PUT não pode mais editar/"ressuscitar" atividade soft-deletada.
+    const currentActivity = await prisma.activity.findFirst({
+      where: { id, organizationId, deletedAt: null },
+    });
     if (!currentActivity) throw new Error('Activity not found');
     if (data.owner) assertRealOwner(data.owner);
+    if (data.leadId) await assertActivityLeadInTenant(organizationId, data.leadId);
 
     const updateData: Prisma.ActivityUpdateInput = { ...data } as Prisma.ActivityUpdateInput;
-    if (data.date) updateData.date = new Date(data.date);
+    if (data.date) updateData.date = parseActivityDate(data.date);
     if (data.type)
       updateData.type = toPrismaActivityType(
         data.type,
@@ -204,9 +220,16 @@ export class ActivityService {
   }
 
   async delete(organizationId: string, id: string) {
-    const existing = await prisma.activity.findFirst({ where: { id, organizationId } });
+    // Soft delete — mesmo comportamento do PrismaActivityRepository. O hard delete anterior
+    // divergía do repositório e apagava a trilha que o soft delete (Onda 2, Agente 11) preserva.
+    const existing = await prisma.activity.findFirst({
+      where: { id, organizationId, deletedAt: null },
+    });
     if (!existing) throw new Error('Activity not found');
-    return prisma.activity.delete({ where: { id, organizationId } });
+    return prisma.activity.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
   }
 }
 export const activityService = new ActivityService();
