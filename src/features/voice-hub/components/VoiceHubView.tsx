@@ -1,6 +1,5 @@
 import {
   AlertCircle,
-  CheckCircle2,
   Layers,
   Mic,
   Phone,
@@ -16,6 +15,7 @@ import { Badge } from '../../../components/ui/Badge.js';
 import { Button } from '../../../components/ui/Button.js';
 import { Card } from '../../../components/ui/Card.js';
 import { SoundFX } from '../../../lib/soundEffects.js';
+import { toast } from '../../../lib/toast.js';
 import {
   type ColdCallStatusData,
   type SuppressionItem,
@@ -40,20 +40,12 @@ export function VoiceHubView() {
   const [leadIdToCall, setLeadIdToCall] = useState('');
   const [agentType, setAgentType] = useState<'sdr' | 'nps' | 'reactivation'>('sdr');
   const [dialing, setDialing] = useState(false);
-  const [dialFeedback, setDialFeedback] = useState<{
-    type: 'success' | 'error' | 'warning';
-    message: string;
-  } | null>(null);
 
   // Add suppression modal state
   const [showAddSuppression, setShowAddSuppression] = useState(false);
   const [suppressPhone, setSuppressPhone] = useState('');
   const [suppressReason, setSuppressReason] = useState('');
   const [savingSuppression, setSavingSuppression] = useState(false);
-  const [suppressionFeedback, setSuppressionFeedback] = useState<{
-    type: 'success' | 'error';
-    message: string;
-  } | null>(null);
 
   const loadData = useCallback(async () => {
     // allSettled: uma fonte fora do ar não pode derrubar as demais nem ser
@@ -106,27 +98,21 @@ export function VoiceHubView() {
     if (!leadIdToCall.trim()) return;
 
     setDialing(true);
-    setDialFeedback(null);
     SoundFX.play('click');
 
     try {
       const result = await voiceHubApi.callLead(leadIdToCall.trim(), agentType);
-      SoundFX.play('success');
-      setDialFeedback({
-        type: 'success',
-        message: `Ligação iniciada com sucesso via SDR de voz (Status: ${result.status}${
+      // toast.* já dispara o SoundFX correspondente — não duplicar aqui.
+      toast.success(
+        `Ligação iniciada com sucesso via SDR de voz (Status: ${result.status}${
           result.callSid ? `, SID: ${result.callSid}` : ''
         }).`,
-      });
+      );
       setLeadIdToCall('');
       loadData();
     } catch (err: any) {
-      SoundFX.play('error');
       const msg = err?.response?.data?.error || err?.message || 'Falha ao disparar ligação de voz.';
-      setDialFeedback({
-        type: 'error',
-        message: msg,
-      });
+      toast.error(msg);
     } finally {
       setDialing(false);
     }
@@ -137,27 +123,20 @@ export function VoiceHubView() {
     if (!suppressPhone.trim()) return;
 
     setSavingSuppression(true);
-    setSuppressionFeedback(null);
     try {
       await voiceHubApi.addSuppression({
         phone: suppressPhone.trim(),
         reason: suppressReason.trim() || undefined,
       });
-      SoundFX.play('confirm');
-      setSuppressionFeedback({
-        type: 'success',
-        message: `Telefone ${suppressPhone.trim()} adicionado à lista de supressão.`,
-      });
+      toast.success(`Telefone ${suppressPhone.trim()} adicionado à lista de supressão.`);
       setShowAddSuppression(false);
       setSuppressPhone('');
       setSuppressReason('');
       loadData();
     } catch (err: any) {
-      SoundFX.play('error');
-      setSuppressionFeedback({
-        type: 'error',
-        message: err?.response?.data?.error || err?.message || 'Falha ao registrar bloqueio.',
-      });
+      toast.error(
+        err?.response?.data?.error || err?.message || 'Falha ao registrar bloqueio.',
+      );
     } finally {
       setSavingSuppression(false);
     }
@@ -419,25 +398,6 @@ export function VoiceHubView() {
                   </div>
                 </div>
 
-                {dialFeedback && (
-                  <div
-                    className={`p-3 rounded-lg border text-xs flex items-center gap-2 ${
-                      dialFeedback.type === 'success'
-                        ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-300'
-                        : dialFeedback.type === 'warning'
-                          ? 'bg-amber-950/40 border-amber-800/60 text-amber-300'
-                          : 'bg-rose-950/40 border-rose-800/60 text-rose-300'
-                    }`}
-                  >
-                    {dialFeedback.type === 'success' ? (
-                      <CheckCircle2 className="h-4 w-4 shrink-0" />
-                    ) : (
-                      <AlertCircle className="h-4 w-4 shrink-0" />
-                    )}
-                    <span>{dialFeedback.message}</span>
-                  </div>
-                )}
-
                 <div className="flex items-center justify-between pt-2">
                   <div className="text-xs text-slate-500 flex items-center gap-1.5">
                     <Shield className="h-3.5 w-3.5 text-slate-400" />
@@ -525,24 +485,6 @@ export function VoiceHubView() {
                   Bloquear
                 </Button>
               </div>
-
-              {suppressionFeedback && (
-                <div
-                  role={suppressionFeedback.type === 'error' ? 'alert' : 'status'}
-                  className={`p-2.5 rounded-lg border text-xs flex items-center gap-2 ${
-                    suppressionFeedback.type === 'success'
-                      ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-300'
-                      : 'bg-rose-950/40 border-rose-800/60 text-rose-300'
-                  }`}
-                >
-                  {suppressionFeedback.type === 'success' ? (
-                    <CheckCircle2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                  ) : (
-                    <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                  )}
-                  <span>{suppressionFeedback.message}</span>
-                </div>
-              )}
 
               {showAddSuppression && (
                 <form

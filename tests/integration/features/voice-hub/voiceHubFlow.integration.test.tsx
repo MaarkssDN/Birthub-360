@@ -2,6 +2,7 @@ import '@testing-library/jest-dom/vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { api } from '../../../../src/lib/api.js';
+import { toast } from '../../../../src/lib/toast.js';
 import { voiceHubApi } from '../../../../src/features/voice-hub/api/voiceHub.api.js';
 import { VoiceHubView } from '../../../../src/features/voice-hub/components/VoiceHubView.js';
 
@@ -274,6 +275,7 @@ describe('Capacidade 5 — VoiceHub & Telefonia (Integração e Contratos)', () 
         status: 'queued',
         callSid: 'CA_test_success_123',
       });
+      const toastSuccess = vi.spyOn(toast, 'success');
 
       render(<VoiceHubView />);
 
@@ -285,9 +287,10 @@ describe('Capacidade 5 — VoiceHub & Telefonia (Integração e Contratos)', () 
 
       await waitFor(() => {
         expect(voiceHubApi.callLead).toHaveBeenCalledWith('lead_abc_456', 'sdr');
-        expect(
-          screen.getByText(/Ligação iniciada com sucesso via SDR de voz/i),
-        ).toBeInTheDocument();
+        // Feedback transitório vai para o toast global (padrão do app), não para um alert inline.
+        expect(toastSuccess).toHaveBeenCalledWith(
+          expect.stringContaining('Ligação iniciada com sucesso via SDR de voz'),
+        );
       });
     });
 
@@ -305,6 +308,7 @@ describe('Capacidade 5 — VoiceHub & Telefonia (Integração e Contratos)', () 
           },
         },
       });
+      const toastError = vi.spyOn(toast, 'error');
 
       render(<VoiceHubView />);
 
@@ -315,9 +319,9 @@ describe('Capacidade 5 — VoiceHub & Telefonia (Integração e Contratos)', () 
       fireEvent.click(submitBtn);
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/Número na lista interna de bloqueio \(opt-out\)/i),
-        ).toBeInTheDocument();
+        expect(toastError).toHaveBeenCalledWith(
+          expect.stringContaining('Número na lista interna de bloqueio (opt-out)'),
+        );
       });
     });
   });
