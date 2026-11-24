@@ -4,3 +4,8 @@
  */
 export { detectPII, type GuardrailResult, PIISchema, redactPII } from './pii.guard.js';
 export { detectToxicity, redactToxicity, type ToxicityResult } from './toxicity.guard.js';
+export {
+  fenceUntrustedPromptField,
+  type IndirectPromptInjectionVerdict,
+  inspectIndirectPromptInjection,
+} from './input.filter.js';

@@ -23,15 +23,22 @@ const MARKDOWN_EXFIL_REGEX = /!\[[^\]]*\]\(https?:\/\/[^)\s]+\?(?:[^)\s]*=)/i;
 
 const INVISIBLE_UNICODE_REGEX = /[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g;
 
+/** Limite máximo de caracteres para evitar ReDoS / exaustão de CPU e tokens (handoff 99->70/77). */
+const MAX_UNTRUSTED_PROMPT_FIELD_LENGTH = 8_000;
+
 export function inspectIndirectPromptInjection(
   untrustedFieldText: string,
 ): IndirectPromptInjectionVerdict {
+  const boundedInput =
+    typeof untrustedFieldText === 'string'
+      ? untrustedFieldText.slice(0, MAX_UNTRUSTED_PROMPT_FIELD_LENGTH)
+      : '';
   const detectedThreats: IndirectPromptInjectionVerdict['detectedThreats'] = [];
 
-  if (INVISIBLE_UNICODE_REGEX.test(untrustedFieldText)) {
+  if (INVISIBLE_UNICODE_REGEX.test(boundedInput)) {
     detectedThreats.push('INVISIBLE_UNICODE_SMUGGLING');
   }
-  const normalized = untrustedFieldText.replace(INVISIBLE_UNICODE_REGEX, '');
+  const normalized = boundedInput.replace(INVISIBLE_UNICODE_REGEX, '');
 
   if (SYSTEM_OVERRIDE_REGEX.test(normalized)) {
     detectedThreats.push('SYSTEM_PROMPT_OVERRIDE');
@@ -57,4 +64,18 @@ export function inspectIndirectPromptInjection(
     sanitizedText,
     detectedThreats,
   };
+}
+
+/**
+ * Envolve um campo de texto não-confiável (nome de lead, histórico, e-mail, chat) em um
+ * fence XML delimitado após aplicar `inspectIndirectPromptInjection` e escape de tags
+ * de fechamento — previne `js/system-prompt-injection` (handoff 99->70/77).
+ */
+export function fenceUntrustedPromptField(label: string, untrustedFieldText: string): string {
+  const safeLabel = label.replace(/[^a-zA-Z0-9_-]/g, '_') || 'untrusted_data';
+  const verdict = inspectIndirectPromptInjection(untrustedFieldText);
+  const escapedContent = verdict.sanitizedText
+    .replace(/<\s*\/?\s*untrusted_field[^>]*>/gi, '[BLOCKED_FENCE_TAG]')
+    .trim();
+  return `<untrusted_field name="${safeLabel}">\n${escapedContent}\n</untrusted_field>`;
 }
