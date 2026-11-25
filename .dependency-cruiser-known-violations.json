@@ -145,15 +145,6 @@
   },
   {
     "type": "dependency",
-    "from": "src/features/cadence/jobs/cadenceRun.worker.ts",
-    "rule": {
-      "name": "no-cross-feature-imports",
-      "severity": "error"
-    },
-    "to": "src/features/integrations/birth-voice/coldCall.policy.ts"
-  },
-  {
-    "type": "dependency",
     "from": "src/features/commercial-intelligence/components/CrmQualityTab.tsx",
     "rule": {
       "name": "no-cross-feature-imports",
@@ -448,41 +439,6 @@
       "severity": "error"
     },
     "to": "src/features/cadence/infra/PrismaOptOutRepository.ts"
-  },
-  {
-    "type": "cycle",
-    "from": "src/features/integrations/whatsapp/whatsapp.service.ts",
-    "rule": {
-      "name": "no-circular",
-      "severity": "error"
-    },
-    "to": "src/lib/queue/whatsappCommand.queue.ts",
-    "cycle": [
-      {
-        "name": "src/lib/queue/whatsappCommand.queue.ts",
-        "dependencyTypes": [
-          "local",
-          "import"
-        ]
-      },
-      {
-        "name": "src/features/integrations/whatsapp/whatsapp.service.ts",
-        "dependencyTypes": [
-          "local",
-          "type-only",
-          "import"
-        ]
-      }
-    ]
-  },
-  {
-    "type": "dependency",
-    "from": "src/features/integrations/whatsapp/whatsappMessage.service.ts",
-    "rule": {
-      "name": "no-cross-feature-imports",
-      "severity": "error"
-    },
-    "to": "src/features/cadence/application/optOutService.ts"
   },
   {
     "type": "dependency",
