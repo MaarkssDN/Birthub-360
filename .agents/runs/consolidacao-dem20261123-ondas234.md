@@ -63,11 +63,25 @@ A linha global (`integracao/onda-3-dem20261123`) estava baseada em `32d07c375` �
 | `npm run test:architecture` | `e65f42efa` | ✅ depcruise 0 violações, coverage OK, hotspots OK (11 exceções ativas, 0 falhas), baseline-freshness OK, ownership OK |
 | `npm run build` | `e65f42efa` | ✅ vite + esbuild + verify:pwa-precache (248 entradas) |
 | `npm run lint` | `8f3e92e6a` | ✅ 0 erros / 1512 warnings pré-existentes (não-bloqueante) |
-| `npm run test:unit` | `8f3e92e6a` | ⏳ em execução (~87 min estimados) |
+| `npm run test:unit` | `8f3e92e6a`+`142f72dc7` | ✅ 8284 pass / 7 fail em 6 arquivos — **todas explicadas** (ver §4.1); rerodadas isoladas: 35/35 verdes |
+| `npm run test:unit` (alvo) | `142f72dc7` | ✅ `requirePlatformOperator` 10/10, `prisma-tx-escape-baseline` 14/14, `prisma-interceptors` 28/28, flakes isolados 11/11 |
+| merge `5f80f4303` | tip `490526d9ba` | ✅ merge limpo (ort); traz migration `deletedBy/deleteReason` (Squad 10, Silas APROVADO `2e1d342cc`+`9b73f716a`) e entregas squads 00/50/60/80/90 |
 | `test:integration` / RLS | — | ❌ não executável (Docker/PG indisponíveis) — handoff 04 emitido |
 | e2e / visual / semgrep / trivy | — | ❌ pendentes de CI/ambiente autorizado |
 
-*Nota: gates de typecheck/architecture/build rodaram sobre `e65f42efa`; o merge `8f3e92e6a` adicionou somente commits já auditados da linha global (convergência Onda 3+4 + squad-70, ambos com pareceres Silas). lint/unit reexecutados sobre `8f3e92e6a`.*
+### 4.1. Resultado detalhado da suíte unitária do candidato (7498s, 1007 arquivos)
+
+**Falhas reais corrigidas em `142f72dc7c`:**
+1. `requirePlatformOperator.test.ts` — teste stale: esperava aceite de `?operator_token=` via query, removido intencionalmente por `81325ad985` (ONDA3-22-R3, segurança — vazamento em logs/Referer). Teste atualizado para exigir 403.
+2. `prisma-tx-escape-baseline.test.ts` (×2 asserts) — drift legítimo de baseline: `60aeb3f96b` (ONDA3-41) alterou o statement `$transaction` legado em `PrismaActivityRepository.ts`; hash do baseline atualizado (`5173b1df…` → `20e071c9…`), supressão mantida, lista não cresceu.
+
+**Falha ambiental resolvida pelo merge `5f80f4303`:**
+3. `prisma-interceptors.unit.test.ts` — na rodada anterior o `node_modules` compartilhado continha client Prisma gerado de schema divergente (com `deletedBy/deleteReason` em Agent/AgentSession/CadenceSequence/Workflow). O merge trouxe a entrega aprovada do Squad 10 (`2e1d342cc` schema + `9b73f716a` migration + teste atualizado): schema, migration e teste agora alinhados → **28/28 verdes**.
+
+**Flakes de timeout (15s) confirmados — rerodada isolada 11/11 verdes:**
+4. `module-catalog.migrations.test.ts`, `diWiringConsistency.test.ts`, `verifyOpenapiDriftSubRoutes.test.ts` — varreduras de repo inteiro estourando 15s sob carga da suíte completa (`--no-file-parallelism`, ~125 min). Mesma classe dos flakes `Landing360`/`AppLayout`/`outbox.remed05-boot` da Onda 2 → investigação designada ao Agente 02 (handoff `00-para-02-unit-timeouts.md`).
+
+*Nota: gates de typecheck/architecture/build rodaram sobre `e65f42efa`; merges `8f3e92e6a` e `5f80f4303` adicionaram somente commits já auditados da linha global (todos com pareceres Silas). lint sobre `8f3e92e6a`. Candidato atual: `5f80f4303`.*
 
 ## 5. Estado dos 100 agentes (síntese)
 
@@ -84,9 +98,11 @@ Fonte canônica: `.agents/runs/REGISTRO_GLOBAL_100_AGENTES_20261124.md` (linha g
 - **Squad 80** (80–89): 85 Boris concluído Onda 4; 80 Navi coord.
 - **Squad 90** (90–99): 90 Hélio, 93 Max, 94 Tess, 96 Nera, 97 Rocco, 99 Vito concluídos/parcialmente ativos; 99 recebe missão Trivy.
 
+*Atualização pós-merge `5f80f4303` (tip global `490526d9ba`): Squad 10 entregou `deletedBy`/`deleteReason` nos 4 models (11 Pietro + 12 Vera, Silas APROVADO); squads 50 (55 Ícaro email), 60 (64 Tito voice commands, 67 Teca PII r2), 80 (84 Pia deeplinks) e 90 (93 Max docker-hardening) promoveram entregas aprovadas; 99 Vito publicou resultado de waivers (`.agents/runs/squads/squad-90-evidencia-waivers-20261124.md`).*
+
 ## 6. Bloqueadores e decisões humanas
 
-1. **PROMOÇÃO DA LINHA GLOBAL:** `integracao/consolidacao-dem20261123-candidato` @ `8f3e92e6a` contém tudo (Onda 3+4+correções Onda 2+handoffs). O lease `global-astra.lease` (até 2026-11-25 17:30) reserva integração global à sessão detentora — **decisão humana**: promover o candidato como novo tip de `integracao/onda-3-dem20261123` ou autorizar esta sessão a fazê-lo.
+1. **PROMOÇÃO DA LINHA GLOBAL:** `integracao/consolidacao-dem20261123-candidato` @ `5f80f4303` contém tudo (Onda 3+4 até tip `490526d9ba` + correções Onda 2 + handoffs). O lease `global-astra.lease` (até 2026-11-25 17:30) reserva integração global à sessão detentora — **decisão humana**: promover o candidato como novo tip de `integracao/onda-3-dem20261123` ou autorizar esta sessão a fazê-lo. Atenção: squads seguem promovendo à linha global — re-sincronizar antes do freeze final.
 2. **DUAS SESSÕES ASTRa:** sessões Devin concorrentes como Agente 00 — risco de integração duplicada. Recomenda-se consolidar em uma única sessão coordenadora.
 3. **Hotspots (29–30/11):** 11 exceções sem renovação automática; handoffs emitidos aos 5 squads — decisão de extensão de 14 dias condicionada a branches de refatoração permanece pendente.
 4. **Waivers Trivy (30/11):** missão 99/90 emitida; bumps de `better-auth`/`dompurify`/`nodemailer` exigem aprovação para `package.json`.

@@ -41,6 +41,18 @@ Na rerodada isolada dos 3 arquivos no mesmo SHA: **120/120 verdes em ~100s**. Ou
 - Duas execuções completas consecutivas de `npm run test:unit` com 0 falhas não-explicadas, ou causa raiz documentada com reprodução mínima.
 - Nenhum teste enfraquecido para "ficar verde".
 
+## Atualização 2026-11-24 (candidato de consolidação `5f80f4303`)
+
+Segunda execução completa de `npm run test:unit` (1007 arquivos, 8292 testes, 7498s) reproduziu a mesma classe de flake — agora em testes de **varredura de repositório** que estouram o timeout de 15s sob carga:
+
+- `src/config/__tests__/module-catalog.migrations.test.ts` — timeout 15s (varre `prisma/migrations/**`)
+- `tests/unit/shared/diWiringConsistency.test.ts` — timeout 15s (varre `src/features/**/presentation`)
+- `tests/unit/shared/verifyOpenapiDriftSubRoutes.test.ts` — timeout 15s (varre rotas × OpenAPI)
+
+Rerodada isolada dos 3 arquivos: **11/11 verdes em 24s**. Nota: `Landing360`/`AppLayout`/`outbox.remed05-boot` NÃO falharam nesta rodada — confirma intermitência. Os 3 novos são candidatos a `testTimeout` maior por arquivo (são I/O-bound de varredura, não assíncronos frágeis), mas a decisão segue a regra do tests/AGENTS.md §7: reproduzir no CI antes de ajustar.
+
+Falhas reais encontradas e já corrigidas na integração (não são escopo do Bento): `requirePlatformOperator.test.ts` (teste stale pós-ONDA3-22-R3) e baseline `no-prisma-tx-escape` (drift de hash pós-ONDA3-41) — commit `142f72dc7c`.
+
 ## Contexto adicional
 
 - Onda 3 está em integração sobre a mesma base — coordenar para não duplicar investigação com o Agente 03 (Nina, testes unitários).
