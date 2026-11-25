@@ -102,6 +102,10 @@ export const crmPipelineSchema = z.object({
 
 export const moveCrmRecordSchema = z.object({
   stageId: z.string().min(1),
+  // Aceita string ou timestamp numérico (o controller faz `new Date(...)`) — a validação de
+  // data inválida acontece no repositório (AppError 400), não aqui, para não rejeitar formatos
+  // legítimos como "YYYY-MM-DD".
+  expectedCloseDate: z.union([z.string().min(1), z.number().finite()]).optional(),
 });
 
 /** BILLING-003 (onda 5) — corpo de POST /documents/:id/reconcile-stripe-payment. O formato exato

@@ -30,7 +30,7 @@ export class Crm360UseCases {
     organizationId: string,
     leadId: string,
     stageId: string,
-    expectedCloseDate?: Date,
+    expectedCloseDate?: Date | string | number,
     actorUserId?: string,
   ) {
     return this.crm360Repository.updateLeadStage(

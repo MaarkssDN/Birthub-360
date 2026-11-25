@@ -2,7 +2,8 @@
 
 ## Dono
 
-Agente 03 — Design e Acessibilidade
+Agente 33 — Célia (Squad 30 · Design System). Legado: Agente 03 — Design e Acessibilidade.
+(Reconciliado em ONDA-DESIGN-PREMIUM-2026-11-24 conforme `.agents/MATRIZ_PROPRIEDADE.md`.)
 
 Este arquivo governa esta pasta e todas as subpastas.
 

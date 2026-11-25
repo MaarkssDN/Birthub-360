@@ -39,7 +39,13 @@ export const sanitizeRequest = (req: Request, _res: Response, next: NextFunction
     req.body = sanitizeValue(req.body);
   }
   if (req.query && typeof req.query === 'object') {
-    req.query = sanitizeValue(req.query) as any;
+    // Express 5: req.query é getter-only — sanitizar in-place
+    const sanitizedQuery = sanitizeValue(req.query) as Record<string, unknown>;
+    const queryObj = req.query as Record<string, unknown>;
+    for (const key of Object.keys(queryObj)) {
+      delete queryObj[key];
+    }
+    Object.assign(queryObj, sanitizedQuery);
   }
   if (req.params && typeof req.params === 'object') {
     req.params = sanitizeValue(req.params) as any;
