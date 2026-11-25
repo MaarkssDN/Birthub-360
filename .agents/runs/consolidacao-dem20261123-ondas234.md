@@ -100,9 +100,19 @@ Fonte canônica: `.agents/runs/REGISTRO_GLOBAL_100_AGENTES_20261124.md` (linha g
 
 *Atualização pós-merge `5f80f4303` (tip global `490526d9ba`): Squad 10 entregou `deletedBy`/`deleteReason` nos 4 models (11 Pietro + 12 Vera, Silas APROVADO); squads 50 (55 Ícaro email), 60 (64 Tito voice commands, 67 Teca PII r2), 80 (84 Pia deeplinks) e 90 (93 Max docker-hardening) promoveram entregas aprovadas; 99 Vito publicou resultado de waivers (`.agents/runs/squads/squad-90-evidencia-waivers-20261124.md`).*
 
-## 6. Bloqueadores e decisões humanas
+## 6. Incidente operacional 2026-11-25 — substituição do repositório local
 
-1. **PROMOÇÃO DA LINHA GLOBAL:** `integracao/consolidacao-dem20261123-candidato` @ `5f80f4303` contém tudo (Onda 3+4 até tip `490526d9ba` + correções Onda 2 + handoffs). O lease `global-astra.lease` (até 2026-11-25 17:30) reserva integração global à sessão detentora — **decisão humana**: promover o candidato como novo tip de `integracao/onda-3-dem20261123` ou autorizar esta sessão a fazê-lo. Atenção: squads seguem promovendo à linha global — re-sincronizar antes do freeze final.
+Entre 2026-11-24 ~19:20 e 2026-11-25, o clone local `Birthub-360` foi substituído (provável re-clone/migração C:→D:). Consequências:
+
+- Worktree `wt-00-candidato` e branch local `integracao/consolidacao-dem20261123-candidato` foram perdidos; os commits locais `142f72dc7c`, `5f80f4303c`, `0dbe05f5c0` **não existiam no remote** (candidato remoto estava em `2f4617cd01`) e foram reconstruídos a partir dos arquivos do worktree órfão (intacto em disco).
+- **Reconstrução:** novo worktree `wt-00-candidato-r2`, merge de `origin/integracao/onda-3-dem20261123` (`490526d9ba`) + reaplicação dos 2 reparos e docs → HEAD `d93698f6f`. `diff -r` worktree-órfão × r2: única divergência = `global-astra.lease` (renovado pela outra sessão — correto). SHAs novos (`1f7417ba4`, `a064df674`, `d93698f6f`), conteúdo idêntico.
+- **Estado do remote:** `origin/integracao/consolidacao-dem20261123-candidato` = `2f4617cd01` (3 commits atrás do reconstruído — **push pendente de autorização**); `origin/integracao/onda-3-dem20261123` = `490526d9ba`; **nova onda `pos4` ativa**: `origin/integracao/pos4-dem20261124` = `727d303bd8` (10 agentes: 06, 08, 17, 22, 63, 64, 69, 85, 99 — IDOR, opt-out, idempotência, STT, sec-gates).
+- **Divergência pos4 × onda-3:** pos4 deriva do tip Onda-4 (`9f80c07edc`) e **não contém** as 208+ entregas de squads da linha onda-3 (`490526d9ba`). As correções pos4 (IDOR daily-plan, opt-out STOP, X-Idempotency-Key, gates de segurança) são relevantes para homologação — decisão humana sobre reconciliar pos4 com a linha consolidada.
+- Lease `global-astra.lease` renovado até **2026-11-26** pela sessão Astra detentora (commit `1e1ecb76b`).
+
+## 7. Bloqueadores e decisões humanas
+
+1. **PROMOÇÃO DA LINHA GLOBAL:** candidato reconstruído @ `d93698f6f` (worktree `wt-00-candidato-r2`) contém Onda 3 até tip `490526d9ba` + correções Onda 2 + handoffs — **3 commits à frente do remote** (`2f4617cd01`). Lease `global-astra.lease` renovado até 2026-11-26 pela sessão detentora — **decisões humanas**: (a) autorizar push do candidato reconstruído; (b) definir se o candidato vira tip global ou se a reconciliação passa pela onda pos4; (c) reconciliar pos4 (correções de segurança ativas) com a linha onda-3 consolidada — hoje são linhas divergentes.
 2. **DUAS SESSÕES ASTRa:** sessões Devin concorrentes como Agente 00 — risco de integração duplicada. Recomenda-se consolidar em uma única sessão coordenadora.
 3. **Hotspots (29–30/11):** 11 exceções sem renovação automática; handoffs emitidos aos 5 squads — decisão de extensão de 14 dias condicionada a branches de refatoração permanece pendente.
 4. **Waivers Trivy (30/11):** missão 99/90 emitida; bumps de `better-auth`/`dompurify`/`nodemailer` exigem aprovação para `package.json`.
