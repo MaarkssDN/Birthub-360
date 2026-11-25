@@ -38,7 +38,7 @@ describe('AppBreadcrumbs Component (App Shell)', () => {
     expect(screen.getByText('Hub de Inteligência')).toBeInTheDocument();
   });
 
-  it('marca o último item como aria-current="page"', () => {
+  it('marca o último item como aria-current="page"', async () => {
     render(
       React.createElement(
         MemoryRouter,
@@ -48,6 +48,6 @@ describe('AppBreadcrumbs Component (App Shell)', () => {
     );
 
     const currentPage = screen.getByText('Prospecção');
-    expect(currentPage).toHaveAttribute('aria-current', 'page');
+    await expect(currentPage).toHaveAttribute('aria-current', 'page');
   });
 });
