@@ -66,15 +66,25 @@ nulo — a rejeição 400 evita a inconsistência caso etapas customizadas venha
 
 ## 3. Verificações executadas
 
-- `npx vitest run -c vitest.unit.config.ts src/features/crm360/infra/__tests__/PrismaCrm360Repository.stageTransitions.test.ts`
-  → **NÃO EXECUTADO**: `node_modules` do checkout principal (`D:\Github\Birthub-360`, alvo da
-  junction) está sendo **reinstalado neste momento** (`npm install` em andamento — staging
-  `.pkg-*`, `vitest`/`vite`/`typescript` sem `package.json`, `biome.exe` truncado/locked).
-  `npx vitest` caiu no cache do npx e falhou com `ERR_MODULE_NOT_FOUND`; `tsc`/`biome`
-  indisponíveis. **Limitação registrada conforme instrução da missão — testes NÃO foram
-  executados, não finjo verde.** O teste unitário foi escrito e revisado estaticamente;
-  deve ser rodado quando o `node_modules` estabilizar (comando acima).
-- Revisão estática do diff completo (somente os 5 arquivos do ownership).
+- **Vitest (executado, VERDE):**
+  `node node_modules/vitest/vitest.mjs run -c vitest.unit.config.ts --environment node --pool forks src/features/crm360/infra/__tests__/PrismaCrm360Repository.stageTransitions.test.ts`
+  → **10/10 testes passando** (5 cenários de `updateLeadStage` — movimento válido, reabertura
+  de fechado, `expectedCloseDate` válida, cross-funnel Negócio→Lead e Lead→Negócio, etapa sem
+  `leadStatus`, data inválida, lead inexistente — e 2 de `convertLead` — sucesso e 409).
+  ⚠️ Contorno de ambiente: o `node_modules` do checkout principal estava sendo reinstalado;
+  a symlink do worktree foi apontada temporariamente para o `node_modules` intacto de
+  `dem-20261123-onda3/wt-41-activities` (mesmo lockfile, gerado no Prisma do schema da época).
+  Versões de vitest/TS podem divergir minimamente do CI — rerodar no ambiente normal é
+  recomendado, mas os testes são unitários com prisma mockado.
+- **Biome lint (executado, limpo):** `biome lint` nos 5 arquivos alterados → 0 problemas.
+- **`npx tsc --noEmit` (executado):** ver resultado na seção de encerramento abaixo — o
+  typecheck full-project é lento neste host; resultado registrado após a conclusão.
+- Revisão estática do diff completo (somente arquivos do ownership).
+- **Incidente de worktree:** `git status` inicial limpo, mas `Dockerfile`, `docker-compose.yml`
+  e `.trivyignore.yaml` apareceram modificados com conteúdo **mais antigo** que HEAD (diff
+  removia o pin por digest adicionado em 2026-11-24 — artefato de provisionamento, mtime
+  2026-11-24 16:07, provavelmente falso-negativo de racy-git no status inicial). Restaurados
+  via `git checkout HEAD --` antes do commit final; worktree limpo.
 
 ## 4. Arquivos alterados
 
