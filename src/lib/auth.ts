@@ -7,6 +7,7 @@ import { parseAllowedOrigins } from '../config/network.js';
 import { requestContext } from './async-context.js';
 import { AuditService } from './audit/audit.service.js';
 import { hashPasswordArgon2id, verifyPasswordHash } from './auth/password-hash.js';
+import { resolveSecureCookiesEnabled } from './auth/cookie-security.js';
 import { MailerNotConfiguredError, sendEmail } from './email/mailer.js';
 import { logger } from './logger.js';
 import { prisma } from './prisma.js';
@@ -292,9 +293,16 @@ export const auth = betterAuth({
     updateAge: 60 * 60 * 24, // renova a sessão a cada 24h de uso
   },
   advanced: {
-    useSecureCookies: Boolean(
-      process.env.SECURE_COOKIES === 'true' || process.env.BETTER_AUTH_URL?.startsWith('https://'),
-    ),
+    // POS3-96 (Onda 4): Secure é OBRIGATÓRIO em produção — ver src/lib/auth/cookie-security.ts.
+    // Antes era fail-open: produção sem SECURE_COOKIES/BETTER_AUTH_URL-https emitia cookie de
+    // sessão sem Secure e sem prefixo __Secure-.
+    useSecureCookies: resolveSecureCookiesEnabled(),
+    // POS3-96 (Onda 4): quando TRUST_PROXY=true (mesma flag que liga `app.set('trust proxy', 1)`
+    // e a normalização de x-forwarded-for em src/bootstrap/security.ts), o Better Auth passa a
+    // honrar x-forwarded-host/x-forwarded-proto para inferir a baseURL por request — correto
+    // atrás de proxy reverso que termina TLS (nginx/ALB), onde o socket interno é http://.
+    // Sem a flag, comportamento inalterado (não confia em headers forjáveis pelo cliente).
+    trustedProxyHeaders: env.TRUST_PROXY,
     crossSubDomainCookies: {
       enabled: Boolean(process.env.COOKIE_DOMAIN),
       domain: process.env.COOKIE_DOMAIN,
@@ -302,10 +310,7 @@ export const auth = betterAuth({
     defaultCookieAttributes: {
       httpOnly: true,
       sameSite: 'lax',
-      secure: Boolean(
-        process.env.SECURE_COOKIES === 'true' ||
-          process.env.BETTER_AUTH_URL?.startsWith('https://'),
-      ),
+      secure: resolveSecureCookiesEnabled(),
     },
   },
   user: {
