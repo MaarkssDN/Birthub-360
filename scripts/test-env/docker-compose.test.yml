@@ -1,0 +1,82 @@
+# Stack de TESTE ISOLADA por squad/agente — POS3-02-ISOLATED-ENV (Agente 02, Squad 00).
+#
+# NÃO substitui docker-compose.yml / docker-compose.postgres-local.yml (produção/dev).
+# Este arquivo existe para que cada consumidor (squad/agente) suba seu PRÓPRIO par
+# Postgres+Redis em portas dedicadas, sem tocar nos containers compartilhados
+# `birthhub_postgres`/`birthhub_redis`/`birthhub_meilisearch` — a causa raiz dos
+# ECONNREFUSED :5434/:6379 na integração da Onda 3 foi justamente depender de
+# containers compartilhados que nem sempre estão de pé no worktree de integração.
+#
+# Toda a parametrização vem de env vars exportadas por scripts/test-env/envctl.mjs
+# (COMPOSE_PROJECT_NAME, BHT_PG_PORT, BHT_REDIS_PORT, BHT_PG_VOLUME,
+# BHT_REDIS_VOLUME, POSTGRES_*, REDIS_PASSWORD). Não suba este arquivo direto sem
+# elas — as variáveis marcadas com `:?` falham de propósito para evitar bind
+# acidental em porta default.
+#
+# Postgres: mesma imagem do harness oficial (pgvector/pgvector:pg17 — Onda 2
+# padronizou PG17 com as extensões vector+pg_trgm que o schema exige) e os MESMOS
+# scripts de bootstrap de scripts/db/ (papéis prospector_app/prospector_migrator,
+# extensões, baseline Langfuse). Bancos de teste por consumidor são criados pelo
+# envctl (`provision`), nunca pelo entrypoint — o POSTGRES_DB aqui é só o banco
+# bootstrap `postgres`, descartável.
+name: ${COMPOSE_PROJECT_NAME:?defina via `node scripts/test-env/envctl.mjs up --scope <escopo>`}
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: ${COMPOSE_PROJECT_NAME}_postgres
+    environment:
+      # Superusuário de bootstrap — só para initdb e para o envctl provisionar
+      # bancos/papéis por consumidor. Nada deve conectar como ele em runtime.
+      POSTGRES_USER: ${POSTGRES_USER:-prospector}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-prospector_pass}
+      POSTGRES_DB: postgres
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:-prospector_app_pass}
+      MIGRATOR_DB_PASSWORD: ${MIGRATOR_DB_PASSWORD:-prospector_migrator_pass}
+    ports:
+      - '${BHT_PG_PORT:?defina via envctl}:${POSTGRES_PORT:-5432}'
+    shm_size: '1gb'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # initdb só roda na primeira subida de um volume novo. O envctl repete o
+      # create-app-role.sql.tpl dentro de CADA banco de consumidor criado depois
+      # (mesmo procedimento de scripts/test/prepare-integration-env.js).
+      - ../../scripts/db/create-app-role.sql:/docker-entrypoint-initdb.d/create-app-role.sql.tpl:ro
+      - ../../scripts/db/docker-init.sh:/docker-entrypoint-initdb.d/01-create-app-role.sh:ro
+      - ../../scripts/db/02-enable-extensions.sql:/docker-entrypoint-initdb.d/02-enable-extensions.sql:ro
+      - ../../scripts/db/03-create-langfuse-db.sql:/docker-entrypoint-initdb.d/03-create-langfuse-db.sql:ro
+    security_opt:
+      - no-new-privileges:true
+    restart: 'no'
+    healthcheck:
+      test:
+        ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-prospector} -d postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 24
+
+  redis:
+    image: redis:7-alpine
+    container_name: ${COMPOSE_PROJECT_NAME}_redis
+    command: redis-server --requirepass ${REDIS_PASSWORD:-prospector_redis_pass}
+    ports:
+      - '${BHT_REDIS_PORT:?defina via envctl}:6379'
+    volumes:
+      - redisdata:/data
+    security_opt:
+      - no-new-privileges:true
+    restart: 'no'
+    healthcheck:
+      test:
+        ['CMD-SHELL', 'redis-cli -a ${REDIS_PASSWORD:-prospector_redis_pass} ping | grep -q PONG']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  # Declarados fora dos services para o `docker compose down -v` do envctl
+  # resetar dados de teste sem tocar em volumes de outros projetos.
+  pgdata:
+    name: ${BHT_PG_VOLUME:?defina via envctl}
+  redisdata:
+    name: ${BHT_REDIS_VOLUME:?defina via envctl}

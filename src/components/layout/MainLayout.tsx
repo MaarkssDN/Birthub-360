@@ -17,6 +17,8 @@ import { deriveActiveTabFromPath } from './settingsPillarNav.js';
 import type { TabType } from './tabMeta.js';
 import { getActiveModuleId } from './moduleRegistry.js';
 import { getModuleTheme } from './moduleThemes.js';
+import { SidebarV2 } from './v2/SidebarV2.js';
+import { isDesignV2Enabled, DESIGN_V2_FLAGS } from '../../config/feature-flags.js';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -34,6 +36,9 @@ export function MainLayout({ children, activeTab: activeTabProp }: MainLayoutPro
   const activeTab = activeTabProp ?? deriveActiveTabFromPath(pathname);
   const activeModuleId = getActiveModuleId(pathname);
   const activeModuleTheme = getModuleTheme(activeModuleId);
+  // design.newNavigation (Agente 31, Onda ONDA-DESIGN-PREMIUM): chrome premium
+  // da navegação. Flag off → Sidebar v1 intacta (rollback instantâneo).
+  const navigationV2 = isDesignV2Enabled(DESIGN_V2_FLAGS.NEW_NAVIGATION);
   const domainAccent =
     /forecast|revenue|dashboard|analytics|pipeline|performance|metas|predictability/.test(activeTab)
       ? 'gold'
@@ -54,7 +59,11 @@ export function MainLayout({ children, activeTab: activeTabProp }: MainLayoutPro
 
       <div className="relative flex flex-1 min-h-0 w-full overflow-hidden">
         {/* Sidebar Desktop gerencia o proprio fixed e collapse */}
-        <Sidebar activeTab={activeTab as TabType} />
+        {navigationV2 ? (
+          <SidebarV2 activeTab={activeTab as TabType} />
+        ) : (
+          <Sidebar activeTab={activeTab as TabType} />
+        )}
 
         {/* Drawer Mobile Desacoplado */}
         <MobileNavDrawer
