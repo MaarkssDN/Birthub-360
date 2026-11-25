@@ -4,7 +4,8 @@ session_id: devin-astra-00-20261124
 agent: 00 — Astra (Devin)
 branch: integracao/onda-3-dem20261123
 acquired_at: 2026-11-24T17:30:00-03:00
-expires_at: 2026-11-25T17:30:00-03:00
+heartbeat_at: 2026-11-25T00:00:00-03:00
+expires_at: 2026-11-26T17:30:00-03:00
 autoridade: Orquestrador Humano — deliberação executiva 2026-11-24 §1
 notas: |
   ÚNICA sessão autorizada a escrever/promover na integração global.
