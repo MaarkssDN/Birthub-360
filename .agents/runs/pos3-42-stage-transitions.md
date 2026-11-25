@@ -77,8 +77,10 @@ nulo — a rejeição 400 evita a inconsistência caso etapas customizadas venha
   Versões de vitest/TS podem divergir minimamente do CI — rerodar no ambiente normal é
   recomendado, mas os testes são unitários com prisma mockado.
 - **Biome lint (executado, limpo):** `biome lint` nos 5 arquivos alterados → 0 problemas.
-- **`npx tsc --noEmit` (executado):** ver resultado na seção de encerramento abaixo — o
-  typecheck full-project é lento neste host; resultado registrado após a conclusão.
+- **TypeScript (executado, VERDE no escopo):** `tsc --noEmit` full-project é inviável neste
+  host (>30 min, `allowJs` + FS lento); rodado typecheck escopado do grafo `crm360/**` +
+  dependências (`dealClosureGate`, `PrismaDealClosureGate`, `vite-env.d.ts`) via tsconfig
+  temporário → **0 erros**. Nenhum erro nos arquivos alterados.
 - Revisão estática do diff completo (somente arquivos do ownership).
 - **Incidente de worktree:** `git status` inicial limpo, mas `Dockerfile`, `docker-compose.yml`
   e `.trivyignore.yaml` apareceram modificados com conteúdo **mais antigo** que HEAD (diff
