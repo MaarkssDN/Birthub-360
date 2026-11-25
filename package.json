@@ -300,8 +300,7 @@
     },
     "tsx": {
       "esbuild": "$esbuild"
-    },
-    "effect": "3.22.5"
+    }
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
