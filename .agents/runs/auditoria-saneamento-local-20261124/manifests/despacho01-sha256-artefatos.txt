@@ -1,0 +1,41 @@
+# despacho01 — SHA256 dos artefatos de preservação
+# Sessão: devin-subagent-despacho01-20261124 · Coletado em 2026-11-24 ~18:40-19:00 (-03)
+# Raiz D: D:\Github\_backups\saneamento-20261124\
+# Cópia cruzada C: C:\Github\Birthub-360-backups\saneamento-20261124\ (bundles + orphans\*.tar.gz, 18 arquivos)
+#
+# Formato: <sha256>  <caminho relativo>
+#
+# --- Bundles git (711 MB cada) ---
+177db0e131e1723bf37b20693c8f032fc7231a451fe524d5b6525cd9671a3be1  birthub360-cloneC-unpushed-20261124.bundle
+5fbf17965f849bf6dce7aa75f23c3f698631e1c0337694bdd267a1fe377ed024  birthub360-cloneD-unpushed-20261124.bundle
+#
+# --- Tars de worktrees órfãos (19) — todos gzip -t OK ---
+dc25a9c7bc9023a12b8ab61b43083669ae861d5b0d452cd08caa99cfbf2cc298  orphans/agente-04-waveE-C-20261124.tar.gz
+990f0376d2e4d6dff3140aad3e8bee96cafeaf11bbc0222815be3c47dcda40f2  orphans/agente-05-cold-email-C-20261124.tar.gz
+d6502720bccec5f4005d006e63125961ecb32c22682d872efc74effe1f239009  orphans/agente-07-waveE-outbox-C-20261124.tar.gz
+ffb0c351717db649431bbbfdc7c8ade569db29c2e629a1b5dfc833ee91f7d6ba  orphans/agente-08-handoffs-C-20261124.tar.gz
+051fb3313346c742daa08b2666e9529cba6d3bbbd576b4d19e04a9d87af7f479  orphans/agente-14-repro-500-C-20261124.tar.gz
+3e13f07da47966008e87c209cff277126839a4119d639e99f9fbf95c57f2ba9d  orphans/agente-16-worker-outbound-C-20261124.tar.gz
+853a08f85bd134f528369096d8b2a63383540b008cdc767a924f3e08254d74a2  orphans/agente-17-cadence-debts-C-20261124.tar.gz
+a30f2c3da89384e5bf22fa16fef45c85ddcd1b4ba923b8e0817f91d968a3969e  orphans/agente-17-waveE-C-20261124.tar.gz
+0dbfe140ac2f0d6461b4b0a5c001731e4890a4b1856d5ad3bf95a2cb54dbd529  orphans/agente-99-prisma-C-20261124.tar.gz
+c77a224681d26e229e4141e3f71a1de6c3b75643248fcf0dec776373b3ebf8f9  orphans/consolidacao-20261120-C-20261124.tar.gz
+15439ac5e21b36a676f325812fcbb40a3710524d4ea0a0a82edf96a0c0d74080  orphans/genesis-brand-C-20261124.tar.gz
+b836ac38181d80a96a9f20691d0437f64dfdda6ceb130414c5e28eb97b9d144f  orphans/wt-08-dsr-C-20261124.tar.gz
+db2a2d94a2bc09dc6a5e1ff8a1b72b272db42ce412f558c3114fb442457bdad7  orphans/wt-15-cve-tools-C-20261124.tar.gz
+fcd435b86c5924083a4df9a82e16d64c044498fcd8bfebddeb5c8457072dda4c  orphans/wt-310-extract-C-20261124.tar.gz
+df9bd8a288255a2e50c43e051ce63a61a52e072fc9aae1070b7a6ae2388eccab  orphans/wt-368-rebase-C-20261124.tar.gz
+59bacdaeeb4d4c0b991ce6ecdbb8f191116366e9b123effadba3cb669c844aa5  orphans/wt-399-fix-C-20261124.tar.gz
+d29f08609e6579df2800758d973c663aa1342c5636b418f5c5e668aab0947351  orphans/wt-402-fix-C-20261124.tar.gz
+effcc2c4d0b800163c5cbaaff804bced4458b84c8ef4479d8c974bc6207d5812  orphans/wt-cadence-fix-C-20261124.tar.gz
+d4cec3b0f9057481c2b551a3d866417086bbe49bd7590494337ea5e1d35865bd  orphans/Birthub-360-audit-main-D-20261124.tar.gz
+#   ^ criado pelo Agente 19 (Bruno) no Despacho 01 ~19:02-19:15 — único órfão ORPHAN_GITFILE
+#     (D:\Github\Birthub-360-audit-main, 13.506 arquivos) que ainda não tinha tar.
+#
+# --- Arquivo sensível (conteúdo NÃO reproduzido; apenas referência) ---
+# orphans/agente-05-cold-email-C-20261124.tar.gz :: agente-05-cold-email/.env.test
+#   sha256 do conteúdo extraído via tar -xO: 1b010f0bca2baff9aaf2535b4dfa024313943c80d1053433d332f3a554459d67
+# Demais tars: somente *.env.example / *.env.test.example (modelos, sem segredos).
+# Presentes em quase todos os tars (candidatos a conter valores — REVISAR antes de publicar):
+#   <wt>/handoff-secrets.md
+#   <wt>/postman/environments/Birthub 360 — Local.environment.yaml

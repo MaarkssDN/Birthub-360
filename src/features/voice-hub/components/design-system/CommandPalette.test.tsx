@@ -29,6 +29,18 @@ function renderPalette(isOpen: boolean, onClose = vi.fn()) {
   );
 }
 
+function Harness() {
+  const [open, setOpen] = useState(false);
+  return (
+    <MemoryRouter>
+      <button type="button" onClick={() => setOpen(true)}>
+        Abrir paleta
+      </button>
+      <CommandPalette isOpen={open} onClose={() => setOpen(false)} />
+    </MemoryRouter>
+  );
+}
+
 describe('CommandPalette', () => {
   beforeEach(() => {
     vi.stubGlobal(
@@ -110,18 +122,6 @@ describe('CommandPalette', () => {
   });
 
   it('restores focus to the element that triggered it when it closes', async () => {
-    function Harness() {
-      const [open, setOpen] = useState(false);
-      return (
-        <MemoryRouter>
-          <button type="button" onClick={() => setOpen(true)}>
-            Abrir paleta
-          </button>
-          <CommandPalette isOpen={open} onClose={() => setOpen(false)} />
-        </MemoryRouter>
-      );
-    }
-
     const user = userEvent.setup();
     render(<Harness />);
 

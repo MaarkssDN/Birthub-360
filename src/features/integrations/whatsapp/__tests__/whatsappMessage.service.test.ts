@@ -18,8 +18,10 @@ vi.mock('../../../../lib/prisma.js', () => ({
       groupBy: vi.fn(),
       findFirst: vi.fn(),
     },
-    lead: { findFirst: vi.fn() },
+    lead: { findFirst: vi.fn(), update: vi.fn() },
     timelineEvent: { create: vi.fn() },
+    // Usado pelo caminho real de opt-out (recordOptOutAndPurgePendingJobs -> PrismaOptOutRepository).
+    optOutRecord: { create: vi.fn(), findMany: vi.fn() },
   },
   withRlsContext: (fn: (tx: { $queryRaw: typeof txQueryRaw }) => unknown) => withRlsContextMock(fn),
 }));
@@ -37,6 +39,24 @@ vi.mock('../../../../lib/queue/domainEventMesh.service.js', () => ({
   domainEventMesh: { publish: publishMock },
 }));
 
+// Fila real do opt-out (`cancelPendingJobsForOptOut`, Agente 69) varre `whatsappCommandQueue`.
+// Aqui entra uma fila fake com `getJobs`/`remove` espiões — prova de que a purga de jobs
+// pendentes é de fato disparada pelo fluxo inbound de STOP, sem BullMQ/Redis reais.
+const { whatsappCommandQueueMock } = vi.hoisted(() => ({
+  whatsappCommandQueueMock: {
+    name: 'whatsapp-command',
+    getJobs: vi.fn(),
+  },
+}));
+vi.mock('../../../../lib/queue/whatsappCommand.queue.js', () => ({
+  WHATSAPP_COMMAND_QUEUE_NAME: 'whatsapp-command',
+  WHATSAPP_DLQ_QUEUE_NAME: 'whatsapp-messages-dlq',
+  whatsappCommandQueue: whatsappCommandQueueMock,
+  whatsappDlqQueue: null,
+  enqueueWhatsAppCommand: vi.fn(),
+  enqueueWhatsAppDlq: vi.fn(),
+}));
+
 import { prisma } from '../../../../lib/prisma.js';
 import {
   extractMessageText,
@@ -51,8 +71,15 @@ const messageMock = prisma.whatsAppMessage as unknown as {
   groupBy: ReturnType<typeof vi.fn>;
   findFirst: ReturnType<typeof vi.fn>;
 };
-const leadMock = prisma.lead as unknown as { findFirst: ReturnType<typeof vi.fn> };
+const leadMock = prisma.lead as unknown as {
+  findFirst: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+};
 const timelineMock = prisma.timelineEvent as unknown as { create: ReturnType<typeof vi.fn> };
+const optOutRecordMock = prisma.optOutRecord as unknown as {
+  create: ReturnType<typeof vi.fn>;
+  findMany: ReturnType<typeof vi.fn>;
+};
 const queryRawMock = txQueryRaw;
 
 const ORG = 'org-1';
@@ -65,7 +92,23 @@ beforeEach(() => {
   messageMock.groupBy.mockResolvedValue([]);
   messageMock.findFirst.mockResolvedValue(null);
   leadMock.findFirst.mockResolvedValue(null);
+  leadMock.update.mockResolvedValue({});
   timelineMock.create.mockResolvedValue({});
+  optOutRecordMock.create.mockResolvedValue({
+    id: 'optout-1',
+    organizationId: ORG,
+    scope: 'Global',
+    leadId: null,
+    email: null,
+    phoneE164: null,
+    originChannel: 'whatsapp',
+    reason: null,
+    evidence: null,
+    requestedBy: null,
+    createdAt: new Date(),
+  });
+  optOutRecordMock.findMany.mockResolvedValue([]);
+  whatsappCommandQueueMock.getJobs.mockResolvedValue([]);
   queryRawMock.mockResolvedValue([]);
 });
 
@@ -298,5 +341,159 @@ describe('listConversations — sem N+1', () => {
     expect(result).toHaveLength(2);
     // As duas mais recentes (índices 4 e 3, datas maiores) devem vir primeiro.
     expect(result.map((c) => c.phoneE164)).toEqual(['+5511999990004', '+5511999990003']);
+  });
+});
+
+// POS4 (Onda 4 — achados do Agente 69): STOP inbound sem Lead aberto não registrava opt-out, e
+// a purga de jobs pendentes (`cancelPendingJobsForOptOut`) não tinha caller em produção. Estes
+// testes rodam o caminho REAL de opt-out (recordOptOutAndPurgePendingJobs -> PrismaOptOutRepository
+// -> prisma.optOutRecord.create mockado + cancelPendingJobsForOptOut -> fila fake), então provam
+// registro E purga de ponta a ponta, não só que uma função foi chamada.
+describe('persistWhatsAppMessage — opt-out inbound sem lead aberto + purga de jobs (POS4)', () => {
+  const STOP_JID = '5511999998888@s.whatsapp.net';
+
+  function pendingJob(id: string, data: Record<string, unknown>) {
+    return { id, data, remove: vi.fn().mockResolvedValue(undefined) };
+  }
+
+  it('STOP de contato identificável SEM lead aberto grava OptOutRecord por telefone/e-mail e remove jobs pendentes do mesmo número', async () => {
+    queryRawMock.mockResolvedValue([{ id: 'cont-1', email: 'contato@example.com' }]);
+    leadMock.findFirst.mockResolvedValue(null); // contato existe, mas nenhum lead em aberto
+
+    const matchingJob = pendingJob('job-match', {
+      organizationId: ORG,
+      number: '(11) 99999-8888',
+      context: {},
+    });
+    const otherOrgJob = pendingJob('job-other-org', {
+      organizationId: 'org-vizinha',
+      number: '5511999998888',
+    });
+    const otherNumberJob = pendingJob('job-other-number', {
+      organizationId: ORG,
+      number: '5511888880000',
+    });
+    whatsappCommandQueueMock.getJobs.mockResolvedValue([matchingJob, otherOrgJob, otherNumberJob]);
+
+    await persistWhatsAppMessage({
+      organizationId: ORG,
+      waMessageId: 'm-stop-sem-lead',
+      direction: 'inbound',
+      remoteJid: STOP_JID,
+      body: 'STOP',
+    });
+
+    // Opt-out registrado com sujeito identificável (sem leadId) — antes da correção isto não
+    // acontecia porque o bloco inteiro dependia de `lead` existir.
+    expect(optOutRecordMock.create).toHaveBeenCalledTimes(1);
+    expect(optOutRecordMock.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        organizationId: ORG,
+        scope: 'Global',
+        originChannel: 'whatsapp',
+        leadId: null,
+        email: 'contato@example.com',
+        phoneE164: '+5511999998888',
+        evidence: 'STOP',
+      }),
+    });
+
+    // Purga real: só o job do MESMO tenant e MESMO número foi removido.
+    expect(whatsappCommandQueueMock.getJobs).toHaveBeenCalled();
+    expect(matchingJob.remove).toHaveBeenCalledTimes(1);
+    expect(otherOrgJob.remove).not.toHaveBeenCalled();
+    expect(otherNumberJob.remove).not.toHaveBeenCalled();
+  });
+
+  it('STOP de número totalmente desconhecido (sem contato no CRM) ainda registra opt-out por telefone', async () => {
+    queryRawMock.mockResolvedValue([]); // nenhum contato cadastrado
+    leadMock.findFirst.mockResolvedValue(null);
+
+    await persistWhatsAppMessage({
+      organizationId: ORG,
+      waMessageId: 'm-stop-desconhecido',
+      direction: 'inbound',
+      remoteJid: STOP_JID,
+      body: 'parar',
+    });
+
+    expect(optOutRecordMock.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        organizationId: ORG,
+        scope: 'Global',
+        leadId: null,
+        email: null,
+        phoneE164: '+5511999998888',
+      }),
+    });
+  });
+
+  it('STOP com lead aberto registra opt-out casável por leadId E dispara a purga', async () => {
+    queryRawMock.mockResolvedValue([{ id: 'cont-1', email: null }]);
+    leadMock.findFirst.mockResolvedValue({
+      id: 'lead-9',
+      customFields: {},
+      organizationId: ORG,
+    });
+    const leadJob = pendingJob('job-lead', {
+      organizationId: ORG,
+      leadId: 'lead-9',
+      number: '5511777776666',
+    });
+    whatsappCommandQueueMock.getJobs.mockResolvedValue([leadJob]);
+
+    await persistWhatsAppMessage({
+      organizationId: ORG,
+      waMessageId: 'm-stop-com-lead',
+      direction: 'inbound',
+      remoteJid: STOP_JID,
+      body: 'sair',
+    });
+
+    // Flag legado preservado + registro unificado com leadId.
+    expect(leadMock.update).toHaveBeenCalledWith({
+      where: { id: 'lead-9' },
+      data: { customFields: { optOutWhatsApp: true } },
+    });
+    expect(optOutRecordMock.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        leadId: 'lead-9',
+        phoneE164: '+5511999998888',
+      }),
+    });
+    // Job casado por leadId (não por telefone — o número do job é outro) também é purgado.
+    expect(leadJob.remove).toHaveBeenCalledTimes(1);
+  });
+
+  it('mensagem comum inbound não grava opt-out nem consulta a fila', async () => {
+    queryRawMock.mockResolvedValue([{ id: 'cont-1', email: 'a@b.com' }]);
+    leadMock.findFirst.mockResolvedValue({ id: 'lead-1', customFields: {}, organizationId: ORG });
+
+    await persistWhatsAppMessage({
+      organizationId: ORG,
+      waMessageId: 'm-normal',
+      direction: 'inbound',
+      remoteJid: STOP_JID,
+      body: 'Quero saber mais sobre o produto',
+    });
+
+    expect(optOutRecordMock.create).not.toHaveBeenCalled();
+    expect(whatsappCommandQueueMock.getJobs).not.toHaveBeenCalled();
+  });
+
+  it('STOP em mensagem OUTBOUND (enviada por nós) não registra opt-out', async () => {
+    queryRawMock.mockResolvedValue([{ id: 'cont-1', email: null }]);
+    leadMock.findFirst.mockResolvedValue(null);
+
+    await persistWhatsAppMessage({
+      organizationId: ORG,
+      waMessageId: 'm-outbound-stop',
+      direction: 'outbound',
+      remoteJid: STOP_JID,
+      body: 'STOP',
+    });
+
+    expect(optOutRecordMock.create).not.toHaveBeenCalled();
+    expect(whatsappCommandQueueMock.getJobs).not.toHaveBeenCalled();
   });
 });

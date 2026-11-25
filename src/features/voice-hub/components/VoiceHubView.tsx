@@ -134,9 +134,7 @@ export function VoiceHubView() {
       setSuppressReason('');
       loadData();
     } catch (err: any) {
-      toast.error(
-        err?.response?.data?.error || err?.message || 'Falha ao registrar bloqueio.',
-      );
+      toast.error(err?.response?.data?.error || err?.message || 'Falha ao registrar bloqueio.');
     } finally {
       setSavingSuppression(false);
     }

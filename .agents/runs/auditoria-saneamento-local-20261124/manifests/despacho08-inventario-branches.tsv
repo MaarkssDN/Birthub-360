@@ -1,0 +1,103 @@
+branch	sha_C	sha_D	ahead_C_unpushed_origin	ahead_D_unpushed_origin	remote_ref_c	divergente
+agente/00-fix-format-biome-main	0be04645049934c7b58a1f0b7175bfc95ffed9e0	0be04645049934c7b58a1f0b7175bfc95ffed9e0	1	1	N	
+agente/00-integracao-p0-local	867533ffb56de8d5e230bd63edb3c973c822c49b	867533ffb56de8d5e230bd63edb3c973c822c49b	7	7	N	
+agente/02-env-harness-s00	1960064d818b449a0bceab939a06f9e2172d2277		170		N	
+agente/02-harness-onda2-dem20261123	d776c8f8f740d58a8ce0e324439c455b676042fd	d776c8f8f740d58a8ce0e324439c455b676042fd	38	38	N	
+agente/03-p0-06-falhas-unitarias	79c97218906397db9207e6e347ab98bd90fcaabd	79c97218906397db9207e6e347ab98bd90fcaabd	1	1	N	
+agente/03-telas-brand-system	29ee11d9950836e24515afa9a31ca520c8869b87	29ee11d9950836e24515afa9a31ca520c8869b87	2	2	S	
+agente/03-unitarios-dem20261123	c286185c13bca42ff70c5c95bd15495ec44e794a	c286185c13bca42ff70c5c95bd15495ec44e794a	14	14	N	
+agente/04-env-isolado-s00	1960064d818b449a0bceab939a06f9e2172d2277		170		N	
+agente/04-integracao-dem20261123	48e9ac1699757da5f09611ea8ce03eaffc65f126	48e9ac1699757da5f09611ea8ce03eaffc65f126	15	15	N	
+agente/04-integracao-onda2-dem20261123	0d87b8adf096c385c03086e1fb7c2e208e653dca	0d87b8adf096c385c03086e1fb7c2e208e653dca	38	38	N	
+agente/05-e2e-visual-dem20261123	8151d8cdaca15a09b2b36d5a82a6e538c9cf1c7d	8151d8cdaca15a09b2b36d5a82a6e538c9cf1c7d	15	15	N	
+agente/06-dailyplan-verify-s00	13992c7083372109b380d175b95fb1a43a512470		171		N	
+agente/06-idor-whatsapp-pos4		9f80c07edc2000712e884febbdd3cd2fb2bee55d		81	N	
+agente/08-lgpd-onda2-dem20261123	f2011442e4c47dd68ac722ea078b0b368bb58e85	f2011442e4c47dd68ac722ea078b0b368bb58e85	38	38	N	
+agente/09-audit-onda3	727f13e72a0a2d649b7afa66e7f5fa62686f845f	32d07c3750c370b63da8b720019413c9a40e0e68	71	53	N	DIVERGE
+agente/09-review-dem20261123	58943b83e99a02e5612312e4733500ecdeeb395a	58943b83e99a02e5612312e4733500ecdeeb395a	21	21	N	
+agente/09-review-onda2-dem20261123	f842a5ebf549eb20f24394d1fb43bbe3d5b9f681	f842a5ebf549eb20f24394d1fb43bbe3d5b9f681	39	39	N	
+agente/09-review-onda2-final-dem20261123	32d07c3750c370b63da8b720019413c9a40e0e68	32d07c3750c370b63da8b720019413c9a40e0e68	53	53	N	
+agente/09-review-onda4		6603fc11693a0436059da8ae6a861c84d52e30c0		57	N	
+agente/10-data-interceptors-onda3	d13f0889268b6117a3b092c13dfe9cd4b12d9bb3		60		N	
+agente/11-deletedby-schema-s10	2e1d342cc039b9328441e347a5b584a76d5233c1		172		N	
+agente/12-deletedby-migration-s10	9b73f716af4a727dd67d390a5a265f6a62d90e11		172		N	
+agente/13-rls-dem20261123	283e7ec1ecb8c7b8e981fb5c289368da56d7d9c1	283e7ec1ecb8c7b8e981fb5c289368da56d7d9c1	15	15	N	
+agente/14-fixtures-dem20261123	090de3949e638d3cf4c4da8019398c7814032532	090de3949e638d3cf4c4da8019398c7814032532	15	15	N	
+agente/17-cadence-tz-pos4		9f80c07edc2000712e884febbdd3cd2fb2bee55d		81	N	
+agente/20-core-backend-onda3	23b1d31cd15bc741506b9481e0f7a4fa0288ac1c	32d07c3750c370b63da8b720019413c9a40e0e68	54	53	N	DIVERGE
+agente/21-api-contracts-onda3	af91a3e0df7e8f610f1148b1324955a101337d15	32d07c3750c370b63da8b720019413c9a40e0e68	58	53	N	DIVERGE
+agente/22-api-idem-pos4		7e096223df97dd90047b6bbdf12af6bc4dcd14f7		81	N	
+agente/22-controllers-onda3	81325ad985d3038077abd3110919528c694da7f6		157		N	
+agente/23-queue-onda3	82a50d0c9ff954759c071578725b8d88f91ab948		56		N	
+agente/31-app-shell-onda3	0e27cf657239fde96d16e35f023aa81b363a47b5		157		N	
+agente/34-accessibility-onda3	27924c7cf96da0eee9d50a531b92c60a4bc8fde5	32d07c3750c370b63da8b720019413c9a40e0e68	55	53	N	DIVERGE
+agente/40-crm-components-onda3	f3fc2f20319a458984021c977bb6484e0c16c7cf		59		N	
+agente/41-activities-onda3	59738d5cf12caa9a312769b8c9a546d9d1181091		59		N	
+agente/42-crm-kanban-onda3	47846b442bd2b5a112082a127c1fecc225a06fbd	32d07c3750c370b63da8b720019413c9a40e0e68	59	53	N	DIVERGE
+agente/42-stage-transitions-s40	1960064d818b449a0bceab939a06f9e2172d2277		170		N	
+agente/43-prospecting-authz-onda3	f8254c63df8f04810bcbd8e2fc37b92700579a32		157		N	
+agente/44-cadence-contracts-s40	1960064d818b449a0bceab939a06f9e2172d2277		170		N	
+agente/44-cadence-onda3	fea9d698b169c945b3cb48bf44341d50256a239f		57		N	
+agente/44-cadences-onda4		a8347fffd3bc12bc8f7875857909fbd02b12834b		54	N	
+agente/45-crm-agenda-onda3	2bf6ffe312aa390da8e36112c964f0ae8318619f	32d07c3750c370b63da8b720019413c9a40e0e68	64	53	N	DIVERGE
+agente/46-forecast-s40		d8cf21b37c1b0177ab8790faa6fc07b47a514531		82	N	
+agente/46-forecast-s40-v2	fbe307efcdb32b3a63d3386055c3306afec1a0cb		170		N	
+agente/47-routing-s40	dec247af496762cedd4b3ca63301409d085595f8		171		N	
+agente/50-bitrix-authz-onda3	5a1e8560575effb583837ab96c0c89492e1ded88		56		N	
+agente/50-dailyplan-idor-s50	1960064d818b449a0bceab939a06f9e2172d2277		170		N	
+agente/51-bitrix-auth-onda4		42a57d0772dae69edd7aa5f4883b2ef2567072ee		54	N	
+agente/56-whatsapp-onda4		da43ae198f4a05a9e62a8bbf04d31a349f5572fd		55	N	
+agente/60-voice-hub-inventory-s60	1960064d818b449a0bceab939a06f9e2172d2277		170		N	
+agente/63-stt-pos4		c8afd307798f8ef8c388865bb0c1fb24f9bc216e		81	N	
+agente/64-stt-cmd-pos4		9f80c07edc2000712e884febbdd3cd2fb2bee55d		81	N	
+agente/64-voice-commands-onda4		425271b5cb68f0f3c15ac15d12af04ff6c2825d0		57	N	
+agente/65-voice-hub-onda3	b8a39713ec23bee4af39f9dba76d129a52c0f58a	32d07c3750c370b63da8b720019413c9a40e0e68	58	53	N	DIVERGE
+agente/69-optout-onda4		dafcece91a134ffc93c5222923cfa03e6c62d289		55	N	
+agente/69-optout-pos4		9f80c07edc2000712e884febbdd3cd2fb2bee55d		81	N	
+agente/72-tool-calling-b08-s70	8c78e5523aa7ea5959fba518c9ce4cafb6648c0d		170		N	
+agente/72-tool-engine-onda4		9bf9eb1ed00379caeb8a17092da2a2a56734a2d8		55	N	
+agente/77-guardrails-onda3-r3	a5c862847788a7c231e4c6b6424e07e81199c16a		157		N	
+agente/85-mobile-idem-pos4		8f8791dfdf4958bc48245a1891b0009473b1dda8		81	N	
+agente/85-mobile-offline-onda4		a6229d90f60c90cb5db35fcfaec1304e524e91c0		55	N	
+agente/90-nginx-p007-onda2-dem20261123	be14797b6563ed8f522b39d84a6762dc6e468c56	be14797b6563ed8f522b39d84a6762dc6e468c56	38	38	N	
+agente/93-docker-onda2-dem20261123	1074ee1a2565c797914eebbe155130fba8ac4db1	1074ee1a2565c797914eebbe155130fba8ac4db1	38	38	N	
+agente/93-docker-p007-dem20261123	2596287dd5b88c69c3e4b7e8126fcbb15e3be9de	2596287dd5b88c69c3e4b7e8126fcbb15e3be9de	15	15	N	
+agente/94-ci-dem20261123	0372d169ba281e5b3cd60dab4f98363744e177fe	0372d169ba281e5b3cd60dab4f98363744e177fe	15	15	N	
+agente/94-ci-onda2-dem20261123	f9196627dfbbaa82c3c9cea5c934dca8be63a0cd	f9196627dfbbaa82c3c9cea5c934dca8be63a0cd	38	38	N	
+agente/94-ci-onda3-r3	767f856aabdf55fd84e1ecc3ff6b7d57e867f668		157		N	
+agente/94-p0-01-format-depcruise	03c38acb6baa8f564e75a7b44d8f553730eabdf9	03c38acb6baa8f564e75a7b44d8f553730eabdf9	1	1	N	
+agente/96-auth-onda3	dd8351072bc80f752fccc374b11d85568c45c6e4	32d07c3750c370b63da8b720019413c9a40e0e68	58	53	N	DIVERGE
+agente/96-sessions-cookies-s90	1960064d818b449a0bceab939a06f9e2172d2277		170		N	
+agente/97-rbac-onda3	33f6cf1e78ad5f550fb80627ae00d35fec2f6a60		54		N	
+agente/99-appsec-onda2-dem20261123	54d10014a54b0a3e48c4a74a829eed879a00ab25	54d10014a54b0a3e48c4a74a829eed879a00ab25	38	38	N	
+agente/99-appsec-onda3	97856cb136065dacddf452240290a8c6f9a97c67		56		N	
+agente/99-p0-02-semgrep-sync	eb8e945fce77d8340fcaa6480385552ca42304eb	eb8e945fce77d8340fcaa6480385552ca42304eb	4	4	N	
+agente/99-p0-07-bypass-estaticos	2963a0d909740b1144c6115efd7b4cbab9a6ee9c	2963a0d909740b1144c6115efd7b4cbab9a6ee9c	1	1	N	
+agente/99-sec-triage-pos4		5dfe49ba78d8fe59f3a1c62079936bbf86d990bf		81	N	
+agente/99-trivy-waivers-s90	1f2e8ab30e9f3dc7821e76a374d0371c960316f9		172		N	
+base/dem-20261123-c286185c	c286185c13bca42ff70c5c95bd15495ec44e794a	c286185c13bca42ff70c5c95bd15495ec44e794a	14	14	N	
+consolidacao_backlog_birthub360	51c82aa5eb41412902b6660f4de7c78ef83c45fc	51c82aa5eb41412902b6660f4de7c78ef83c45fc	1	1	N	
+coord/squad-10	4f41ee3b5a1e930dcf877280d1f5ddfe3369c9a5		171		N	
+coord/squad-20	c64c1d38242c17f269fa4712a8362e07fe069de7		170		N	
+coord/squad-30		39758b02968b4b6015a982d4d7c8a71bcc4bcfd9		83	N	
+coord/squad-30-v2	37575aa8e5db87d31164c48ed1e2c7ca4d021093		170		N	
+coord/squad-40	4a70fe798313ec5e0759f79d3976f0e53c2a030a		170		N	
+coord/squad-50	effce95541b8bc88f61e826bf13bfad839641dde		172		N	
+coord/squad-60	fafc15169c27a10097196ac83335bb7c15813753		171		N	
+coord/squad-70	c6c9ea8f659e9afad74bfa98eabdb554bfeb2c14		171		N	
+coord/squad-80	43c92b43ccd1c1fccfbc36e8fd7f7605d9e6523c		171		N	
+coord/squad-90	356d8a22e90d9c5fb5893b2a3a932912d9a7dabb		171		N	
+docs/matriz-reconciliacao-20261124	375f42e64dedbdf8f876e7ae5ce297510e5b713e		171		N	
+integracao/consolidacao-dem20261123-candidato	2f4617cd0194fb74689f95e250e2a3ab2caca246		210		N	
+integracao/onda-1-dem20261123	815a09305f532153ad8dc07adb9363f1ea694100	815a09305f532153ad8dc07adb9363f1ea694100	37	37	N	
+integracao/onda-2-dem20261123	3b40599d68a97361240dafd3059d4d50bd86f7ea	32d07c3750c370b63da8b720019413c9a40e0e68	56	53	N	DIVERGE
+integracao/onda-3-dem20261123	dc43a14d8825a0470a3092db9776f1bd7f601858	32d07c3750c370b63da8b720019413c9a40e0e68	203	53	N	DIVERGE
+integracao/onda-4-dem20261123	9f80c07edc2000712e884febbdd3cd2fb2bee55d	9f80c07edc2000712e884febbdd3cd2fb2bee55d	81	81	N	
+integracao/pos4-dem20261124		9d4089f8f961d77e0789436f1f09840acaf73b82		82	N	
+integracao/squad-00	ed54111ac2f89b900006837be93d8cea3cc96c62		170		N	
+integracao/squad-30	d53bb541313d9293db9a050df970f11b1f396cd6		169		N	
+integracao/squad-40	abbc4601add3d726d74d9477cc8853cd2d7a8832		170		N	
+integracao/squad-50	1960064d818b449a0bceab939a06f9e2172d2277		170		N	
+integracao/squad-60	93e82c22024ccc9ca48abad6b29e855cbd4157f9		169		N	
+integracao/squad-70	1c5b816c313528ae81a67c844ebda04cfac70160		171		N	
+integracao/squad-90	e0601014aee09d00738dbef4ef7d9e479fdf4af6		170		N	

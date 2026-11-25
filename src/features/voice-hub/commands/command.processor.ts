@@ -80,7 +80,8 @@ export async function executeVoiceCommandWithCommit(
       success: false,
       confirmed: false,
       simulated: true,
-      error: 'EXECUTOR_SIMULATION_NOT_ALLOWED: comando de voz exige executor real com commit no banco.',
+      error:
+        'EXECUTOR_SIMULATION_NOT_ALLOWED: comando de voz exige executor real com commit no banco.',
     };
   }
 

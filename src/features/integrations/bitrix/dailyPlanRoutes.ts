@@ -75,13 +75,22 @@ router.post(
   '/daily-plan/complete',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { organizationId, id: userId } = (req as AuthRequest).user;
-      const { itemType, itemId } = req.body;
+      const { organizationId, id: userId, role } = (req as AuthRequest).user;
+      const { itemType, itemId, assignedById } = req.body;
       if (!itemType || !itemId) {
         res.status(400).json({ success: false, error: 'itemType e itemId são obrigatórios.' });
         return;
       }
-      const result = await completeDailyPlanItem(organizationId, userId, itemType, itemId);
+      // Mesmo override de GET/POST /daily-plan: ADMIN/GESTOR pode operar o plano de outro
+      // membro — mas a posse do item continua validada no serviço contra o BitrixUserId do
+      // membro alvo (nunca pula a checagem de IDOR).
+      const overrideBitrixUserId =
+        hasRequiredRole(role, ['ADMIN', 'GESTOR']) && assignedById
+          ? String(assignedById)
+          : undefined;
+      const result = await completeDailyPlanItem(organizationId, userId, itemType, itemId, {
+        overrideBitrixUserId,
+      });
       res.json({ success: true, message: result.message });
     } catch (error: any) {
       next(error);

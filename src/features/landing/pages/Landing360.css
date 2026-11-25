@@ -272,7 +272,7 @@ html {
 
 /* Fallback de segurança: apenas para títulos neutros que não possuem classe de cor explícita */
 .landing-neon-root
-h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"]),
+  h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"]),
 .landing-neon-root
   h2:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"]),
 .landing-neon-root

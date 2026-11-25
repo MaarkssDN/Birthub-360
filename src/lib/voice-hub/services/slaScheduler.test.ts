@@ -15,7 +15,7 @@ const {
   const mockOn = vi.fn();
   const mockRedisDisconnect = vi.fn();
   const mockRedisOn = vi.fn();
-  const RedisMock = vi.fn().mockImplementation(function Redis() {
+  const RedisMock = vi.fn().mockImplementation(function () {
     return { on: mockRedisOn, disconnect: mockRedisDisconnect, ping: vi.fn() };
   });
   return {

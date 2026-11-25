@@ -1,0 +1,66 @@
+########## C:/Github/Birthub-360-worktrees/handoff-devin-consolidacao
+--- branch: chore/handoff-devin-consolidacao-global-20261120 HEAD: 86288f30b
+--- staged:
+ .../2026-11-19/CHECKLIST_RESOLUCAO_ONDAS.md        | 71 +++++++++++-----------
+ .../00-para-07-pii-detection-service-encoding.md   |  5 +-
+ ...a-00-debt0001-deploy-ec2-migrate-healthcheck.md |  3 +-
+ ...00-continuidade-consolidacao-global-20261120.md | 60 ++++++++++++++++++
+ .../onda-2/15-para-07-webhook-fetch-safeFetch.md   |  3 +-
+ .../04-para-02-gamification-outbox-idempotency.md  |  3 +-
+ ...ara-00-outbox-produtores-sem-idempotency-key.md | 27 +-------
+ 7 files changed, 102 insertions(+), 70 deletions(-)
+--- unstaged:
+--- untracked:
+########## C:/Github/Birthub-360-worktrees/dem-20261123-onda2/wt-00-integracao-o2
+--- branch: integracao/onda-2-dem20261123 HEAD: 3b40599d6
+--- staged:
+--- unstaged:
+ .../09-dem-20261123-integracao-onda2-32d07c375.md  |  82 -----------------
+ .../09-dem-20261123-integracao-onda2-a81c63ccc.md  | 102 ---------------------
+ .agents/runs/onda2-dem20261123-relatorio-final.md  |  77 ----------------
+ .../services/dataSubjectErasureCascade.test.ts     |  19 ++--
+ 4 files changed, 9 insertions(+), 271 deletions(-)
+--- untracked:
+########## C:/Github/Birthub-360-worktrees/squads/squad-40/wt-42-stages
+--- branch: agente/42-stage-transitions-s40 HEAD: 1960064d8
+--- staged:
+--- unstaged:
+ src/features/crm360/crm360.schema.ts                |  9 +++++++++
+ src/features/crm360/infra/PrismaCrm360Repository.ts | 15 ++++++++++++++-
+ 2 files changed, 23 insertions(+), 1 deletion(-)
+--- untracked:
+?? .agents/handoffs/onda-4/42-para-04-stage-transitions-achados-crm.md
+?? src/features/crm360/infra/__tests__/
+########## C:/Github/Birthub-360-worktrees/squads/squad-50/wt-50-dailyplan
+--- branch: agente/50-dailyplan-idor-s50 HEAD: 1960064d81
+--- staged:
+--- unstaged:
+ .../integrations/bitrix/dailyPlanRoutes.ts         | 16 ++++--
+ .../bitrix/service/dailyPlan.service.ts            | 63 ++++++++++++++++++++--
+ .../bitrix/service/dailyPlanNotes.service.ts       | 19 +++++++
+ 3 files changed, 89 insertions(+), 9 deletions(-)
+--- untracked:
+?? src/features/integrations/bitrix/service/dailyPlanAuthz.ts
+?? tests/unit/features/integrations/bitrix/service/dailyPlan.service.test.ts
+########## C:/Github/Birthub-360-worktrees/squads/squad-90/wt-96-sessions
+--- branch: agente/96-sessions-cookies-s90 HEAD: 1960064d81
+--- staged:
+--- unstaged:
+ src/lib/auth.ts | 19 ++++++++++++-------
+ 1 file changed, 12 insertions(+), 7 deletions(-)
+--- untracked:
+?? src/lib/auth/__tests__/cookie-security.unit.test.ts
+?? src/lib/auth/cookie-security.ts
+########## C:/Users/Marcelo/.gemini/antigravity/worktrees/Birthub-360/parallel_task_force_worktrees
+--- branch: parallel_task_force_worktrees HEAD: 0d790443d1
+--- staged:
+--- unstaged:
+warning: in the working copy of '.agents/ESTADO_ATUAL.md', LF will be replaced by CRLF the next time Git touches it
+ .agents/ESTADO_ATUAL.md             | 61 ++++++++++++++-----------------------
+ docs/orchestration/demands/INDEX.md |  1 +
+ 2 files changed, 24 insertions(+), 38 deletions(-)
+--- untracked:
+?? .agents/runs/onda-1-forca-tarefa-paralela-dem-20261123-001.md
+?? .agents/runs/onda-2-forca-tarefa-paralela-dem-20261123-001.md
+?? docs/orchestration/demands/DEM-20261123-001.md
+?? "\357\200\212  else\357\200\212    echo MISSING\357\200\272"

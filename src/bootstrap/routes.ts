@@ -2,8 +2,8 @@ import type { Express } from 'express';
 import { activityRoutes } from '../features/activities/routes/activity.routes.js';
 import { analyticsRoutes } from '../features/analytics/routes/analytics.routes.js';
 import { eventsRoutes } from '../features/analytics/routes/events.routes.js';
-import { attachmentRoutes } from '../features/attachments/routes/attachment.routes.js';
 import { apiKeyRoutes } from '../features/api-keys/apiKey.routes.js';
+import { attachmentRoutes } from '../features/attachments/routes/attachment.routes.js';
 import { authExtraRoutes } from '../features/auth/routes/auth-extra.routes.js';
 import { automationRoutes } from '../features/automations/routes/automation.routes.js';
 import { usageRoutes } from '../features/billing/routes/usage.routes.js';
@@ -50,9 +50,9 @@ import { memoryRoutes } from '../features/job-roles/routes/memory.routes.js';
 import { roleSupervisorRoutes } from '../features/job-roles/routes/roleSupervisor.routes.js';
 import { workspaceRoutes } from '../features/job-roles/routes/workspace.routes.js';
 import { knowledgeRoutes } from '../features/knowledge/knowledge.routes.js';
-import { lgpdRouter } from '../features/lgpd/lgpd.routes.js';
-import { dsrRequestRoutes } from '../features/lgpd/dsrRequest.routes.js';
 import { publicLeadCaptureRouter } from '../features/landing/routes/leadCapture.routes.js';
+import { dsrRequestRoutes } from '../features/lgpd/dsrRequest.routes.js';
+import { lgpdRouter } from '../features/lgpd/lgpd.routes.js';
 import { accountIntelligenceRoutes } from '../features/market-intelligence/server/accountIntelligence.routes.js';
 import { marketIntelligenceCompanyRoutes } from '../features/market-intelligence/server/marketIntelligenceCompany.routes.js';
 import { mesaTratamentoRoutes } from '../features/mesa-tratamento/routes/mesaTratamento.routes.js';
@@ -69,13 +69,14 @@ import { prospectingRoutes } from '../features/prospecting/routes/prospecting.ro
 import { prospectingToolsRoutes } from '../features/prospecting/routes/prospecting-tools.routes.js';
 import { publicLeadRoutes } from '../features/public-leads/publicLead.routes.js';
 import { roleplayRoutes } from '../features/roleplay/routes/roleplay.routes.js';
-import { pillarSettingsRoutes } from '../features/settings/routes/pillarSettings.routes.js';
 import { salesOrchestrationRoutes } from '../features/sales-orchestration/server/salesOrchestration.routes.js';
+import { pillarSettingsRoutes } from '../features/settings/routes/pillarSettings.routes.js';
 import { socialSellingRoutes } from '../features/social-selling/server/socialSelling.routes.js';
 import { teamRoutes } from '../features/team/routes/team.routes.js';
 import { COMMERCIAL_INTELLIGENCE_ROLES, COPILOTO_IA_ROLES } from '../lib/auth/authorization.js';
 import { type AuthRequest, authenticateToken } from '../shared/middlewares/authenticateToken.js';
 import { requireTenant } from '../shared/middlewares/authorization.js';
+import { idempotencyKeyMiddleware } from '../shared/middlewares/idempotencyKey.js';
 import { requireRole } from '../shared/middlewares/requireRole.js';
 import { unavailableLegacyModule } from './legacyModuleGate.js';
 
@@ -102,7 +103,10 @@ export function mountFeatureRoutes(app: Express): void {
   // Montado ANTES de /api/leads de propósito: rota mais específica primeiro (mesmo que hoje não
   // colida com nenhum padrão de lead.routes.ts, evita qualquer ambiguidade futura).
   app.use('/api/leads/dedup', authenticateToken, requireTenant, leadDedupRoutes);
-  app.use('/api/leads', authenticateToken, requireTenant, leadRoutes);
+  // idempotencyKeyMiddleware: dedup por X-Idempotency-Key namespaced por org (outbox mobile,
+  // Agente 85). Sem header → passthrough; só cacheia respostas 2xx. Ver src/shared/middlewares/
+  // idempotencyKey.ts — store em memória (limitação documentada, persistência → handoff 01).
+  app.use('/api/leads', authenticateToken, requireTenant, idempotencyKeyMiddleware, leadRoutes);
   // Endpoint PÚBLICO da landing (sem authenticateToken / requireTenant). Prefixo
   // /api/public/demo-leads propositalmente distinto do /api/leads autenticado — não abre
   // o CRM. O tenant é resolvido só por LANDING_LEAD_ORGANIZATION_ID no servidor.
@@ -122,7 +126,15 @@ export function mountFeatureRoutes(app: Express): void {
     objectionMatrixRoutes,
   );
   app.use('/api/playbook/living-playbook', authenticateToken, requireTenant, livingPlaybookRoutes);
-  app.use('/api/leads/:leadId/notes', authenticateToken, requireTenant, noteRoutes);
+  // CREATE_NOTE do outbox mobile (Agente 85) também precisa de dedup — este mount é separado
+  // de /api/leads, então o middleware é reaplicado aqui.
+  app.use(
+    '/api/leads/:leadId/notes',
+    authenticateToken,
+    requireTenant,
+    idempotencyKeyMiddleware,
+    noteRoutes,
+  );
   // CRM-004: Note deixou de ser exclusiva de Lead — mesmo router, montado também nos prefixos de
   // Company/Contact (NoteController resolve a entidade pelo param que realmente chegou).
   app.use('/api/companies/:companyId/notes', authenticateToken, requireTenant, noteRoutes);
@@ -274,7 +286,13 @@ export function mountFeatureRoutes(app: Express): void {
   app.use('/api/market-intelligence', authenticateToken, requireTenant, accountIntelligenceRoutes);
   app.use('/api/sales-orchestration', authenticateToken, requireTenant, salesOrchestrationRoutes);
   app.use('/api/social-selling', authenticateToken, requireTenant, socialSellingRoutes);
-  app.use('/api/mobile', authenticateToken, requireTenant, mobileFieldMeetingRoutes);
+  app.use(
+    '/api/mobile',
+    authenticateToken,
+    requireTenant,
+    idempotencyKeyMiddleware,
+    mobileFieldMeetingRoutes,
+  );
 
   // Qualquer /api/* que não bateu em nenhuma rota acima deve 404 aqui, e nunca
   // cair no fallback do Vite/SPA (mountFrontend, em frontend.ts): em dev, `vite.middlewares`

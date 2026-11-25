@@ -203,11 +203,12 @@ describe('OfflineSyncService (Mobile / Capacitor / PWA)', () => {
       // Verifica chamadas da API
       expect(mockApiClient.request).toHaveBeenCalledTimes(3);
 
-      // 1ª chamada: criação do lead
+      // 1ª chamada: criação do lead (com header de idempotência do outbox)
       expect(mockApiClient.request).toHaveBeenNthCalledWith(1, {
         endpoint: '/api/leads',
         method: 'POST',
         body: expect.objectContaining({ name: 'Delta Logística' }),
+        headers: expect.objectContaining({ 'X-Idempotency-Key': expect.any(String) }),
       });
 
       // 2ª chamada: atualização do lead COM ID REAL RESOLVIDO (substituiu temp_lead_...)
@@ -215,6 +216,7 @@ describe('OfflineSyncService (Mobile / Capacitor / PWA)', () => {
         endpoint: `/api/leads/${realLeadId}`,
         method: 'PUT',
         body: expect.objectContaining({ status: 'Qualificação' }),
+        headers: expect.objectContaining({ 'X-Idempotency-Key': expect.any(String) }),
       });
 
       // 3ª chamada: criação da nota COM ID REAL RESOLVIDO na rota e no payload
@@ -225,6 +227,7 @@ describe('OfflineSyncService (Mobile / Capacitor / PWA)', () => {
           content: 'Frotas de 50 caminhões',
           author: 'Consultor Carlos',
         }),
+        headers: expect.objectContaining({ 'X-Idempotency-Key': expect.any(String) }),
       });
 
       // Fila fica limpa após sincronização com sucesso

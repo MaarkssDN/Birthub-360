@@ -1,0 +1,10 @@
+ref	clone	SHA_atual	commits_nao_publicados	veredito	obs
+integracao/consolidacao-dem20261123-candidato	C:	2f4617cd0194	0 (origin=2f4617cd0, +8 vs origin/main)	PUBLICAVEL	ja publicada pelo Despacho 08 durante a auditoria; conteudo varrido
+integracao/pos4-dem20261124	D:	727d303bd81c	0 (origin=727d303bd)	PUBLICAVEL	ja publicada; merges POS4 limpos
+agente/06-idor-whatsapp-pos4	D:	687ed8d7f066	0	PUBLICAVEL	3 commits POS4 varridos individualmente
+agente/69-optout-pos4	D:	506f8cdcd7db	0	PUBLICAVEL	1 commit varrido
+branches preservacao/*	ambos	—	—	NAO_EXISTEM	propostas no Relatorio 5 mas nunca criadas; sem risco de publicacao imeditada
+demais ~270 branches locais	C:+D:	—	0	PUBLICAVEL/N_A	todas com counterpart origin/* e 0 commits fora de origin/* (varredura completa)
+tags locais	ambos	152 tags archive/*	0 local-only	NAO_APLICAVEL	remoto ja contem todas; tags backup/checkpoint/audit pre-existentes no remoto
+integration/saneamento-20261124	C:	d0b429614921	32 merges (118 commits vs origin/main)	PUBLICAVEL	criada durante a auditoria; diff vs merge-base varrido: 0 segredos; workflow novo usa apenas credenciais CI efemeras; recomendo gate final
+main	D:	86b471fcf63a	4 merges	PUBLICAVEL	merges de conteudo ja publicado; diff limpo; push de main e decisao de coordenacao

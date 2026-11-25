@@ -11,7 +11,9 @@ import makeWASocket, {
 import pino from 'pino';
 import qrcode from 'qrcode';
 import { requestContext } from '../../../lib/async-context.js';
+import { CircuitOpenError, circuitGuard } from '../../../lib/circuitGuard.js';
 import { withTimeout } from '../../../lib/http.js';
+import { whatsAppAntiBanThrottler } from '../../../lib/integrations/whatsapp/baileys.client.js';
 import { logger } from '../../../lib/logger.js';
 import { toE164BR } from '../../../lib/phone.js';
 import { recordDeadLetter } from '../../../lib/queue/deadLetter.js';
@@ -20,7 +22,10 @@ import {
   type DistributedLock,
 } from '../../../lib/queue/distributedLock.js';
 import { cacheConnection, isDedicatedWorkerProcess } from '../../../lib/queue/redis.js';
-import { enqueueWhatsAppCommand } from '../../../lib/queue/whatsappCommand.queue.js';
+import {
+  enqueueWhatsAppCommand,
+  type SendWhatsAppMessageContext,
+} from '../../../lib/queue/whatsappCommand.queue.js';
 import { AppError } from '../../../shared/middlewares/errorHandler.js';
 import { isOptedOut } from '../../cadence/application/optOutService.js';
 import { prismaOptOutRepository } from '../../cadence/infra/PrismaOptOutRepository.js';
@@ -242,6 +247,9 @@ export async function initWhatsApp(organizationId: string) {
     session.status = 'disconnected';
     await persistStatusToRedis(organizationId, session);
     await releaseSessionLock(organizationId, session);
+    // MEL-42: falha ao subir o socket/estado de auth = sinal de saúde do provedor WhatsApp
+    // para o circuitGuard compartilhado (observabilidade + fail-fast nos envios).
+    circuitGuard.recordFailure('whatsapp', err);
     logger.error({ err, organizationId }, 'WhatsApp: falha ao inicializar sessão.');
     throw err;
   }
@@ -290,6 +298,8 @@ export async function initWhatsApp(organizationId: string) {
       session.status = 'connected';
       session.currentQr = null;
       session.reconnectAttempts = 0;
+      // MEL-42: socket aberto = provedor WhatsApp saudável — fecha o circuito compartilhado.
+      circuitGuard.recordSuccess('whatsapp');
       await persistStatusToRedis(organizationId, session);
       whatsappEvents.emit('status', { organizationId, status: session.status });
     }
@@ -387,13 +397,6 @@ export async function shutdownWhatsAppSessions(): Promise<void> {
   );
 }
 
-export interface SendWhatsAppMessageContext {
-  leadId?: string | null;
-  email?: string | null;
-  skipOptOutCheck?: boolean;
-  fromWorker?: boolean;
-}
-
 export async function sendWhatsAppMessage(
   organizationId: string,
   number: string,
@@ -462,8 +465,19 @@ export async function sendWhatsAppMessage(
 
   let results: Awaited<ReturnType<WASocket['onWhatsApp']>>;
   try {
-    results = await withTimeout(sock.onWhatsApp(formattedNumber), BAILEYS_CALL_TIMEOUT_MS);
+    // MEL-42: circuit breaker compartilhado — com o circuito 'whatsapp' aberto, falhamos
+    // rápido (sem queimar o timeout de 15s do Baileys) enquanto o provedor está instável.
+    results = await circuitGuard.execute('whatsapp', () =>
+      withTimeout(sock.onWhatsApp(formattedNumber), BAILEYS_CALL_TIMEOUT_MS),
+    );
   } catch (err: any) {
+    if (err instanceof CircuitOpenError) {
+      logger.warn({ organizationId }, '[whatsapp] Circuit breaker aberto — envio fail-fast');
+      throw new AppError(
+        'WhatsApp temporariamente indisponível — novas tentativas serão retomadas automaticamente em instantes.',
+        503,
+      );
+    }
     logger.warn(
       { err, organizationId },
       '[whatsapp] Falha/timeout ao verificar número no WhatsApp',
@@ -478,16 +492,37 @@ export async function sendWhatsAppMessage(
     throw new AppError('O número fornecido não está registrado no WhatsApp.', 422);
   }
 
+  // Anti-ban (B-08, Agente 56): delay humanizado serializado por organização antes do disparo
+  // + sinal de "digitando..." — sem isso, envios em rajada via Baileys têm perfil robótico e o
+  // número arrisca bloqueio. O throttler é no-op no 1º disparo da org e serializa chamadas
+  // concorrentes da MESMA org (ver WhatsAppAntiBanThrottler); orgs diferentes seguem paralelas.
+  // Cobre tanto o envio direto do worker quanto o reenviado via fila — todos convergem aqui.
+  await whatsAppAntiBanThrottler.throttle(organizationId);
+  try {
+    await withTimeout(sock.sendPresenceUpdate('composing', result.jid), BAILEYS_CALL_TIMEOUT_MS);
+  } catch (err: any) {
+    // Presença é cosmética — uma falha aqui nunca pode impedir o envio da mensagem em si.
+    logger.warn({ err, organizationId }, '[whatsapp] Falha ao enviar presença (composing)');
+  }
+
   try {
     let finalMessage = text;
     if (buttons && buttons.length > 0) {
       finalMessage += `\n\n${buttons.map((b, i) => `[${i + 1}] ${b}`).join('\n')}`;
     }
-    await withTimeout(
-      sock.sendMessage(result.jid, { text: finalMessage }),
-      BAILEYS_CALL_TIMEOUT_MS,
+    // MEL-42: mesmo circuit breaker 'whatsapp' — sendMessage é a operação que de fato consome
+    // o socket; falhas consecutivas aqui (além das de onWhatsApp/init) abrem o circuito.
+    await circuitGuard.execute('whatsapp', () =>
+      withTimeout(sock.sendMessage(result.jid, { text: finalMessage }), BAILEYS_CALL_TIMEOUT_MS),
     );
   } catch (err: any) {
+    if (err instanceof CircuitOpenError) {
+      logger.warn({ organizationId }, '[whatsapp] Circuit breaker aberto — envio fail-fast');
+      throw new AppError(
+        'WhatsApp temporariamente indisponível — novas tentativas serão retomadas automaticamente em instantes.',
+        503,
+      );
+    }
     logger.warn({ err, organizationId }, '[whatsapp] Falha/timeout ao enviar mensagem');
     throw new AppError(
       'Não foi possível enviar a mensagem agora (timeout ou falha de conexão).',

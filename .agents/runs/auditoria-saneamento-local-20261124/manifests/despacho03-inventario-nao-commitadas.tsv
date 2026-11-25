@@ -1,0 +1,55 @@
+# despacho03 — Inventário de trabalho não commitado (Agente 02 Bento)
+# Sessão: devin-subagent-despacho03-20261124 · Coleta: 2026-11-24 ~17:20–18:00 -03:00
+# ATENÇÃO: durante a sessão o coordenador COMMITOU e deu PUSH no trabalho dos clones principais.
+# Estado "na largada" (snapshot das auditorias status__*.txt) vs. estado "na chegada".
+
+## A. Clones principais — estado na largada (idêntico em C: e D:)
+repo	clone	branch	HEAD	staged	unstaged	untracked_top	untracked_files_uall
+Birthub-360	C:	chore/handoff-00-despacho-wave-a-b-20261120	a60a76b5e	0	2	24 entradas??/74 paths	109
+Birthub-360	D:	chore/handoff-00-despacho-wave-a-b-20261120	a60a76b5e	0	2	26 entradas??/76 paths	165
+
+# unstaged (ambos): docs/orchestration/demands/INDEX.md (+1 linha DEM-20261118-001),
+#                  docs/orchestration/journal/00.md (+8 linhas, Etapa 0 saneamento)
+# untracked C: (109 arquivos): 23 .agents/handoffs/*, release-readiness-audit-2026-11-18/ (36 arq),
+#   .agents/runs/audit-2026-11-18/matriz-reconciliacao-etapa-0.md, DEM-20261118-001.md,
+#   visual-regression-report/data/*.md (46 arq)
+# untracked D: (165 arquivos): os mesmos 109 + .agents/runs/auditoria-saneamento-local-20261124/ (~55 arq)
+#   + .agents/runs/leases/squad-40-wt46.lease  [somente D:, artefatos do coordenador]
+
+## B. Clones principais — estado na chegada (após commits do coordenador)
+clone	branch_atual	HEAD	status_porcelain	nota
+C:	chore/handoff-00-despacho-wave-a-b-20261120	95db5dbd5	0 limpo	commit próprio 111 arquivos +25.392; == origin (0 ahead)
+D:	main	656746533	0 limpo	commit f930d0f68 (170 arq, +282.065) + merge a4d837a5e; checkout main + ff p/ origin/main 17:53
+
+# Commits de resgate (ambos já publicados em origin/chore/handoff-00-despacho-wave-a-b-20261120):
+#   95db5dbd5 (clone C, 17:38:49) "chore(handoff): preservacao de handoffs e artefatos nao commitados — saneamento local 20261124"
+#   f930d0f68 (clone D, 17:46:29) "chore(handoffs): consolida handoffs, runs de auditoria e relatorios pendentes"
+#   a4d837a5e merge dos dois na branch (origin)
+
+## C. Verificação de integridade (blob SHA-1 git)
+conjunto	backup_vs_liveCD	commit_C_95db5dbd5_vs_backup	commit_D_f930d0f68_vs_backup
+109 untracked compartilhados	IDENTICO 109/109	MATCH 109/109	MATCH 109/109
+INDEX.md pós-imagem	—	c64bdc5e3 (=patch)	c64bdc5e3 (=patch)
+journal/00.md pós-imagem	—	1ca0defe0 (=patch)	1ca0defe0 (=patch)
+patch tracked (sha256)	6ad2e79c911598f9f58a3efe4c84ef8fb6f7ebf2e2737dab2d2db3cbaf9da58c	idêntico nos 2 clones e nos 2 patches preservados	—
+
+## D. Teste de aplicação reversível (dir isolado D:\Github\Birthub-360-backups\patch-test-despacho03)
+git apply --check patch	OK	git apply -R --check	OK	git apply -R + re-apply --check	OK (reversível integral)
+
+## E. Worktrees sujos remanescentes (estado re-medido 17:5x; diffs/stat em despacho03-worktrees-diffs.txt)
+worktree	branch	dirty	natureza	proprietário provável	classe
+C:/Github/Birthub-360-worktrees/agente-01-waveF-ux05a	agente/01-waveF-ux05a-auth-morta	753	deleções em massa (só ' D')	Agente 01/Onda F	C reversível (conteúdo no git; cópia D: íntegra)
+C:/Github/Birthub-360-worktrees/agente-02-waveF-ux09	agente/02-waveF-ux09-perfil	497	deleções em massa	Agente 02/Onda F	C reversível
+C:/Github/wt-handoff-devin-central	chore/handoff-devin-central-operacao-20261121	1218	deleções em massa (.agents/audits)	devin/Agente 00	C reversível
+C:/Github/Birthub-360-worktrees/handoff-devin-consolidacao	chore/handoff-devin-consolidacao-global-20261120	7 STAGED (M/A)	handoffs+checklist consolidação	devin/Agente 00	B trabalho real pendente de commit
+C:/Github/Birthub-360-worktrees/dem-20261123-onda2/wt-00-integracao-o2	integracao/onda-2-dem20261123	4	3 ' D' (reviews/runs onda2) + M teste erasure	Agentes 04/09	misto: limpeza + alteração de teste
+C:/Github/Birthub-360-worktrees/squads/squad-00/wt-02-harness	agente/02-env-harness-s00	1 untracked	scripts/test-env/{docker-compose.test.yml,envctl.mjs}	Agente 02 (Bento)	B trabalho real — LOCKED
+C:/Github/Birthub-360-worktrees/squads/squad-00/wt-04-env	agente/04-env-isolado-s00	1 untracked	tests/integration/crm-stage-transitions.test.ts (suspeita: artefato squad-40)	Agente 04?	B ambíguo
+C:/Github/Birthub-360-worktrees/squads/squad-40/wt-42-stages	agente/42-stage-transitions-s40	3+2 untracked	crm360.schema.ts, PrismaCrm360Repository.ts, __tests__/, handoff md	Agente 42 Lívia (S40)	B trabalho real coeso
+C:/Github/Birthub-360-worktrees/squads/squad-50/wt-50-dailyplan	agente/50-dailyplan-idor-s50	3+2 untracked	dailyPlan routes/services + dailyPlanAuthz.ts + test	Agente 50 (S50)	B trabalho real coeso (IDOR)
+C:/Github/Birthub-360-worktrees/squads/squad-90/wt-96-sessions	agente/96-sessions-cookies-s90	1+2 untracked	src/lib/auth.ts + cookie-security.ts + test	Agente 96 Nera (S90)	B trabalho real coeso
+C:/Users/Marcelo/.gemini/antigravity/.../parallel_task_force_worktrees	parallel_task_force_worktrees	6	M ESTADO_ATUAL/INDEX + DEM-20261123-001 + 2 runs + arquivo-lixo ' else echo MISSING'	Agente 00/antigravity	B docs; lixo a remover
+
+# Worktrees que constavam sujos na auditoria e agora estão LIMPOS (sessões commitaram):
+#   dem-20261123-onda3/wt-09-audit-onda3, squads/squad-40/wt-46, squads/squad-60/wt-60-voice,
+#   dem-20261124-pos4/* (wt-06,17,22,63,69,85,99 — todos 0 na re-medição)

@@ -128,9 +128,7 @@ export function detectDuplicateCrmContacts(
  * comprimento válido (CPF=11, CNPJ=14) — validação de dígito verificador fica fora do
  * escopo desta camada (detecção, não verificação fiscal).
  */
-export function normalizeDocument(
-  rawDocument: string | null | undefined,
-): string | null {
+export function normalizeDocument(rawDocument: string | null | undefined): string | null {
   if (!rawDocument) return null;
   const digits = rawDocument.replace(/\D+/g, '');
   if (digits.length === 11 || digits.length === 14) return digits;
@@ -184,8 +182,7 @@ export function jaroWinklerSimilarity(a: string, b: string): number {
   }
   transpositions /= 2;
 
-  const jaro =
-    (matches / a.length + matches / b.length + (matches - transpositions) / matches) / 3;
+  const jaro = (matches / a.length + matches / b.length + (matches - transpositions) / matches) / 3;
 
   // Prefixo comum até 4 caracteres recebe boost (Winkler).
   let prefix = 0;

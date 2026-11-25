@@ -1,0 +1,11 @@
+{
+  "session_id": "devin-ciro-squad20-20261124",
+  "squad": "squad-20",
+  "coordenador": "20-ciro",
+  "branch": "coord/squad-20",
+  "worktree": "C:/Github/Birthub-360-worktrees/squads/squad-20/wt-coord",
+  "timestamp": "2026-11-24T15:30:00-03:00",
+  "heartbeat": "2026-11-24T15:30:00-03:00",
+  "escopo": "coordenação squad-20; portas efêmeras 22200-22299; sem escrita em integracao/onda-3-dem20261123 nem worktrees dem-20261123-*",
+  "recursos": ["portas:22200-22299"]
+}

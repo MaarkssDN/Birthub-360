@@ -39,8 +39,7 @@ function outcomeLabel(outcome: string): string {
 
 function outcomeTone(outcome: string): OutcomeTone {
   if (outcome === 'completed') return 'positive';
-  if (outcome === 'no-answer' || outcome === 'voicemail' || outcome === 'unknown')
-    return 'neutral';
+  if (outcome === 'no-answer' || outcome === 'voicemail' || outcome === 'unknown') return 'neutral';
   return 'negative';
 }
 
@@ -506,10 +505,7 @@ export default function ResultsPage() {
                     transcript.text &&
                     transcript.text.split('\n').map((line, idx) => {
                       const isAgent = line.startsWith('Agente:');
-                      const cleanLine = line
-                        .replace('Agente:', '')
-                        .replace('Usuário:', '')
-                        .trim();
+                      const cleanLine = line.replace('Agente:', '').replace('Usuário:', '').trim();
                       return (
                         <div
                           key={idx}

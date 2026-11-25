@@ -10,11 +10,7 @@
 
 import type { VoiceCommandType } from './command.processor.js';
 
-export type VoiceIntentParseStatus =
-  | 'parsed'
-  | 'ambiguous'
-  | 'incomplete'
-  | 'unrecognized';
+export type VoiceIntentParseStatus = 'parsed' | 'ambiguous' | 'incomplete' | 'unrecognized';
 
 export interface ParsedVoiceIntent {
   type: VoiceCommandType;
@@ -93,11 +89,14 @@ const INTENT_PATTERNS: IntentPattern[] = [
   },
 ];
 
-const ID_PATTERN = /(?:deal|neg[oó]cio|oportunidade|lead|contato)\s*(?:id|#|n[ºo°.]*)?\s*[:=]?\s*([A-Za-z0-9][A-Za-z0-9_-]{2,})/i;
-const STAGE_PATTERN = /(?:para|to|stage|est[aá]gio)\s*[:=]?\s*([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ0-9_ -]{1,40})/i;
+const ID_PATTERN =
+  /(?:deal|neg[oó]cio|oportunidade|lead|contato)\s*(?:id|#|n[ºo°.]*)?\s*[:=]?\s*([A-Za-z0-9][A-Za-z0-9_-]{2,})/i;
+const STAGE_PATTERN =
+  /(?:para|to|stage|est[aá]gio)\s*[:=]?\s*([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ0-9_ -]{1,40})/i;
 const DATETIME_PATTERN =
   /((?:\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)|(?:\d{4}-\d{2}-\d{2})|(?:amanh[aã]|hoje|depois de amanh[aã]|next week|tomorrow|today))/i;
-const NAME_PATTERN = /(?:chamad[oa]|nome|name[d]?|lead)\s*[:=]?\s*([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ0-9 _-]{0,60})/i;
+const NAME_PATTERN =
+  /(?:chamad[oa]|nome|name[d]?|lead)\s*[:=]?\s*([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ0-9 _-]{0,60})/i;
 const NAME_LEADING_STOPWORD = /^(?:chamad[oa]|nome|name[d]?|lead)\s+/i;
 const ACTION_PATTERN = /(?:a[cç][aã]o|action)\s*[:=]\s*([A-Za-z0-9_.-]+)/i;
 const DESC_PATTERN = /(?:descri[cç][aã]o|description|motivo|reason)\s*[:=]\s*(.+?)(?:[.!?]|$)/i;
@@ -118,7 +117,10 @@ function extractParameters(transcript: string): Record<string, unknown> {
   if (nameMatch) {
     // O match pode começar numa keyword anterior (ex.: "lead chamado X") —
     // remove stopwords líderes para extrair apenas o nome.
-    const name = nameMatch[1].replace(NAME_LEADING_STOPWORD, '').replace(/[.,;:!?]+$/, '').trim();
+    const name = nameMatch[1]
+      .replace(NAME_LEADING_STOPWORD, '')
+      .replace(/[.,;:!?]+$/, '')
+      .trim();
     if (name) parameters.leadName = name;
   }
 

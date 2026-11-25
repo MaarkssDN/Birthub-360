@@ -316,8 +316,8 @@ describe('[Onda 4 & Onda 5] Validação integral dos 36 itens (P2 e P3)', () => 
       providerCalls += 1;
       return { cnpj, razaoSocial: 'Birth Hub Tecnologia S.A.', situacaoCadastral: 'ATIVA' };
     });
-    const first = await cnpjSvc.lookupCnpj('12.345.678/0001-99', 1_000_000);
-    const second = await cnpjSvc.lookupCnpj('12345678000199', 1_000_000 + 5 * 86_400_000);
+    const first = await cnpjSvc.lookupCnpj('20.540.912/0001-63', 1_000_000);
+    const second = await cnpjSvc.lookupCnpj('20540912000163', 1_000_000 + 5 * 86_400_000);
     expect(first.fromCache).toBe(false);
     expect(second.fromCache).toBe(true);
     expect(providerCalls).toBe(1);

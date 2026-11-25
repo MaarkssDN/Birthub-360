@@ -49,13 +49,15 @@ describe('External CRM Providers (HubSpot, RD Station)', () => {
     const provider = getCrmProvider('hubspot');
     const result = await provider.listLeads({ accessToken: 'test-token' }, null);
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining('/crm/v3/objects/deals'),
+    // fetchWithTimeout entrega a URL como objeto URL (não string) após validar allowedHosts.
+    const [calledUrl, calledInit] = fetchMock.mock.calls[0];
+    expect(String(calledUrl)).toContain('/crm/v3/objects/deals');
+    expect(calledInit).toEqual(
       expect.objectContaining({
         headers: expect.objectContaining({
-          Authorization: 'Bearer test-token'
-        })
-      })
+          Authorization: 'Bearer test-token',
+        }),
+      }),
     );
 
     expect(result.leads).toHaveLength(1);
@@ -82,12 +84,13 @@ describe('External CRM Providers (HubSpot, RD Station)', () => {
       amount: 1200
     });
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining('/deals'),
+    const [calledUrl, calledInit] = fetchMock.mock.calls[0];
+    expect(String(calledUrl)).toContain('/deals');
+    expect(calledInit).toEqual(
       expect.objectContaining({
         method: 'POST',
-        body: expect.stringContaining('New RD Deal')
-      })
+        body: expect.stringContaining('New RD Deal'),
+      }),
     );
 
     expect(result.externalId).toBe('rd-456');

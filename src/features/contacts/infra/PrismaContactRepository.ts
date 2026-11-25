@@ -1,7 +1,29 @@
 import type { Prisma } from '@prisma/client';
 import { contactSearchIndexClauses } from '../../../lib/crypto/piiIndex.js';
 import { prisma } from '../../../lib/prisma.js';
+import { AppError } from '../../../shared/middlewares/errorHandler.js';
 import type { Contact, ContactRepository } from '../domain/Contact.js';
+
+/**
+ * Tenancy defense-in-depth (DEBT-0018, auditoria 2026-11-18 CRM-04): `contactSchema.companyId`
+ * é `z.string()` puro — um id de empresa de OUTRA organização passava direto e o contato ficava
+ * vinculado cross-tenant (vazando PII da empresa alheia via `include: { company: true }` se a
+ * RLS estivesse inativa). Mesmo padrão de `assertLeadRelationsInTenant` em
+ * PrismaLeadRepository.ts: valida a FK referenciada com `findFirst` escopado por tenant antes
+ * de qualquer escrita — id estrangeiro vira 404, sem vínculo órfão. `null`/ausente (limpeza de
+ * vínculo) não é validado: não há o que conferir.
+ */
+async function assertContactCompanyInTenant(
+  organizationId: string,
+  companyId?: string | null,
+): Promise<void> {
+  if (!companyId) return;
+  const found = await prisma.company.findFirst({
+    where: { id: companyId, organizationId },
+    select: { id: true },
+  });
+  if (!found) throw new AppError('Empresa vinculada não encontrada.', 404);
+}
 
 export class PrismaContactRepository implements ContactRepository {
   async findAllWithFilters(
@@ -81,7 +103,8 @@ export class PrismaContactRepository implements ContactRepository {
     organizationId: string,
     data: Partial<Contact> & { birthDate?: string | Date },
   ): Promise<Contact> {
-    await this.assertCompanyBelongsToOrg(organizationId, data.companyId);
+    await assertContactCompanyInTenant(organizationId, data.companyId);
+
     return prisma.contact.create({
       data: {
         ...data,
@@ -101,7 +124,11 @@ export class PrismaContactRepository implements ContactRepository {
 
     const existing = await prisma.contact.findFirst({ where: { id, organizationId } });
     if (!existing) throw new Error('Contact not found');
-    await this.assertCompanyBelongsToOrg(organizationId, data.companyId);
+    // Só valida quando o payload toca companyId — update sem o campo não pode falhar por uma
+    // empresa que já estava vinculada antes (legada ou criada por outro fluxo).
+    if (data.companyId !== undefined) {
+      await assertContactCompanyInTenant(organizationId, data.companyId);
+    }
 
     return prisma.contact.update({
       where: { id },

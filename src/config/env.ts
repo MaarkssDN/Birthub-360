@@ -20,10 +20,13 @@ const envSchema = z
     PRODUCTION_DOMAIN: z.string().optional(),
     DOMAIN: z.string().optional(),
     COOKIE_DOMAIN: z.string().optional(),
+    // Sem default fixo 'false': o valor efetivo é resolvido após o parse (ver bloco
+    // "SECURE_COOKIES — default seguro" abaixo) — em produção o cookie de sessão é
+    // `Secure` por padrão, e SECURE_COOKIES=false explícito continua sendo override.
     SECURE_COOKIES: z
       .enum(['true', 'false'])
-      .default('false')
-      .transform((value) => value === 'true'),
+      .optional()
+      .transform((value) => (value === undefined ? undefined : value === 'true')),
     ALLOWED_ORIGINS: z.string().optional(),
     BETTER_AUTH_URL: z.string().optional(),
     BETTER_AUTH_SECRET: z.string().optional(),
@@ -544,6 +547,22 @@ if (_env.success && _env.data.NODE_ENV === 'production') {
       }
     }
   }
+}
+
+// SECURE_COOKIES — default seguro (AUD-1, achado 15-21 P2-9): antes, o default 'false'
+// significava que um deploy de produção que esquecesse a env emitia cookies de sessão sem a
+// flag `Secure` sempre que BETTER_AUTH_URL não começasse com https:// (ex.: URL esquecida ou
+// http). Agora, unset em produção resolve para true; fora de produção resolve para false
+// (http://localhost). Override explícito SECURE_COOKIES=true/false continua respeitado nos
+// dois sentidos. BETTER_AUTH_URL https também liga a flag no consumidor (src/lib/auth.ts),
+// preservando túneis/proxies de dev — mesmo comportamento anterior.
+if (_env.success && _env.data.SECURE_COOKIES === undefined) {
+  _env.data.SECURE_COOKIES = _env.data.NODE_ENV === 'production';
+}
+if (_env.success && _env.data.NODE_ENV === 'production' && _env.data.SECURE_COOKIES === false) {
+  logger.warn(
+    '⚠️ SECURE_COOKIES=false explícito com NODE_ENV=production — cookies de sessão ficarão sem a flag Secure (salvo BETTER_AUTH_URL https://). Confirme que o override é intencional.',
+  );
 }
 
 // Tipado como o schema (não `NodeJS.ProcessEnv`): no caminho de sucesso (o único que importa em

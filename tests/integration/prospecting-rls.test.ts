@@ -57,9 +57,11 @@ const hardDeleteOrgData = async (organizationId: string) => {
   await withRlsContext(async (tx) => {
     // Ordem estrita de deleção para preservar integridade referencial:
     // filhas com FK RESTRICT/CASCADE antes de Lead e Company
-    await tx.$executeRaw`DELETE FROM "TimelineEvent" WHERE "organizationId" = ${organizationId}`;
+    // TimelineEvent não tem organizationId (só leadId, ON DELETE RESTRICT) — resolve via Lead.
+    await tx.$executeRaw`DELETE FROM "TimelineEvent" WHERE "leadId" IN (SELECT id FROM "Lead" WHERE "organizationId" = ${organizationId})`;
     await tx.$executeRaw`DELETE FROM "Activity" WHERE "organizationId" = ${organizationId}`;
-    await tx.$executeRaw`DELETE FROM "Note" WHERE "organizationId" = ${organizationId}`;
+    // Note não tem organizationId (só leadId/companyId/contactId, ON DELETE CASCADE) — resolve via pais.
+    await tx.$executeRaw`DELETE FROM "Note" WHERE "leadId" IN (SELECT id FROM "Lead" WHERE "organizationId" = ${organizationId}) OR "companyId" IN (SELECT id FROM "Company" WHERE "organizationId" = ${organizationId}) OR "contactId" IN (SELECT id FROM "Contact" WHERE "organizationId" = ${organizationId})`;
     await tx.$executeRaw`DELETE FROM "PublicLeadConsent" WHERE "organizationId" = ${organizationId}`;
     await tx.$executeRaw`DELETE FROM "Lead" WHERE "organizationId" = ${organizationId}`;
     await tx.$executeRaw`DELETE FROM "Contact" WHERE "organizationId" = ${organizationId}`;

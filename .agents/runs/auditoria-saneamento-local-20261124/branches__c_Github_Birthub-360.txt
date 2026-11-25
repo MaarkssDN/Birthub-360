@@ -1,0 +1,148 @@
+agente/00-dossie-gates-pres005-20261122|9d0d7cf83aa3206dc572ed1d5da67767077556fa|origin/agente/00-dossie-gates-pres005-20261122|
+agente/00-fix-format-biome-main|0be04645049934c7b58a1f0b7175bfc95ffed9e0|origin/agente/00-fix-format-biome-main|[gone]
+agente/00-handoff-continuidade-20261121|5c343a15a637ed5afe470bcc1fcfc9df307a32d9|origin/agente/00-handoff-continuidade-20261121|
+agente/00-handoff-encerramento-20261122|da55b8d6266fceecff3209d1b6435a243cdc3f8e|origin/agente/00-handoff-encerramento-20261122|
+agente/00-handoff-reconciliacao-20261120|3c28c80e5f79af8559cb99e753d7c6941879f79e|origin/agente/00-handoff-reconciliacao-20261120|
+agente/00-integracao-p0-local|867533ffb56de8d5e230bd63edb3c973c822c49b||
+agente/00-onda1-bloqueadores-p0|4038509fcb24b54a6babf0c736d9e5dcd234d597|origin/main|[ahead 1, behind 230]
+agente/00-plano-mestre-operacional-100-agentes|5b1bc5d45cc078f307980687bae65f408f19e58e||
+agente/01-waveF-ux05a-auth-morta|0c5c9804a35140ffb596c3f8f613ffaf85968b41|origin/agente/01-waveF-ux05a-auth-morta|[behind 171]
+agente/02-env-harness-s00|1960064d818b449a0bceab939a06f9e2172d2277||
+agente/02-harness-onda2-dem20261123|d776c8f8f740d58a8ce0e324439c455b676042fd||
+agente/02-waveF-ux09-perfil|65eacb196d08d4f32944f53b35a431e68dbacede|origin/agente/02-waveF-ux09-perfil|[behind 171]
+agente/03-fix-ownership-coverage|dc54884bb6c2bb9a9c8a5cb3c7e486f8daa15247|origin/agente/03-fix-ownership-coverage|[behind 21]
+agente/03-p0-06-falhas-unitarias|79c97218906397db9207e6e347ab98bd90fcaabd||
+agente/03-telas-brand-system|29ee11d9950836e24515afa9a31ca520c8869b87||
+agente/03-unitarios-dem20261123|c286185c13bca42ff70c5c95bd15495ec44e794a||
+agente/04-env-isolado-s00|1960064d818b449a0bceab939a06f9e2172d2277||
+agente/04-integracao-dem20261123|48e9ac1699757da5f09611ea8ce03eaffc65f126||
+agente/04-integracao-onda2-dem20261123|0d87b8adf096c385c03086e1fb7c2e208e653dca||
+agente/05-e2e-visual-dem20261123|8151d8cdaca15a09b2b36d5a82a6e538c9cf1c7d||
+agente/06-dailyplan-verify-s00|1960064d818b449a0bceab939a06f9e2172d2277||
+agente/07-waveE-outbox-idem|c1a5ce036d980153b45fed7492f0641318ad3403|origin/agente/07-waveE-outbox-idem|[behind 122]
+agente/07-waveF-pii-detection|b7e71cba79f04db2e076d73c20f040e34c2a5443|origin/agente/07-waveF-pii-detection|[behind 186]
+agente/08-handoffs-20261117|aafad8eb7c61fe9e9b3a48a1758f08b82a8ab92e|origin/agente/08-handoffs-20261117|
+agente/08-lgpd-onda2-dem20261123|f2011442e4c47dd68ac722ea078b0b368bb58e85||
+agente/08-waveF-orchestration-e2e|960070acaca07692657bf27ac3d0f9bbbdadeb13|origin/agente/08-waveF-orchestration-e2e|
+agente/08-waveF-ownership-gate|8c13f9d467ea53a5a38f9bf292679a6854045a4e|origin/agente/08-waveF-ownership-gate|
+agente/09-audit-onda3|131d38e213fed4240591fb31278b32044b6a3bd9||
+agente/09-pareceres-waveE-e-infra-473-476|85c95ee9bce1d3bd230988de41d980270ac391bb|origin/agente/09-pareceres-waveE-e-infra-473-476|
+agente/09-pareceres-waveF-ci-governanca-488-508|8b9012bbd475199f8817d42504a4b2fa88b42804|origin/main|[behind 40]
+agente/09-review-dem20261123|58943b83e99a02e5612312e4733500ecdeeb395a||
+agente/09-review-onda2-dem20261123|f842a5ebf549eb20f24394d1fb43bbe3d5b9f681||
+agente/09-review-onda2-final-dem20261123|32d07c3750c370b63da8b720019413c9a40e0e68||
+agente/10-data-interceptors-onda3|d13f0889268b6117a3b092c13dfe9cd4b12d9bb3||
+agente/10-onda2-dados-qa|85553628060f62178432fc8afd432bd4445007b3|origin/agente/10-onda2-dados-qa|
+agente/10-waveF-scanner-real|8e3fcac7b16ad57f08c01052a2b1e6db80d5b162|origin/agente/10-waveF-scanner-real|[behind 171]
+agente/11-deletedby-schema-s10|2e1d342cc039b9328441e347a5b584a76d5233c1||
+agente/12-deletedby-migration-s10|9b73f716af4a727dd67d390a5a265f6a62d90e11||
+agente/13-rls-dem20261123|283e7ec1ecb8c7b8e981fb5c289368da56d7d9c1||
+agente/14-fixtures-dem20261123|090de3949e638d3cf4c4da8019398c7814032532||
+agente/16-workers-filqs|0726650400d3597d02bb882739e1b215bbd96f82||
+agente/16-workers-filqs-temp|231c12bd0f5e013dd4ab2239e070bc356a44edf4||
+agente/20-core-backend-onda3|23b1d31cd15bc741506b9481e0f7a4fa0288ac1c||
+agente/20-onda2-backend|f6089a5daa491a1567e2377d9e4e0acae515b6a2|origin/agente/20-onda2-backend|
+agente/21-api-contracts-onda3|af91a3e0df7e8f610f1148b1324955a101337d15||
+agente/22-controllers-onda3|81325ad985d3038077abd3110919528c694da7f6||
+agente/23-queue-onda3|82a50d0c9ff954759c071578725b8d88f91ab948||
+agente/31-app-shell-onda3|0e27cf657239fde96d16e35f023aa81b363a47b5||
+agente/34-accessibility-onda3|27924c7cf96da0eee9d50a531b92c60a4bc8fde5||
+agente/40-crm-components-onda3|f3fc2f20319a458984021c977bb6484e0c16c7cf||
+agente/41-activities-onda3|59738d5cf12caa9a312769b8c9a546d9d1181091||
+agente/42-crm-kanban-onda3|47846b442bd2b5a112082a127c1fecc225a06fbd||
+agente/42-stage-transitions-s40|1960064d818b449a0bceab939a06f9e2172d2277||
+agente/43-prospecting-authz-onda3|f8254c63df8f04810bcbd8e2fc37b92700579a32||
+agente/44-cadence-contracts-s40|1960064d818b449a0bceab939a06f9e2172d2277||
+agente/44-cadence-onda3|fea9d698b169c945b3cb48bf44341d50256a239f||
+agente/45-crm-agenda-onda3|2bf6ffe312aa390da8e36112c964f0ae8318619f||
+agente/47-routing-s40|dec247af496762cedd4b3ca63301409d085595f8||
+agente/50-bitrix-authz-onda3|5a1e8560575effb583837ab96c0c89492e1ded88||
+agente/50-dailyplan-idor-s50|1960064d818b449a0bceab939a06f9e2172d2277||
+agente/60-voice-hub-inventory-s60|1960064d818b449a0bceab939a06f9e2172d2277||
+agente/65-voice-hub-onda3|b8a39713ec23bee4af39f9dba76d129a52c0f58a||
+agente/72-tool-calling-b08-s70|8c78e5523aa7ea5959fba518c9ce4cafb6648c0d||
+agente/77-guardrails-onda3-r3|a5c862847788a7c231e4c6b6424e07e81199c16a||
+agente/90-nginx-p007-onda2-dem20261123|be14797b6563ed8f522b39d84a6762dc6e468c56||
+agente/90-onda2-infra|ba5ae95c7a54f22c05f8bf4ca9ef74d96d75f14d|origin/agente/90-onda2-infra|
+agente/93-docker-onda2-dem20261123|1074ee1a2565c797914eebbe155130fba8ac4db1||
+agente/93-docker-p007-dem20261123|2596287dd5b88c69c3e4b7e8126fcbb15e3be9de||
+agente/94-ci-dem20261123|0372d169ba281e5b3cd60dab4f98363744e177fe||
+agente/94-ci-onda2-dem20261123|f9196627dfbbaa82c3c9cea5c934dca8be63a0cd||
+agente/94-ci-onda3-r3|767f856aabdf55fd84e1ecc3ff6b7d57e867f668||
+agente/94-p0-01-format-depcruise|03c38acb6baa8f564e75a7b44d8f553730eabdf9||
+agente/96-auth-onda3|dd8351072bc80f752fccc374b11d85568c45c6e4||
+agente/96-sessions-cookies-s90|1960064d818b449a0bceab939a06f9e2172d2277||
+agente/97-rbac-onda3|33f6cf1e78ad5f550fb80627ae00d35fec2f6a60||
+agente/99-appsec-onda2-dem20261123|54d10014a54b0a3e48c4a74a829eed879a00ab25||
+agente/99-appsec-onda3|97856cb136065dacddf452240290a8c6f9a97c67||
+agente/99-p0-02-semgrep-sync|eb8e945fce77d8340fcaa6480385552ca42304eb||
+agente/99-p0-07-bypass-estaticos|2963a0d909740b1144c6115efd7b4cbab9a6ee9c||
+agente/99-trivy-waivers-s90|1f2e8ab30e9f3dc7821e76a374d0371c960316f9||
+base/dem-20261123-c286185c|c286185c13bca42ff70c5c95bd15495ec44e794a||
+chore/00-preservacao-etapa-0-20261122|5d6a61c19ede9a1746faec1ceee415f18c90f814|origin/chore/00-preservacao-etapa-0-20261122|
+chore/00-preservacao-handoffs-historicos-20261122|4d01e6b077405812efcf418c4f14e375424d4568|origin/chore/00-preservacao-handoffs-historicos-20261122|
+chore/handoff-00-conflito434-deliberacao487-20261121|a35fd9b306251a8a6658ae90de1cfb4b21bd21e4|origin/main|[ahead 1]
+chore/handoff-00-consolidacao-global-20261120|b0deaf0974608037290bd49529722bf766d09844|origin/chore/handoff-00-consolidacao-global-20261120|
+chore/handoff-00-despacho-wave-a-b-20261120|a60a76b5e284834a80cdb779d4a7576d60e67dcc|origin/chore/handoff-00-despacho-wave-a-b-20261120|
+chore/handoff-00-governanca-ux-ui-pr471-20261120|1066a517d1fc7ba57490ea09ee361f1643db3d96|origin/chore/handoff-00-governanca-ux-ui-pr471-20261120|
+chore/handoff-00-reconciliacao-etapa-0-20261121|ae37cac88585eeae0a0aa1844a657c15d8920259|origin/chore/handoff-00-reconciliacao-etapa-0-20261121|
+chore/handoff-03-design-tokens-v2-20261120|d23cec6e2b049ba7367c65b99d9f33655337282e|origin/main|[ahead 1, behind 11]
+chore/handoff-03-genesis-brand-system-20261120|29de2d616b5f9805539950e5fac160cfce8e3e72|origin/chore/handoff-03-genesis-brand-system-20261120|
+chore/handoff-08a-destravamento-prs-20261120|f5dd709c4a01c91f26a6cc6b36f34446d62faa2a|origin/chore/handoff-08a-destravamento-prs-20261120|
+chore/handoff-antigravity-encerramento-100-agentes-20261121|7f6c85930f21b4c64a085f6c627380d9243196ce|origin/chore/handoff-antigravity-encerramento-100-agentes-20261121|
+chore/handoff-antigravity-resolucao-dividas-ondas-1-a-5-20261120|ffac4306f40f54c2bab399a0a725629e051c2f7a|origin/chore/handoff-antigravity-resolucao-dividas-ondas-1-a-5-20261120|
+chore/handoff-antigravity-restauracao-governanca-20261121|27d0a5b2debdcab4f942621dac6cc8e1acbd70a9|origin/chore/handoff-antigravity-restauracao-governanca-20261121|
+chore/handoff-devin-central-auditoria-20261120|c2405a8e9c4af000d502646bc7bd61d5d0672ca5|origin/chore/handoff-devin-central-auditoria-20261120|
+chore/handoff-devin-central-operacao-20261121|82eb67477484ac9ffd6a8c6a7724118fa6780b2c|origin/chore/handoff-devin-central-operacao-20261121|
+chore/handoff-devin-consolidacao-global-20261120|86288f30bd8f3f564d26c7ab0b0d80f2afc787d0|origin/main|[behind 226]
+chore/handoff-devin-encerramento-20261121|0a0ec2e715ea54da04f0354b3f8ba9853ea46b5a|origin/chore/handoff-devin-encerramento-20261121|
+chore/handoff-devin-suite-swarm-20261120|42145cadddb0f6fee643acb8f137a5eadea46cd8|origin/chore/handoff-devin-suite-swarm-20261120|
+chore/handoff-devin-v2-consolidacao-20261120|3b293bff83d28acaefe26fe34dbb6e1141c0b18a|origin/chore/handoff-devin-v2-consolidacao-20261120|
+chore/handoffs-docker-e-delta-20261120|79d93783dc41fe2db318d37adb37ce1a73cc3069|origin/chore/handoffs-docker-e-delta-20261120|
+claude/keen-noyce-69768a|0d790443d10fed5c9da20394b29e43188a07b467||
+consolidacao_backlog_birthub360|51c82aa5eb41412902b6660f4de7c78ef83c45fc||
+coord/squad-10|4f41ee3b5a1e930dcf877280d1f5ddfe3369c9a5||
+coord/squad-20|c64c1d38242c17f269fa4712a8362e07fe069de7||
+coord/squad-30-v2|37575aa8e5db87d31164c48ed1e2c7ca4d021093||
+coord/squad-40|4a70fe798313ec5e0759f79d3976f0e53c2a030a||
+coord/squad-50|effce95541b8bc88f61e826bf13bfad839641dde||
+coord/squad-60|fafc15169c27a10097196ac83335bb7c15813753||
+coord/squad-70|c6c9ea8f659e9afad74bfa98eabdb554bfeb2c14||
+coord/squad-80|43c92b43ccd1c1fccfbc36e8fd7f7605d9e6523c||
+coord/squad-90|356d8a22e90d9c5fb5893b2a3a932912d9a7dabb||
+devin/handoff-continuidade-merge-20261120|fdb806d7130f4198e4eb1fdc0b807907b9b8a1de|origin/devin/handoff-continuidade-merge-20261120|
+devin/handoff-encerramento-20261122|9a1ea406067a3f72eebc9074aeea2c793a7ce3c5|origin/devin/handoff-encerramento-20261122|
+docs/00-handoff-onda-02-20261120|5bd555eea9f6876d2cf49662b5e8d30a5d14cb40|origin/docs/00-handoff-onda-02-20261120|
+docs/09-silas-revisao-preservacao-20261122|f80aca2be2b3be3b3b4e2d91f805b4c2f50eb688|origin/docs/09-silas-revisao-preservacao-20261122|
+docs/matriz-reconciliacao-20261124|2408cd848eaaff9e526f6b086b6c927446b848d2||
+execute_setup_script|0d790443d10fed5c9da20394b29e43188a07b467||
+handle_all_hands_subagents|0d790443d10fed5c9da20394b29e43188a07b467|origin/handle_all_hands_subagents|
+integracao/consolidacao-20261121|1ee3f812c5a4600582174af852d088ee6330be9b|origin/integracao/consolidacao-20261121|
+integracao/consolidacao-dem20261123-candidato|e65f42efa8a209f729ed17a15a9cfa8bfe692ccf||
+integracao/onda-1-dem20261123|815a09305f532153ad8dc07adb9363f1ea694100||
+integracao/onda-2|6b84a7f9608910b47aa4a341fdaa1fc733e97c6f|origin/integracao/onda-2|[behind 24]
+integracao/onda-2-dem20261123|3b40599d68a97361240dafd3059d4d50bd86f7ea||
+integracao/onda-3|94fa43819d718b062c4738bedb1e73893d2b276c|origin/integracao/onda-3|
+integracao/onda-3-dem20261123|c69447eb609aceb792d0d181c4042e5f52f6d77e||
+integracao/onda-4-dem20261123|9f80c07edc2000712e884febbdd3cd2fb2bee55d||
+integracao/squad-00|1960064d818b449a0bceab939a06f9e2172d2277||
+integracao/squad-30|93e82c22024ccc9ca48abad6b29e855cbd4157f9||
+integracao/squad-40|1960064d818b449a0bceab939a06f9e2172d2277||
+integracao/squad-50|1960064d818b449a0bceab939a06f9e2172d2277||
+integracao/squad-60|93e82c22024ccc9ca48abad6b29e855cbd4157f9||
+integracao/squad-70|1c5b816c313528ae81a67c844ebda04cfac70160||
+integracao/squad-90|1960064d818b449a0bceab939a06f9e2172d2277||
+main|0d790443d10fed5c9da20394b29e43188a07b467|origin/main|
+parallel_task_force_worktrees|0d790443d10fed5c9da20394b29e43188a07b467||
+pr471-resolve|3a02758c3df82144be37cf92073a8dda17418c3e|origin/agente/03-telas-brand-system|[behind 87]
+pr486-resolve|6aa35acab5915741c4a476226ee9e777668e1533|origin/agente/15-cve-waiver-tools-guard|
+reconcile_handoffs_birthub|29979fab38799130a07bd75b0b4ca71170c666f0||
+update_agents_documentation|86288f30bd8f3f564d26c7ab0b0d80f2afc787d0||
+wE-02-waveE-outbox-idem|716c3c6243bb121fdecdd55329f076f0807c6969|origin/agente/02-waveE-outbox-idem|
+wE-07-waveE-outbox-idem|dfb7da5ddf6616d5a5c3c07f5060d0239f0f6306|origin/agente/07-waveE-outbox-idem|[behind 98]
+wE-09-waveE-outbox-idem|4ee1990980c8841d344c7d737f8f697520c1d524|origin/agente/09-waveE-outbox-idem|
+wE-10-waveE-outbox-idem|6aea8b1b48e1c2f94c16622ebd8bb27e61737de2|origin/agente/10-waveE-outbox-idem|
+worktree-agent-a24ac917ab11c5f29|0d790443d10fed5c9da20394b29e43188a07b467||
+worktree-agent-a6335793a5774be5f|0d790443d10fed5c9da20394b29e43188a07b467||
+worktree-agent-ab68155b498d20afe|0d790443d10fed5c9da20394b29e43188a07b467||
+worktree-agent-ada1749a7fb0e2c7a|0d790443d10fed5c9da20394b29e43188a07b467||

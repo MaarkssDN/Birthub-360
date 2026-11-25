@@ -6,7 +6,7 @@ import request from 'supertest';
 // declaração destas constantes, já que imports estáticos também são hoisted pela spec de módulos
 // ES) — vi.hoisted() é o jeito suportado de ter um valor pronto ANTES desse hoist, evitando o
 // "Cannot access before initialization" que um `const` comum causaria aqui.
-const { prismaMock, bitrixServiceMock } = vi.hoisted(() => ({
+const { prismaMock, bitrixServiceMock, leadUseCasesMock } = vi.hoisted(() => ({
   prismaMock: {
     bitrixConnection: { findFirst: vi.fn() },
     lead: { findFirst: vi.fn(), findMany: vi.fn(), update: vi.fn() },
@@ -25,10 +25,21 @@ const { prismaMock, bitrixServiceMock } = vi.hoisted(() => ({
     postCommentToBitrix: vi.fn(),
     exportLeadToBitrixNow: vi.fn(),
   },
+  leadUseCasesMock: {
+    updateLead: vi.fn(),
+  },
 }));
 
 vi.mock('@/lib/prisma', () => ({ prisma: prismaMock }));
 vi.mock('@/features/integrations/bitrix/bitrix.service', () => bitrixServiceMock);
+vi.mock('@/shared/di/container', () => ({
+  container: {
+    resolve: vi.fn((key: string) => {
+      if (key === 'LeadUseCases') return leadUseCasesMock;
+      throw new Error(`Dependency ${key} not found in container`);
+    }),
+  },
+}));
 
 import { mesaTratamentoRoutes } from '@/features/mesa-tratamento/routes/mesaTratamento.routes';
 import { errorHandler } from '@/shared/middlewares/errorHandler';
@@ -54,6 +65,12 @@ beforeEach(() => {
   prismaMock.mesaTratamentoTreatment.create.mockResolvedValue({});
   prismaMock.activity.create.mockResolvedValue({});
   prismaMock.lead.update.mockResolvedValue({});
+  leadUseCasesMock.updateLead.mockImplementation(
+    async (_orgId: string, id: string, data: Record<string, unknown>) => {
+      await prismaMock.lead.update({ where: { id }, data });
+      return { id, ...data };
+    },
+  );
   prismaMock.user.findMany.mockResolvedValue([]);
   bitrixServiceMock.postCommentToBitrix.mockResolvedValue({
     entityType: 'lead',
