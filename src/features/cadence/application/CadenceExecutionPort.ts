@@ -44,6 +44,7 @@ export type SwarmRejectionReason =
   | 'lead-not-found'
   | 'missing-contact-info'
   | 'unsupported-channel'
+  | 'queue-unavailable'
   | 'internal-error';
 
 /**
@@ -119,6 +120,12 @@ export interface CadenceExecutionPort {
   /**
    * Enfileira uma ação de contato para um lead, aplicando as travas de opt-out, janela comercial
    * e rate limit. Se options.autoExecute for true e a ação for elegível, executa imediatamente.
+   *
+   * ATENÇÃO (contrato dormente — POS3-44): hoje NÃO existe fila persistente de ações do Swarm
+   * por trás desta porta e nenhum consumidor de produção a chama. Enquanto isso, `autoExecute`
+   * ausente/false é rejeitado com `rejectionReason: 'queue-unavailable'` — a implementação
+   * nunca retorna `status: 'queued'` sem persistir de fato (seria sucesso falso). Quando um
+   * consumidor real chegar, a fila deve ser implementada antes de reabilitar o enfileiramento.
    */
   enqueueAction(
     input: EnqueueSwarmActionInput,
