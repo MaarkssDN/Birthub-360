@@ -63,7 +63,7 @@
     "check:bundle-budget": "node scripts/ci/check-bundle-budget.mjs",
     "check:public-budget": "node scripts/ci/check-public-budget.mjs",
     "lint": "biome lint src",
-    "lint:ci": "biome lint src",
+    "lint:ci": "biome lint src --diagnostic-level=error --max-diagnostics=none",
     "lint:fix": "biome lint --write src",
     "format": "biome format --write src",
     "format:check": "biome format src",
