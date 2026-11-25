@@ -7,7 +7,6 @@ import { routeParam } from '../../../shared/http/routeParams.js';
 import type { AuthRequest } from '../../../shared/middlewares/authenticateToken.js';
 import { AppError } from '../../../shared/middlewares/errorHandler.js';
 import { requireRole } from '../../../shared/middlewares/requireRole.js';
-import type { LeadUseCases } from '../../crm/application/LeadUseCases.js';
 import {
   exportLeadToBitrixNow,
   findUnimportedBitrixLeadIds,
@@ -30,6 +29,19 @@ import {
 import { computeQueuePriorityScore, rankLeadsForQueue } from '../mesaTratamento.priority.js';
 
 const router = Router();
+
+// Contrato estrutural mínimo do use case canônico do CRM — resolve via container sem
+// import cross-feature (depcruise no-cross-feature-imports), mesmo padrão de
+// job-roles/services/toolExecutors.ts.
+interface LeadUseCasesContract {
+  updateLead(
+    organizationId: string,
+    id: string,
+    data: Record<string, unknown>,
+    actorUserId?: string,
+  ): Promise<unknown>;
+}
+
 const mesaRoles = requireRole(['ADMIN', 'GESTOR', 'CLOSER', 'SDR']);
 
 /** Etapas "abertas" do funil de Lead (SDR) — as únicas que aparecem na Mesa de Tratamento.
@@ -333,11 +345,11 @@ router.post(
       );
 
       await container
-        .resolve<LeadUseCases>('LeadUseCases')
+        .resolve<LeadUseCasesContract>('LeadUseCases')
         .updateLead(
           organizationId,
           id,
-          data as unknown as Parameters<LeadUseCases['updateLead']>[2],
+          data as unknown as Parameters<LeadUseCasesContract['updateLead']>[2],
           userId,
         );
 
@@ -513,7 +525,7 @@ router.post(
       // (recordLeadFieldChanges), que o prisma.lead.update direto não fazia.
       const { id: actorUserId } = (req as AuthRequest).user;
       await container
-        .resolve<LeadUseCases>('LeadUseCases')
+        .resolve<LeadUseCasesContract>('LeadUseCases')
         .updateLead(organizationId, id, { owner: newOwnerId }, actorUserId);
 
       await postCommentToBitrix(
