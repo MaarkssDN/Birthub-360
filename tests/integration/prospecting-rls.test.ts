@@ -53,13 +53,21 @@ const asBypass = () => requestContext.enterWith({ bypassRls: true });
 /** Hard delete de verdade (bypassa a interceptação de soft-delete do model client) — necessário
  * para os testes deste arquivo não vazarem Company/Lead de um `it` para o próximo. */
 const hardDeleteOrgData = async (organizationId: string) => {
-  asBypass();
+  // NÃO usar bypass aqui: desde a migration 20260825120000_scope_rls_bypass_to_bootstrap_allowlist
+  // as policies de TimelineEvent/Activity/Note/Company/Contact/etc. não honram mais
+  // app.bypass_rls (só modelos do allowlist de bootstrap, como Organization, ainda honram).
+  // Com bypass + tenant vazio essas tabelas ficam invisíveis e o DELETE vira no-op silencioso,
+  // estourando FK Restrict (ex.: TimelineEvent_leadId_fkey) na hora de apagar o Lead.
+  // Rodar com tenant = org alvo faz cada policy avaliar organizationId/leadId->org corretamente.
+  asTenant(organizationId);
   await withRlsContext(async (tx) => {
     // Ordem estrita de deleção para preservar integridade referencial:
     // filhas com FK RESTRICT/CASCADE antes de Lead e Company
     // TimelineEvent não tem organizationId (só leadId, ON DELETE RESTRICT) — resolve via Lead.
     await tx.$executeRaw`DELETE FROM "TimelineEvent" WHERE "leadId" IN (SELECT id FROM "Lead" WHERE "organizationId" = ${organizationId})`;
+    await tx.$executeRaw`DELETE FROM "BitrixSyncLog" WHERE "organizationId" = ${organizationId}`;
     await tx.$executeRaw`DELETE FROM "Activity" WHERE "organizationId" = ${organizationId}`;
+    await tx.$executeRaw`DELETE FROM "AuditLog" WHERE "tenantId" = ${organizationId}`;
     // Note não tem organizationId (só leadId/companyId/contactId, ON DELETE CASCADE) — resolve via pais.
     await tx.$executeRaw`DELETE FROM "Note" WHERE "leadId" IN (SELECT id FROM "Lead" WHERE "organizationId" = ${organizationId}) OR "companyId" IN (SELECT id FROM "Company" WHERE "organizationId" = ${organizationId}) OR "contactId" IN (SELECT id FROM "Contact" WHERE "organizationId" = ${organizationId})`;
     await tx.$executeRaw`DELETE FROM "PublicLeadConsent" WHERE "organizationId" = ${organizationId}`;

@@ -16,6 +16,12 @@ const maxWorkers = hasWorkerOverride ? parsedMaxWorkers : 2;
 const fileParallelism = hasWorkerOverride;
 
 export default defineConfig({
+  server: {
+    fs: {
+      strict: false,
+      allow: ['C:/', 'D:/'],
+    },
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
