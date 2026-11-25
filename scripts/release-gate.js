@@ -41,7 +41,7 @@ const checks = [
   run('npm run lint', 'Lint', false),
   run('npm run typecheck', 'Typecheck', false),
   run('npm run verify:migration-drift', 'Verificação de Drift de Migrações (Prisma)', false),
-  run('npm run verify:governance-reviews', 'Revisão Independente Agente 24', false),
+  run('npm run verify:governance-reviews', 'Revisão Independente (Agente 09 — Silas)', false),
   run('npm run test:architecture', 'Arquitetura', false),
   run('npm run test:unit', 'Testes Unitarios', false),
   run('npm run test:integration', 'Testes de Integracao', false),

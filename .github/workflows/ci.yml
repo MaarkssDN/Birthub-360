@@ -228,7 +228,7 @@ jobs:
         run: npm run typecheck
         continue-on-error: true
 
-      - name: Verificar governança e parecer independente (Agente 24)
+      - name: Verificar governança e parecer independente (Agente 09 — Silas)
         run: npm run verify:governance-reviews
 
       - name: Architecture tests (fronteiras de dependência e hotspots)
