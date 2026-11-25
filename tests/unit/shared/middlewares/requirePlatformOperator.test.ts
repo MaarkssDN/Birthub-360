@@ -74,13 +74,14 @@ describe('requirePlatformOperator (SEC-001/SEC-002)', () => {
     );
   });
 
-  it('token correto via query param: passa (ex.: primeira navegação a partir de um link com token)', () => {
+  it('token correto via query param: rejeitado (ONDA3-22-R3 — query vaza em logs/Referer/histórico)', () => {
     mockEnv.PLATFORM_OPERATOR_TOKEN = 'super-secret-operator-token-value';
     const { req, res, next } = buildReqRes({ query: 'super-secret-operator-token-value' });
 
     requirePlatformOperator(req, res, next);
 
-    expect(next).toHaveBeenCalled();
+    expect(next).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(403);
   });
 
   it('token correto via cookie já setado numa requisição anterior: passa e NÃO reseta o cookie', () => {
