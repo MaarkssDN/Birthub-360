@@ -1,8 +1,8 @@
 import { Building2, GitMerge, Loader2, RefreshCw } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { LoadingState } from '../../../components/feedback/LoadingState.js';
 import { Badge } from '../../../components/ui/Badge.js';
 import { Button } from '../../../components/ui/Button.js';
-import { OperationalStateContainer } from '../../../components/ui/OperationalStateContainer.js';
 import {
   Card,
   CardContent,
@@ -10,6 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from '../../../components/ui/Card.js';
+import { OperationalStateContainer } from '../../../components/ui/OperationalStateContainer.js';
+import { ListSkeleton } from '../../../components/ui/Skeleton.js';
 import { api } from '../../../lib/api.js';
 import { clientLogger } from '../../../lib/clientLogger.js';
 import { toast } from '../../../lib/toast.js';
@@ -106,7 +108,13 @@ export function CompanyDedupPanel() {
               description:
                 'Quando houver empresas duplicadas por CNPJ ou nome fantasia, elas aparecerão aqui para revisão antes da mesclagem.',
             }}
-            loadingSkeleton={<p className="text-sm text-ink-2">Carregando…</p>}
+            loadingSkeleton={
+              <LoadingState
+                variant="skeleton"
+                label="Carregando duplicados de empresas…"
+                skeleton={<ListSkeleton items={3} />}
+              />
+            }
           >
             <div className="space-y-4">
               <div className="flex items-center justify-between gap-4">

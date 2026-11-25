@@ -1,4 +1,7 @@
-import React from 'react';
+import { Inbox } from 'lucide-react';
+import type React from 'react';
+import { cn } from '../../lib/utils.js';
+import { Button } from '../ui/Button.js';
 
 export interface EmptyStateProps {
   title: string;
@@ -6,39 +9,49 @@ export interface EmptyStateProps {
   actionLabel?: string;
   onAction?: () => void;
   icon?: React.ReactNode;
+  className?: string;
 }
 
+/** Estado vazio canônico (S30-03). role="status" + aria-live="polite": ausência de
+ *  dados é informativa, não alarmante — não usa role="alert". Ícone é decorativo
+ *  (aria-hidden); título/descrição carregam a informação para leitores de tela. */
 export const EmptyState: React.FC<EmptyStateProps> = ({
   title,
   description,
   actionLabel,
   onAction,
   icon,
+  className,
 }) => {
   return (
     <section
       role="status"
       aria-live="polite"
       data-testid="canonical-empty-state"
-      className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40 p-8 text-center"
+      className={cn(
+        'flex flex-col items-center justify-center rounded-2xl border border-dashed border-line bg-surface/60 p-8 text-center',
+        className,
+      )}
     >
       <div
         aria-hidden="true"
-        className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
+        className="mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-line bg-surface-2 text-ink-2"
       >
-        {icon ?? '✦'}
+        {icon ?? <Inbox className="h-5 w-5" strokeWidth={1.5} />}
       </div>
-      <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
-      <p className="mt-1 max-w-md text-sm text-slate-600 dark:text-slate-400">{description}</p>
+      <h3 className="text-base font-semibold text-ink">{title}</h3>
+      <p className="mt-1 max-w-md text-sm text-ink-2">{description}</p>
       {actionLabel && onAction && (
-        <button
+        <Button
           type="button"
+          variant="vancouver"
+          size="sm"
           onClick={onAction}
           data-testid="empty-state-primary-action"
-          className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 focus-visible:ring-2"
+          className="mt-4"
         >
           {actionLabel}
-        </button>
+        </Button>
       )}
     </section>
   );

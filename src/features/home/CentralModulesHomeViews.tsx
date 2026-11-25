@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { ArrowRight, Smartphone, Workflow } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, type KeyboardEvent } from 'react';
 import { BirthHubLogo } from '../../components/brand/BirthHubLogo.js';
 import type { ProductModule } from '../../components/layout/moduleRegistry.js';
 import { getModuleTheme } from '../../components/layout/moduleThemes.js';
@@ -17,6 +17,19 @@ interface ProposalProps {
   modules: ProductModule[];
   onNavigate: (module: ProductModule) => void;
   isDark: boolean;
+}
+
+// WCAG 2.1.1 (Teclado) e 4.1.2 (Nome/Papel/Valor) — handoff 34→30
+// (`.agents/handoffs/onda-3/34-para-30-a11y-paths-sem-owner.md`, item 1):
+// os cards de módulo são acionáveis por mouse; `role="button"` + `tabIndex`
+// + ativação por Enter/Espaço os tornam operáveis por teclado.
+function onModuleCardKeyDown(onActivate: () => void) {
+  return (event: KeyboardEvent<HTMLElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onActivate();
+    }
+  };
 }
 
 export function BentoEditorialView({ modules, onNavigate, isDark }: ProposalProps) {
@@ -74,6 +87,9 @@ export function BentoEditorialView({ modules, onNavigate, isDark }: ProposalProp
               isMobileOnly ? 'opacity-85' : 'cursor-pointer hover:-translate-y-1'
             }`}
             onClick={() => onNavigate(m)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={onModuleCardKeyDown(() => onNavigate(m))}
           >
             {/* Topo do Card */}
             <div>
@@ -186,6 +202,9 @@ export function GridModularView({ modules, onNavigate, isDark }: ProposalProps) 
               isMobileOnly ? 'opacity-85' : 'cursor-pointer hover:-translate-y-1'
             }`}
             onClick={() => onNavigate(m)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={onModuleCardKeyDown(() => onNavigate(m))}
           >
             <div>
               <div className="flex items-center justify-between mb-3.5">
@@ -358,9 +377,13 @@ export function HubOrbitalView({ modules, onNavigate, isDark }: ProposalProps) {
                   const themeStyles = isDark ? theme.dark : theme.light;
 
                   return (
+                    // biome-ignore lint/a11y/useSemanticElements: card contém headings/blocos — <button> nativo não admite esse content model; role="button"+teclado é o padrão correto (WCAG 4.1.2)
                     <div
                       key={m.id}
                       onClick={() => onNavigate(m)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={onModuleCardKeyDown(() => onNavigate(m))}
                       className={`group flex flex-col justify-between rounded-xl border ${
                         themeStyles.border
                       } ${themeStyles.borderHover} ${
@@ -537,6 +560,9 @@ export function WorkflowPipelineView({ modules, onNavigate, isDark }: ProposalPr
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       onClick={() => onNavigate(m)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={onModuleCardKeyDown(() => onNavigate(m))}
                       className={`group flex flex-col justify-between rounded-xl border ${
                         themeStyles.border
                       } ${themeStyles.borderHover} ${

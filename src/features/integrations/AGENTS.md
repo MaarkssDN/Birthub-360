@@ -2,7 +2,13 @@
 
 ## Dono
 
-Agente 06 — Integrações e Bitrix
+Squad 50–59 conforme `.agents/MATRIZ_PROPRIEDADE.md` (revisão 2026-11-24):
+`bitrix/**` dividido entre 50 (coordenação/rotas gerais), 51 (auth/credenciais),
+52 (extrações batch), 53 (webhooks/sync), 54 (mapeamento/providers CRM),
+55 (e-mail), 56 (WhatsApp), 57 (Google/Calendar), 58 (ERP/omie/signature/slack),
+59 (observabilidade). `stripe/**`→26, `chatwoot/**`→66, `threecx/**` e
+`birth-voice/**`→61. Este arquivo já declarava "Agente 06" (numeração legada) —
+substituído pela matriz oficial.
 
 Este arquivo governa esta pasta e todas as subpastas.
 

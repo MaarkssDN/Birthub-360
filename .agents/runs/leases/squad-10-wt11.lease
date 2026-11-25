@@ -1,0 +1,6 @@
+lease: squad-10-wt11
+agent: 11-pietro
+branch: agente/11-deletedby-schema-s10
+worktree: C:/Github/Birthub-360-worktrees/squads/squad-10/wt-11
+scope: prisma/schema.prisma — 4 models (Agent, AgentSession, CadenceSequence, Workflow) + deletedBy/deleteReason
+mission: DEM-20261123-001

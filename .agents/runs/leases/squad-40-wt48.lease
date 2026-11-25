@@ -1,0 +1,6 @@
+squad-40-wt48 lease
+agent: 48 (Jade)
+ports: 22400-22499
+branch: agente/48-crm-dedup-s40
+base: abbc4601ad (integracao/squad-40)
+date: 2026-11-24
