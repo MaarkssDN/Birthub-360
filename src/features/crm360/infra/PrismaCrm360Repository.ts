@@ -408,7 +408,7 @@ export class PrismaCrm360Repository implements ICrm360Repository {
     organizationId: string,
     leadId: string,
     stageId: string,
-    expectedCloseDate?: Date,
+    expectedCloseDate?: Date | string | number,
     actorUserId?: string,
   ) {
     const stage = await prisma.crmPipelineStage.findFirstOrThrow({
@@ -418,9 +418,48 @@ export class PrismaCrm360Repository implements ICrm360Repository {
 
     // Tenancy (handoff 01A→04, onda-paralela-8): valida existência e tenancy do lead ANTES de
     // invocar o gate CYC-007 — evita criar Note e DealClosureEvent órfãos para um leadId estrangeiro.
+    // `deletedAt: null`: registro soft-deleted não pode mais mudar de etapa (mesmo filtro de
+    // getDeals) — sem isso um lead excluído continuava mutável por este endpoint.
     const previousLead = await prisma.lead.findFirstOrThrow({
-      where: { id: leadId, organizationId },
+      where: { id: leadId, organizationId, deletedAt: null },
     });
+
+    // POS3-42-STAGE-TRANSITIONS: o endpoint aceitava qualquer `stageId` da organização, sem
+    // verificar se a etapa pertence ao funil do registro. Uma etapa do pipeline de Leads movia
+    // um Negócio (funnel virava Lead — o negócio sumia de getDeals/forecast/openDeals mantendo
+    // dados comerciais) e vice-versa (um Lead "virava" negócio silenciosamente, contornando
+    // `convertLead`, que registra a timeline de conversão). `SmartProcess` não tem LeadFunnel
+    // equivalente, então qualquer entidade diferente da esperada é rejeitada.
+    const expectedEntity =
+      previousLead.funnel === LeadFunnel.Lead ? CrmPipelineEntity.Lead : CrmPipelineEntity.Negocio;
+    if (stage.pipeline.entity !== expectedEntity) {
+      throw new AppError(
+        `Transição de estágio inválida: a etapa "${stage.name}" pertence a um pipeline do tipo ` +
+          `"${stage.pipeline.entity}", incompatível com o funil "${previousLead.funnel}" do registro.`,
+        400,
+      );
+    }
+
+    // Etapa sem `leadStatus` não define status/closedAt — mover o registro para ela deixaria
+    // `status` (e closedAt, se já estava fechado) divergente da etapa exibida no board.
+    if (!stage.leadStatus) {
+      throw new AppError(
+        `A etapa "${stage.name}" não possui status mapeado; a movimentação deixaria o status do registro divergente da etapa.`,
+        400,
+      );
+    }
+
+    // `expectedCloseDate` chega do body sem passar por schema de data (moveCrmRecordSchema só
+    // declara stageId) — `new Date(lixo)` produz Invalid Date, que estourava 500 no Prisma.
+    // Falha de entrada do cliente é 400, não erro de servidor.
+    let expectedCloseAt: Date | undefined;
+    if (expectedCloseDate) {
+      expectedCloseAt =
+        expectedCloseDate instanceof Date ? expectedCloseDate : new Date(expectedCloseDate);
+      if (Number.isNaN(expectedCloseAt.getTime())) {
+        throw new AppError('expectedCloseDate inválida: informe uma data válida.', 400);
+      }
+    }
 
     // CYC-007 (onda 24): mover para uma etapa mapeada em "Negócios Ganhos" é o 3º caminho de
     // escrita real (junto com LeadUseCases.updateLeadStatus/updateLead) que precisa do gate de
@@ -444,7 +483,7 @@ export class PrismaCrm360Repository implements ICrm360Repository {
         stage.pipeline.entity === CrmPipelineEntity.Lead ? LeadFunnel.Lead : LeadFunnel.Negocio,
     };
 
-    if (expectedCloseDate) updateData.expectedCloseAt = expectedCloseDate;
+    if (expectedCloseAt) updateData.expectedCloseAt = expectedCloseAt;
 
     if (stage.leadStatus) {
       updateData.status = stage.leadStatus;
@@ -460,7 +499,7 @@ export class PrismaCrm360Repository implements ICrm360Repository {
       // já usado por convertLead logo abaixo) — não corrige uma falha explorável hoje (o
       // findFirstOrThrow acima + RLS real já bloqueiam um tenant errado), mas deixa a query de
       // escrita autocontida em vez de depender só do pré-check + RLS como únicas camadas.
-      where: { id: leadId, organizationId },
+      where: { id: leadId, organizationId, deletedAt: null },
       data: updateData,
       include: { company: true, contact: true, pipelineStage: true, dealItems: true },
     });
@@ -468,12 +507,12 @@ export class PrismaCrm360Repository implements ICrm360Repository {
     if (previousLead.pipelineStageId !== stage.id) {
       await recordStageTransition(organizationId, leadId, stage, stage.pipelineId);
     }
-    if (expectedCloseDate) {
+    if (expectedCloseAt) {
       await recordLeadFieldChanges(
         organizationId,
         leadId,
         { expectedCloseAt: previousLead.expectedCloseAt },
-        { expectedCloseAt: expectedCloseDate },
+        { expectedCloseAt: expectedCloseAt },
         { source: 'crm360', changedBy: actorUserId ?? null },
       );
     }
@@ -486,8 +525,22 @@ export class PrismaCrm360Repository implements ICrm360Repository {
     const stage = dealPipeline.stages[0];
     if (!stage) throw new Error('O funil de negócios não possui etapa inicial');
 
+    // POS3-42-STAGE-TRANSITIONS: antes não havia nenhuma verificação do estado atual — chamar
+    // convert num registro que JÁ é Negócio (ou soft-deleted) o resetava para a 1ª etapa do
+    // funil, apagava closedAt e gravava uma 2ª timeline de "conversion" + LeadStageHistory
+    // espúria. Conversão é uma transição de mão única Lead → Negócio.
+    const previousLead = await prisma.lead.findFirstOrThrow({
+      where: { id: leadId, organizationId, deletedAt: null },
+    });
+    if (previousLead.funnel !== LeadFunnel.Lead) {
+      throw new AppError(
+        'Apenas registros do funil de Leads podem ser convertidos em negócio.',
+        409,
+      );
+    }
+
     const updated = await prisma.lead.update({
-      where: { id: leadId, organizationId },
+      where: { id: leadId, organizationId, deletedAt: null },
       data: {
         funnel: LeadFunnel.Negocio,
         status: stage.leadStatus ?? LeadStatus.Nova_Oportunidade,
