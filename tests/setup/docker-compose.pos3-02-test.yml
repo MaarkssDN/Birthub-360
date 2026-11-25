@@ -1,5 +1,8 @@
 # Harness de testes de integração ISOLADO por agente — POS3-02-ENV-HARNESS (Agente 02 — Bento).
 #
+# Vive em tests/setup/ de propósito: a MATRIZ_PROPRIEDADE dá `tests/setup/**` ao Agente 02;
+# um docker-compose.*.yml na raiz colidiria com o guarda-chuva do Agente 93 (Squad 90/93).
+#
 # Substitui o par docker-compose.yml + docker-compose.postgres-local.yml para execuções de
 # `vitest.integration` fora do CI, com isolamento por prefixo `pos3_02_`:
 #   - containers: pos3_02_postgres / pos3_02_redis / pos3_02_meilisearch
@@ -16,26 +19,34 @@
 # NÃO sobem (bind 5434/6379/7701 ocupado). Escolha UM dos dois ambientes por vez — ver
 # .agents/runs/pos3-02-env-harness.md (runbook).
 #
-# Uso (via wrapper, recomendado):
-#   node scripts/test/pos3-02-env-harness.mjs                 # sobe, migra, roda as 3 suítes de cadência, derruba
-#   node scripts/test/pos3-02-env-harness.mjs --keep-up       # sobe e mantém de pé (para iteração)
-#   node scripts/test/pos3-02-env-harness.mjs --down          # derruba containers (volumes preservados)
-#   node scripts/test/pos3-02-env-harness.mjs --down --purge  # derruba e apaga volumes
+# Uso (via wrapper, recomendado — rodar da raiz do repo):
+#   node tests/setup/pos3-02-env-harness.mjs                 # sobe, migra, seed, roda as 3 suítes de cadência, derruba
+#   node tests/setup/pos3-02-env-harness.mjs --keep-up       # sobe e mantém de pé (para iteração)
+#   node tests/setup/pos3-02-env-harness.mjs --down          # derruba containers (volumes preservados)
+#   node tests/setup/pos3-02-env-harness.mjs --down --purge  # derruba e apaga volumes
 #
 # Uso direto:
-#   docker compose -f docker-compose.test.yml up -d --wait
-#   docker compose -f docker-compose.test.yml down
+#   docker compose -f tests/setup/docker-compose.pos3-02-test.yml up -d --wait
+#   docker compose -f tests/setup/docker-compose.pos3-02-test.yml down
 
 name: pos3-02-env-harness
 
 services:
   postgres:
-    # Mesma imagem do harness local (docker-compose.postgres-local.yml): pgvector + Postgres 17.
-    image: pgvector/pgvector:pg17
+    # pgvector/pgvector:pg17 com digest pinado (manifest list, consultado no Docker Hub em
+    # 2026-11-26) — mesma disciplina do Redis/Meilisearch abaixo. ATENÇÃO: esta imagem NÃO
+    # inclui PostGIS. As migrations do repo só exigem `vector` e `pg_trgm` (verificado em
+    # prisma/migrations — nenhum uso de postgis/geography/geometry), então o initdb de
+    # scripts/db/02-enable-extensions.sql (que criaria postgis) foi deliberadamente NÃO
+    # montado aqui: ele existe para o Postgres local de dev, não para este harness de teste.
+    # Se um dia uma migration passar a exigir postgis, trocar para build de
+    # docker/postgres/Dockerfile (que instala postgresql-17-postgis-3) ou imagem com PostGIS.
+    image: pgvector/pgvector:pg17@sha256:b513c48566e4777cd3370451400000c78eda6a08131d68f4c31d4a76f27bd8fd
     container_name: pos3_02_postgres
     environment:
-      # Superusuário de bootstrap — só para initdb e para o script de bootstrap criar o banco
-      # de teste. A app NUNCA conecta como ele (RLS não se aplica a superusuário — N1).
+      # Superusuário de bootstrap — usado só para criar o banco de teste e rodar
+      # create-app-role.sql (criar os papéis). A app NUNCA conecta como ele (RLS não se
+      # aplica a superusuário — N1 em docs/auditoria-divida-tecnica/08-PLANO-DE-SEGURANCA.md).
       POSTGRES_USER: ${POSTGRES_USER:-prospector}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-prospector_pass}
       POSTGRES_DB: ${POSTGRES_DB:-prospectordb}
@@ -48,14 +59,14 @@ services:
     shm_size: '1gb'
     volumes:
       - pos3_02_pgdata:/var/lib/postgresql/data
-      # Mesmos initdb do postgres-local: na PRIMEIRA inicialização do volume criam os papéis
-      # app/migrator e as extensões no banco bootstrap (prospectordb). O banco de teste
-      # (prospectordb_pos3_02_test) é criado depois pelo bootstrap script, que roda
-      # create-app-role.sql.tpl nele manualmente — ver scripts/test/pos3-02-env-harness.mjs.
-      - ./scripts/db/create-app-role.sql:/docker-entrypoint-initdb.d/create-app-role.sql.tpl:ro
-      - ./scripts/db/docker-init.sh:/docker-entrypoint-initdb.d/01-create-app-role.sh:ro
-      - ./scripts/db/02-enable-extensions.sql:/docker-entrypoint-initdb.d/02-enable-extensions.sql:ro
-      - ./scripts/db/03-create-langfuse-db.sql:/docker-entrypoint-initdb.d/03-create-langfuse-db.sql:ro
+      # Só o necessário para o initdb do banco BOOTSTRAP (prospectordb): cria os papéis
+      # app/migrator via docker-init.sh → create-app-role.sql.tpl. O banco de teste
+      # (prospectordb_pos3_02_test) é criado depois pelo bootstrap script, que roda o mesmo
+      # create-app-role.sql.tpl nele manualmente — ver tests/setup/pos3-02-env-harness.mjs.
+      # 02-enable-extensions.sql (postgis) e 03-create-langfuse-db.sql (langfuse) NÃO são
+      # montados: postgis não existe nesta imagem e langfuse não é dependência das suítes.
+      - ../../scripts/db/create-app-role.sql:/docker-entrypoint-initdb.d/create-app-role.sql.tpl:ro
+      - ../../scripts/db/docker-init.sh:/docker-entrypoint-initdb.d/01-create-app-role.sh:ro
     security_opt:
       - no-new-privileges:true
     restart: 'no'
