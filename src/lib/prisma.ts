@@ -206,6 +206,27 @@ const extendedPrisma = basePrisma.$extends({
         applySoftDeleteReadFilter(args, model as string, operation);
         const injectedDeletedAt = injectSoftDeleteSelect(args, model as string, operation);
 
+        // findUnique/findUniqueOrThrow não passam pelo filtro de where do soft delete
+        // (applySoftDeleteReadFilter só cobre findFirst/findMany/count/aggregate/groupBy) — a
+        // proteção deles é o pós-check de `result.deletedAt` mais abaixo. Esse pós-check só é
+        // confiável se a coluna vier no resultado: com `select` parcial sem `deletedAt`,
+        // `result.deletedAt` volta `undefined` e `undefined !== null` escondia QUALQUER registro
+        // existente (achado do E2E mesa-tratamento — findUnique com select retornava null para
+        // lead vivo). Injeta a coluna na query e remove do resultado quando o caller não a pediu.
+        const isFindUniqueOp = operation === 'findUnique' || operation === 'findUniqueOrThrow';
+        let stripInjectedDeletedAt = false;
+        if (isAuditable && isFindUniqueOp) {
+          const selArgs = args as { select?: Record<string, unknown> };
+          if (
+            selArgs.select &&
+            typeof selArgs.select === 'object' &&
+            selArgs.select.deletedAt !== true
+          ) {
+            selArgs.select = { ...selArgs.select, deletedAt: true };
+            stripInjectedDeletedAt = true;
+          }
+        }
+
         // IMPORTANTE (Onda 9, bug crítico de RLS — ver .agents/runs/onda-9.md): `executeWithRls`
         // costumava combinar o `SET LOCAL` de tenant com a query real via `basePrisma.$transaction([
         // setConfig, prismaPromise])` (array-form). Reproduzido de forma determinística contra
@@ -486,6 +507,12 @@ const extendedPrisma = basePrisma.$extends({
         // (`decryptField` já trata qualquer outro valor como texto legado/sem cifra e devolve
         // sem alteração) — idempotente mesmo quando já decifrado pelo passo 6 acima.
         result = decryptNestedContactPii(result) as typeof result;
+
+        if (stripInjectedDeletedAt && result) {
+          const { deletedAt: _strippedDeletedAt, ...rest } = result as Record<string, unknown>;
+          void _strippedDeletedAt;
+          result = rest;
+        }
 
         return result;
       },
