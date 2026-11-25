@@ -278,10 +278,7 @@ export function setupDI() {
   container.register('UsageController', new UsageController(usageUseCases));
   container.register('FeatureFlagsController', new FeatureFlagsController(featureFlagsUseCases));
   container.register('CopilotoIaController', new CopilotoIaController(copilotoIaUseCases));
-  container.register(
-    'CopilotoBitrixWritebackUseCases',
-    copilotoBitrixWritebackUseCases,
-  );
+  container.register('CopilotoBitrixWritebackUseCases', copilotoBitrixWritebackUseCases);
   container.register('LivingPlaybookController', new LivingPlaybookController());
   container.register('PlaybookRoleplayAdapter', new PlaybookRoleplayAdapter());
   container.register('CompanyDeduplicationService', new CompanyDeduplicationService());

@@ -27,19 +27,10 @@ const TIMELINE_ENTITY_TYPES: readonly TimelineEntityFilter[] = [
   'whatsapp',
   'automation',
 ];
-const TIMELINE_OUTCOMES: readonly TimelineOutcomeFilter[] = [
-  'all',
-  'success',
-  'pending',
-  'failed',
-];
+const TIMELINE_OUTCOMES: readonly TimelineOutcomeFilter[] = ['all', 'success', 'pending', 'failed'];
 
 /** Valida um query param contra uma allow-list tipada; valores inválidos caem no fallback. */
-function parseQueryEnum<T extends string>(
-  raw: unknown,
-  allowed: readonly T[],
-  fallback: T,
-): T {
+function parseQueryEnum<T extends string>(raw: unknown, allowed: readonly T[], fallback: T): T {
   const value = typeof raw === 'string' ? raw : '';
   return (allowed as readonly string[]).includes(value) ? (value as T) : fallback;
 }
