@@ -272,12 +272,28 @@ export class CadenceExecutionService implements CadenceExecutionPort {
       return this.executeDispatchedAction(actionId, input, subject, now);
     }
 
-    // 6. Caso contrário, enfileira com sucesso
-    return {
-      accepted: true,
+    // 6. Não há fila persistente de ações do Swarm neste serviço (contrato dormente —
+    //    POS3-44-DORMANT-CONTRACTS): nenhum consumidor de produção chama `enqueueAction` e
+    //    `src/lib/queue/**` pertence a outro domínio. Retornar `status: 'queued'` aqui seria
+    //    sucesso falso — nada seria executado depois. Falhamos explicitamente até que um
+    //    consumidor real forneça uma fila de verdade.
+    await this.notifyDeliveryStatus({
       actionId,
-      status: 'queued',
-      nextEligibleAt: input.scheduledFor ?? now,
+      leadId: input.leadId,
+      organizationId: input.organizationId,
+      channel: input.channel,
+      status: 'failed',
+      occurredAt: now,
+      details: { reason: 'queue-unavailable' },
+    });
+    return {
+      accepted: false,
+      actionId,
+      status: 'rejected',
+      rejectionReason: 'queue-unavailable',
+      deliveryStatus: 'failed',
+      error:
+        'Fila persistente de ações do Swarm não implementada: enqueueAction só despacha com autoExecute até que um consumidor forneça uma fila real.',
     };
   }
 
