@@ -76,7 +76,11 @@ externalCrmRoutes.post('/', express.json(), async (req: Request, res: Response) 
     });
   } catch (err: any) {
     logger.error({ err, organizationId }, 'Erro ao criar conexão de CRM externo');
-    return res.status(400).send({ error: err instanceof Error ? err.message : 'Falha interna' });
+    // Não devolve err.message: providers embutem o body cru da resposta do CRM na mensagem,
+    // que pode conter PII do registro ou detalhes de auth (auditoria 2026-11-15, P2-07).
+    return res
+      .status(400)
+      .send({ error: 'Não foi possível criar a conexão. Verifique os dados e tente novamente.' });
   }
 });
 
@@ -130,13 +134,21 @@ externalCrmRoutes.post('/:id/test', async (req: Request, res: Response) => {
     );
     return res.status(500).send({
       success: false,
-      error: err instanceof Error ? err.message : 'Falha ao validar credenciais.',
+      error: 'Falha ao validar credenciais. Tente novamente.',
     });
   }
 });
 
 // POST /api/integrations/external-crm/:id/sync
-// Dispara importação / sincronização manual de leads
+// Dispara importação / sincronização manual de leads.
+//
+// HONESTIDADE (auditoria 2026-11-15, P1-01): a importação de leads de CRMs externos ainda NÃO
+// está implementada — `ExternalCrmService.importLeads` busca os deals no provider mas não
+// existe persistência (Lead + dedup via ExternalEntityLink + mapeamento de etapa), e a decisão
+// de modelo de dedup é de schema/domínio (Agente 01/04). Antes desta correção a rota devolvia
+// `success:true` com `importedCount` = leads BUSCADOS, sem gravar nada — falso sucesso.
+// Até o importador real existir, a rota responde 501 explícito. O provider continua acessível
+// via `importLeads` para o futuro importador.
 externalCrmRoutes.post('/:id/sync', async (req: Request, res: Response) => {
   const organizationId = (req as AuthenticatedRequest).user?.organizationId;
   if (!organizationId) return res.status(401).send({ error: 'Unauthorized' });
@@ -146,18 +158,30 @@ externalCrmRoutes.post('/:id/sync', async (req: Request, res: Response) => {
   if (!id) return res.status(400).send({ error: 'ID obrigatório' });
 
   try {
-    const result = await ExternalCrmService.importLeads(id, organizationId);
-    return res.send({
-      success: true,
-      importedCount: result.leads.length,
-      nextCursor: result.nextCursor,
-      message: `${result.leads.length} lead(s) processado(s) na sincronização.`,
+    // 404 honesto quando a conexão não existe no tenant (sem vazar existência cross-tenant).
+    const connections = await ExternalCrmService.listConnections(organizationId);
+    const connection = connections.find((c) => c.id === id);
+    if (!connection) {
+      return res.status(404).send({ success: false, error: 'Conexão não encontrada.' });
+    }
+
+    logger.warn(
+      { organizationId, connectionId: id, provider: connection.provider },
+      '[external-crm] Sync de importação solicitado, mas importação de leads não está implementada',
+    );
+
+    return res.status(501).send({
+      success: false,
+      code: 'NOT_IMPLEMENTED',
+      error:
+        'A importação de leads deste CRM ainda não está disponível. A conexão está ativa, mas a ' +
+        'sincronização de entrada (CRM externo → Atlas) será liberada em versão futura.',
     });
   } catch (err: any) {
     logger.error({ err, organizationId, connectionId: id }, 'Erro ao sincronizar CRM externo');
     return res.status(500).send({
       success: false,
-      error: err instanceof Error ? err.message : 'Falha ao sincronizar com CRM externo.',
+      error: 'Falha ao sincronizar com CRM externo.',
     });
   }
 });

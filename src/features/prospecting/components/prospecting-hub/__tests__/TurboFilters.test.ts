@@ -11,6 +11,7 @@ function renderFilters() {
   const onDiscover = vi.fn();
   const onInterpret = vi.fn();
   let latest: ProspectCriteria = { segmento: '', localizacao: '', quantidade: 20 };
+  // biome-ignore lint/correctness/noComponentHookFactories: harness de teste captura latest/onDiscover/onInterpret por renderFilters; estado fresco por teste é intencional
   function Harness() {
     const [criteria, setCriteria] = useState(latest);
     latest = criteria;

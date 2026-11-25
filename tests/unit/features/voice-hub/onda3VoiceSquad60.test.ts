@@ -95,13 +95,18 @@ describe('[Squad 60 · Voz & Omnichannel] Onda 3 — Aurora (60), Nando (61), Li
         {
           async transcribeMonoChannel({ channelIndex }) {
             if (channelIndex === 0) {
-              return [{ startSec: 0.5, endSec: 2.0, text: 'Olá, aqui é da clínica.' }];
+              return [
+                { startSec: 0.5, endSec: 2.0, text: 'Olá, aqui é da clínica.', confidence: 0.87 },
+                { startSec: 2.1, endSec: 2.15, text: '   ' },
+              ];
             }
             return [{ startSec: 2.2, endSec: 4.1, text: 'Bom dia, gostaria de agendar.' }];
           },
         },
       );
 
+      // confidence só é propagada quando o transcritor a reporta — nunca fabricada.
+      // Segmento só com espaços é descartado.
       expect(utterances).toEqual([
         {
           speaker: 'AGENT',
@@ -109,7 +114,7 @@ describe('[Squad 60 · Voz & Omnichannel] Onda 3 — Aurora (60), Nando (61), Li
           startSec: 0.5,
           endSec: 2.0,
           text: 'Olá, aqui é da clínica.',
-          confidence: 0.95,
+          confidence: 0.87,
         },
         {
           speaker: 'CUSTOMER',
@@ -117,7 +122,6 @@ describe('[Squad 60 · Voz & Omnichannel] Onda 3 — Aurora (60), Nando (61), Li
           startSec: 2.2,
           endSec: 4.1,
           text: 'Bom dia, gostaria de agendar.',
-          confidence: 0.95,
         },
       ]);
     });

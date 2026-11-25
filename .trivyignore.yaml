@@ -8,22 +8,14 @@
 # na mesma alteração. `expired_at` vencido faz o Trivy voltar a reportar o achado normalmente
 # (fail-closed automático, não depende de revisão manual notar a data vencida).
 #
-# Poda 2026-11-24 (Agente 99 — Vito, DEM-20261123-001): removidas 37 entradas comprovadamente
-# obsoletas. Evidência: `npm audit --audit-level=high` = 0 high/critical; versões resolvidas nos
-# lockfiles scaneados (raiz, agente-codigo-local, landing) acima do range vulnerável de cada
-# advisory — ver docs/security/AUDIT_WAIVERS.md (Histórico) e
-# .agents/runs/squads/squad-90-run-99-waivers.md. Único waiver remanescente: picomatch
-# (CVE-2026-112366 ainda afeta 4.0.7, última versão publicada, sem patch upstream).
-vulnerabilities:
-  - id: GHSA-FC5Q-39XC-VJPF
-    expired_at: 2026-12-17
-    statement: >-
-      picomatch <=4.0.7 ReDoS em ferramentas de build/lint/test sem versão de patch publicada upstream. Ver docs/security/AUDIT_WAIVERS.md.
-  - id: GHSA-fc5q-39xc-vjpf
-    expired_at: 2026-12-17
-    statement: >-
-      picomatch <=4.0.7 ReDoS em ferramentas de build/lint/test sem versão de patch publicada upstream. Ver docs/security/AUDIT_WAIVERS.md.
-  - id: CVE-2026-112366
-    expired_at: 2026-12-17
-    statement: >-
-      Mesma vulnerabilidade de GHSA-FC5Q-39XC-VJPF (picomatch <=4.0.7 ReDoS em ferramentas de build/lint/test), sob o CVE ID usado pelo Trivy. Ver docs/security/AUDIT_WAIVERS.md.
+# 2026-11-24 (Agente 99 — Vito, triagem POS4 MISSÃO POS4-99-SEC-TRIAGE): TODAS as entradas de
+# waiver foram removidas deste arquivo. Cada advisory foi verificado contra a versão realmente
+# resolvida nos lockfiles varridos pelo Trivy (package-lock.json da raiz, landing/package-lock.json
+# e agente-codigo-local/package-lock.json — pnpm-lock.yaml e agente-codigo-local/bun.lock estão em
+# skip-files do workflow) usando as faixas de versão vulnerável publicadas na GitHub Advisory
+# Database, somado a `npm audit --audit-level=high` reportando 0 achados HIGH/CRITICAL e consulta
+# ao OSV.dev sem vulnerabilidades abertas para cada pacote@versão instalada. Evidências completas:
+# .agents/handoffs/onda-pos4/99-para-00-sec-triage-pos4.md e docs/security/AUDIT_WAIVERS.md
+# (seção "## Histórico"). Nenhum waiver está ativo — achados HIGH/CRITICAL novos voltam a
+# bloquear o gate normalmente.
+vulnerabilities: []

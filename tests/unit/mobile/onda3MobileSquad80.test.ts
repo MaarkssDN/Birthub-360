@@ -82,7 +82,12 @@ describe('[Squad 80 · Mobile & Multiplataforma] Onda 3 — Navi (80), Ceci (83)
     it('redireciona usuário deslogado para /login guardando o destino e restaura a entidade exata após o login', () => {
       const router = new MobileDeepLinkRouter();
 
-      const unauth = router.handleIncomingDeepLink('birthhub://leads/lead-889?tab=timeline', false);
+      // Contrato unificado (Agente 84, DEM-20261123-001): scheme real `birthhub360://<tab>`
+      // espelha os VALID_TABS nativos; sub-rotas profundas chegam via App Link https.
+      const unauth = router.handleIncomingDeepLink(
+        'https://app.birthhub360.com.br/app/crm/leads/lead-889?tab=timeline',
+        false,
+      );
       expect(unauth.redirectToLogin).toBe(true);
       expect(unauth.targetInternalRoute).toBe('/login');
       expect(unauth.preservedTargetAfterLogin).toBe('/app/crm/leads/lead-889?tab=timeline');

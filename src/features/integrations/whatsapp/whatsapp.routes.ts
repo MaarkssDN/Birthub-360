@@ -9,6 +9,10 @@ import { listConversations } from './whatsappMessage.service.js';
 
 const router = Router();
 const managementRoles = requireRole(['ADMIN', 'GESTOR']);
+// Piso de leitura das conversas/mensagens/sinais/status: conteúdo de WhatsApp é PII de leads
+// (e /status expõe QR da sessão, vetor de sequestro se vazado). VISUALIZADOR não lê
+// (auditoria 2026-11-15, P2-03 — antes esses GETs não tinham requireRole algum).
+const readRoles = requireRole(['ADMIN', 'GESTOR', 'CLOSER', 'SDR']);
 
 function idempotencyKey(req: Request): string | undefined {
   const value = req.header('x-idempotency-key');
@@ -17,6 +21,7 @@ function idempotencyKey(req: Request): string | undefined {
 
 router.get(
   '/conversations',
+  readRoles,
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { organizationId } = (req as AuthRequest).user;
@@ -28,40 +33,52 @@ router.get(
   },
 );
 
-router.get('/messages', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const { organizationId } = (req as AuthRequest).user;
-    const leadId = typeof req.query.leadId === 'string' ? req.query.leadId : undefined;
-    const phoneE164 = typeof req.query.phone === 'string' ? toE164BR(req.query.phone) : undefined;
-    const messages = await prisma.whatsAppMessage.findMany({
-      where: { organizationId, ...(leadId ? { leadId } : {}), ...(phoneE164 ? { phoneE164 } : {}) },
-      orderBy: { receivedAt: 'desc' },
-      take: 50,
-    });
-    res.json({ success: true, data: messages });
-  } catch (error: any) {
-    next(error);
-  }
-});
-
-router.get('/signals', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const { organizationId } = (req as AuthRequest).user;
-    const leadId = typeof req.query.leadId === 'string' ? req.query.leadId : undefined;
-    if (!leadId) {
-      res.status(400).json({ success: false, error: 'leadId é obrigatório.' });
-      return;
+router.get(
+  '/messages',
+  readRoles,
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { organizationId } = (req as AuthRequest).user;
+      const leadId = typeof req.query.leadId === 'string' ? req.query.leadId : undefined;
+      const phoneE164 = typeof req.query.phone === 'string' ? toE164BR(req.query.phone) : undefined;
+      const messages = await prisma.whatsAppMessage.findMany({
+        where: {
+          organizationId,
+          ...(leadId ? { leadId } : {}),
+          ...(phoneE164 ? { phoneE164 } : {}),
+        },
+        orderBy: { receivedAt: 'desc' },
+        take: 50,
+      });
+      res.json({ success: true, data: messages });
+    } catch (error: any) {
+      next(error);
     }
-    const signals = await prisma.conversationSignal.findMany({
-      where: { organizationId, leadId },
-      orderBy: { createdAt: 'desc' },
-      take: 20,
-    });
-    res.json({ success: true, data: signals });
-  } catch (error: any) {
-    next(error);
-  }
-});
+  },
+);
+
+router.get(
+  '/signals',
+  readRoles,
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { organizationId } = (req as AuthRequest).user;
+      const leadId = typeof req.query.leadId === 'string' ? req.query.leadId : undefined;
+      if (!leadId) {
+        res.status(400).json({ success: false, error: 'leadId é obrigatório.' });
+        return;
+      }
+      const signals = await prisma.conversationSignal.findMany({
+        where: { organizationId, leadId },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      });
+      res.json({ success: true, data: signals });
+    } catch (error: any) {
+      next(error);
+    }
+  },
+);
 
 router.post(
   '/connect',
@@ -82,15 +99,19 @@ router.post(
   },
 );
 
-router.get('/status', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const { organizationId } = (req as AuthRequest).user;
-    const status = await getWhatsAppStatus(organizationId);
-    res.json({ success: true, data: status });
-  } catch (error: any) {
-    next(error);
-  }
-});
+router.get(
+  '/status',
+  readRoles,
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { organizationId } = (req as AuthRequest).user;
+      const status = await getWhatsAppStatus(organizationId);
+      res.json({ success: true, data: status });
+    } catch (error: any) {
+      next(error);
+    }
+  },
+);
 
 router.post(
   '/disconnect',

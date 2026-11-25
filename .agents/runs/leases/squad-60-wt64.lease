@@ -1,0 +1,7 @@
+agent: 64-tito
+mission: DEM-20261123-001 B-07 voice commands wiring
+worktree: squads/squad-60/wt-64
+branch: agente/64-voice-commands-s60
+ports: 22600-22699
+created: 2026-11-24T21:07:43Z
+expires: +4h

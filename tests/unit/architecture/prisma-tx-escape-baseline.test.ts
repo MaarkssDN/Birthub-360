@@ -59,7 +59,7 @@ const NEW_CLIENT_GRIT = path.join(ROOT, 'biome-plugins/no-new-prisma-client.grit
 
 const GENERIC_SUPPRESSION_RE =
   /biome-ignore(?:-all|-start)?\s+lint(?:\/plugin)?\s*(?::|$)|biome-ignore-(?:all|start)\s+lint\/plugin\/no-prisma-tx-escape\b/m;
-const BIOME_VERSION = '2.5.14'; // a do package-lock.json; o teste confere
+const BIOME_VERSION = '2.6.8'; // a do package-lock.json; o teste confere
 const BIOME_BIN = path.join(
   ROOT,
   'node_modules',

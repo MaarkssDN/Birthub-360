@@ -1,0 +1,16 @@
+sha	data	branch_d	assunto	status_final
+9d4089f8f961d77e0789436f1f09840acaf73b82	2026-11-24 16:15	integracao/pos4-dem20261124 (base da linha pos4)	docs(pos4): despacho das frentes pos-onda4	PUBLICADO (ancestral de origin/integracao/pos4-dem20261124)
+bd83277f0a351eb267fcd65fa08f122ff0f3b4a9	2026-11-24 15:11	coord/squad-30	feat(squad-30): SkipLink WCAG 2.2 AA	PUBLICADO em origin/coord/squad-30; SUPERADO semanticamente (SkipLink ja em Onda 3 clone C:)
+39758b02968b4b6015a982d4d7c8a71bcc4bcfd9	2026-11-24 15:50	coord/squad-30	docs(squad-30): marca bd83277f0 SUPERADA	PUBLICADO em origin/coord/squad-30; NAO esta em pos4
+d8cf21b37c1b0177ab8790faa6fc07b47a514531	2026-11-24 16:01	agente/46-forecast-s40	feat(crm-forecast): forecast vs metas (Sofia)	PUBLICADO em origin/agente/46-forecast-s40; NAO mergeado em pos4 — UNICO trabalho exclusivo ainda fora da linha de integracao
+5dfe49ba78d8fe59f3a1c62079936bbf86d990bf	2026-11-24 16:31	agente/08-sec-gates-pos4 + agente/99-sec-triage-pos4	sec(trivy): encerrar 40 waivers obsoletos	PUBLICADO; MERGEADO em pos4
+169ef567c8271681804ec6195d9dd0f4ac9939e6	2026-11-24 17:12	agente/08-sec-gates-pos4	sec(gates): alinhar trivy-pr-gate/allow-ghsas	PUBLICADO; MERGEADO em pos4
+8da340258c862f9ef0a20c3275cf6c26e1805f95	2026-11-24 17:13	agente/08-sec-gates-pos4	docs(handoff): POS4-08-SEC-GATES	PUBLICADO; MERGEADO em pos4
+b3660391d21fc7ba2f0d3808939bd81677770758	2026-11-24 17:33	agente/85-mobile-idem-pos4	feat(mobile): X-Idempotency-Key no outbox offline	PUBLICADO; MERGEADO em pos4
+8f8791dfdf4958bc48245a1891b0009473b1dda8	2026-11-24 17:33	agente/85-mobile-idem-pos4	docs(pos4): handoffs 85->00 e contrato 85->22	PUBLICADO; MERGEADO em pos4
+7e096223df97dd90047b6bbdf12af6bc4dcd14f7	2026-11-24 17:35	agente/22-api-idem-pos4	feat(api): middleware X-Idempotency-Key namespaced	PUBLICADO; MERGEADO em pos4
+c8afd307798f8ef8c388865bb0c1fb24f9bc216e	2026-11-24 16:34	agente/63-stt-pos4	feat(voice-hub/stt): contrato STT->voice-command-router	PUBLICADO; MERGEADO em pos4
+f930d0f68ecf310dc2a1f30b272db29fe1440360	2026-11-24 17:46	chore/handoff-00-despacho-wave-a-b-20261120	chore(handoffs): consolida handoffs/runs pendentes	PUBLICADO (push durante a analise)
+a4d837a5ed114fdbf1477a04d52c7fd7c1782886	2026-11-24 17:47	chore/handoff-00-despacho-wave-a-b-20261120	Merge origin -> chore/handoff	PUBLICADO
+11afcea75aba2556379d3be02c01950b1cf8c1fd	2026-11-24 17:48	agente/17-cadence-tz-pos4	docs(handoff): POS4-17-CADENCE-TZ	PUBLICADO; MERGEADO em pos4 (727d303b)
+68e38a47c0ebf976cdb9caf2f793cc985aa33f70	2026-11-24 17:47	agente/17-cadence-tz-pos4	feat(cadence): janela comercial por fuso do lead	PUBLICADO; MERGEADO em pos4 (727d303b)

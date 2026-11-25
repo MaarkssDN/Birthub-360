@@ -7,11 +7,16 @@
 # opcionais que guardam metadata próprio nele (langfuse, n8n, superset...).
 services:
   redis:
-    image: redis:7-alpine
+    # Digest pinado (2026-11-24): tag `7-alpine` é móvel; o sha256 fixa o manifest list exato.
+    # Atualizar com `docker buildx imagetools inspect redis:7-alpine` e trocar o digest.
+    image: redis:7-alpine@sha256:7f7d30b7fdd09467bac58198a1f166dd69789d348d4fe859cccb20e0cf287fbe
     container_name: birthhub_redis
     command: redis-server --requirepass ${REDIS_PASSWORD:-prospector_redis_pass}
     ports:
-      - '6379:6379'
+      # Bind em 127.0.0.1: a stack é dev-local; sem isso Redis/Meili/MinIO/LiteLLM/Ollama ficam
+      # alcançáveis por qualquer host da LAN. Containers do próprio compose continuam se falando
+      # pela rede interna (nomes de serviço), que não passa pela porta publicada.
+      - '127.0.0.1:6379:6379'
     volumes:
       - birthhub_redisdata:/data
     security_opt:
@@ -25,13 +30,14 @@ services:
       retries: 5
 
   meilisearch:
-    image: getmeili/meilisearch:v1.6
+    # Tag `v1.6` + digest pinado (2026-11-24) para build reproduzível.
+    image: getmeili/meilisearch:v1.6@sha256:634e83ffe5bad15239fa26bd04d06bccb84a1f2f06ad8a35135b510711348792
     container_name: birthhub_meilisearch
     environment:
       - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-birthhub_meili_master_key}
       - MEILI_ENV=development
     ports:
-      - '7700:7700'
+      - '127.0.0.1:7700:7700'
     volumes:
       - birthhub_meilidata:/meili_data
     security_opt:
@@ -52,15 +58,18 @@ services:
   # defina MINIO_ROOT_PASSWORD num .env local não versionado. TLS não é configurado aqui de
   # propósito (uso local/dev); não reusar este compose como está para produção.
   minio:
-    image: elestio/minio:latest
+    # O repositório elestio/minio só publica a tag `latest` (sem tags semver — verificado no
+    # Docker Hub em 2026-11-24). O pin por digest é a única forma de reproduzir a mesma imagem;
+    # o sha256 abaixo é o manifest list do `latest` naquele dia.
+    image: elestio/minio:latest@sha256:25348a257f1ece1b192f25f6cd9854618fa86422ac87b494b5d4e629c556d4bd
     container_name: birthhub_minio
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-birthhub}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?defina MINIO_ROOT_PASSWORD}
     ports:
-      - '9000:9000'
-      - '9001:9001'
+      - '127.0.0.1:9000:9000'
+      - '127.0.0.1:9001:9001'
     volumes:
       - birthhub_miniodata:/data
     security_opt:
@@ -74,7 +83,7 @@ services:
 
   # Cria o bucket esperado pela aplicação de forma idempotente após o MinIO responder.
   minio-init:
-    image: alpine:latest
+    image: alpine:3.21
     container_name: birthhub_minio_init
     depends_on:
       minio:
@@ -93,12 +102,13 @@ services:
     restart: 'no'
 
   litellm:
-    image: ghcr.io/berriai/litellm:main-stable
+    # Digest pinado (2026-11-24) sobre a tag móvel `main-stable` — mesmo padrão do Dockerfile.
+    image: ghcr.io/berriai/litellm:main-stable@sha256:1050d2c9ca58399de9cd51df6eb503812af697717f54d2f08c1c30589c75e1f7
     container_name: birthhub_litellm
     environment:
       LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:?defina LITELLM_MASTER_KEY no .env}
     ports:
-      - '4000:4000'
+      - '127.0.0.1:4000:4000'
     volumes:
       - ./litellm-config.yaml:/app/config.yaml:ro
     command: ['--config', '/app/config.yaml', '--port', '4000']
@@ -128,10 +138,11 @@ services:
       start_period: 20s
 
   ollama:
-    image: ollama/ollama:latest
+    # `latest` fixado na versão semver vigente em 2026-11-24 (0.40.18, mesmo digest do latest).
+    image: ollama/ollama:0.40.18
     container_name: birthhub_ollama
     ports:
-      - '11434:11434'
+      - '127.0.0.1:11434:11434'
     volumes:
       - birthhub_ollamadata:/root/.ollama
     security_opt:

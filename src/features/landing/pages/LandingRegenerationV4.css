@@ -1224,17 +1224,17 @@ html.light .b360-adaptive-landing .b360-sectionhead h2,
    ========================================================================== */
 
 .b360-adaptive-landing
-:is(
-  .b360-feature-card,
-  .b360-problem-card,
-  .b360-platform-card,
-  .b360-flow-card,
-  .b360-integration-card,
-  .b360-module,
-  .b360-copilot-card,
-  .b360-hero-console:not(.bh-n1-plate),
-  .b360-fanned-card
-),
+  :is(
+    .b360-feature-card,
+    .b360-problem-card,
+    .b360-platform-card,
+    .b360-flow-card,
+    .b360-integration-card,
+    .b360-module,
+    .b360-copilot-card,
+    .b360-hero-console:not(.bh-n1-plate),
+    .b360-fanned-card
+  ),
 html:not(.dark)
   .b360-adaptive-landing
   :is(
@@ -1740,17 +1740,17 @@ html.dark .b360-adaptive-landing .b360-eyebrow,
 
 /* ── 5. CARDS BENTO GLASSMORPHIC EM AMBOS OS TEMAS ──────────────────────── */
 .b360-adaptive-landing
-:is(
-  .b360-feature-card,
-  .b360-problem-card,
-  .b360-platform-card,
-  .b360-flow-card,
-  .b360-integration-card,
-  .b360-module,
-  .b360-copilot-card,
-  .b360-hero-console:not(.bh-n1-plate),
-  .b360-fanned-card
-) {
+  :is(
+    .b360-feature-card,
+    .b360-problem-card,
+    .b360-platform-card,
+    .b360-flow-card,
+    .b360-integration-card,
+    .b360-module,
+    .b360-copilot-card,
+    .b360-hero-console:not(.bh-n1-plate),
+    .b360-fanned-card
+  ) {
   position: relative;
   min-width: 0;
   border-radius: 22px !important;
@@ -1982,14 +1982,14 @@ html.dark .b360-adaptive-landing .b360-eyebrow,
 
 /* 3. IMAGEM DE FUNDO UNIVERSAL EM TODOS OS CARDS DA LANDING PAGE */
 .b360-adaptive-landing
-:is(
-  .b360-problem-card,
-  .b360-platform-card,
-  .b360-flow-card,
-  .b360-integration-card,
-  .b360-copilot-card,
-  .b360-hero-console:not(.bh-n1-plate)
-) {
+  :is(
+    .b360-problem-card,
+    .b360-platform-card,
+    .b360-flow-card,
+    .b360-integration-card,
+    .b360-copilot-card,
+    .b360-hero-console:not(.bh-n1-plate)
+  ) {
   position: relative !important;
   overflow: hidden !important;
   isolation: isolate !important;

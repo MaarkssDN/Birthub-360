@@ -90,9 +90,9 @@ export const voiceHubApi = {
    *  Falhas propagam (throw) — engolir o erro aqui fazia a UI exibir "Aguardando
    *  Configuração"/listas vazias como se fosse estado real do tenant. */
   getConnections: async (): Promise<VoiceHubConnectionSummary[]> => {
-    const response = await api.get<VoiceHubConnectionSummary[] | { data?: VoiceHubConnectionSummary[] }>(
-      '/api/integrations/birth-voice/connections',
-    );
+    const response = await api.get<
+      VoiceHubConnectionSummary[] | { data?: VoiceHubConnectionSummary[] }
+    >('/api/integrations/birth-voice/connections');
     if (Array.isArray(response)) return response;
     if (Array.isArray(response?.data)) return response.data;
     return [];
@@ -143,9 +143,9 @@ export const voiceHubApi = {
 
   /** Lista conexões ativas do PABX 3CX */
   get3CXConnections: async (): Promise<ThreeCXConnectionSummary[]> => {
-    const response = await api.get<ThreeCXConnectionSummary[] | { data?: ThreeCXConnectionSummary[] }>(
-      '/api/integrations/3cx/connections',
-    );
+    const response = await api.get<
+      ThreeCXConnectionSummary[] | { data?: ThreeCXConnectionSummary[] }
+    >('/api/integrations/3cx/connections');
     if (Array.isArray(response)) return response;
     if (Array.isArray(response?.data)) return response.data;
     return [];

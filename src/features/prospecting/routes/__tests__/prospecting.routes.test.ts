@@ -31,6 +31,8 @@ const generateIcebreakerMock = vi.fn();
 const findSearchExecutionMock = vi.fn();
 const sendColdEmailMock = vi.fn();
 const runEnrichmentCascadeMock = vi.fn();
+const scrapeWebsiteMock = vi.fn();
+const isSafeUrlMock = vi.fn().mockReturnValue(true);
 const savedSearchFindManyMock = vi.fn();
 const savedSearchCreateMock = vi.fn();
 const savedSearchFindFirstMock = vi.fn();
@@ -92,6 +94,14 @@ vi.mock('../../services/cold-email.service.js', () => ({
 
 vi.mock('../../services/enrichmentCascade.service.js', () => ({
   runEnrichmentCascade: (...args: unknown[]) => runEnrichmentCascadeMock(...args),
+}));
+
+// /enrich importa o scraper dinamicamente — vi.mock intercepta o import() literal do handler.
+vi.mock('../../services/enrichment/webScraper.service.js', () => ({
+  webScraperService: {
+    isSafeUrl: (...args: unknown[]) => isSafeUrlMock(...args),
+    scrapeWebsite: (...args: unknown[]) => scrapeWebsiteMock(...args),
+  },
 }));
 
 vi.mock('../../../../lib/queue/enrichmentCascade.worker.js', () => ({
@@ -231,6 +241,46 @@ describe('POST /api/prospecting/enrich-cnpj — não afetado (avaliado e mantido
 
     expect(res.status).toBe(200);
     expect(fetchCnpjDataMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('POST /api/prospecting/enrich — RBAC + SSRF (auditoria-20261115)', () => {
+  it('nega com 403 para VISUALIZADOR sem acionar o scraper', async () => {
+    const app = buildApp('VISUALIZADOR');
+
+    const res = await request(app)
+      .post('/api/prospecting/enrich')
+      .send({ url: 'https://empresa.com.br' });
+
+    expect(res.status).toBe(403);
+    expect(res.body.success).toBe(false);
+    expect(scrapeWebsiteMock).not.toHaveBeenCalled();
+  });
+
+  it('permite para SDR e devolve os sinais raspados', async () => {
+    scrapeWebsiteMock.mockResolvedValue({ url: 'https://empresa.com.br', source: 'cheerio_http' });
+    const app = buildApp('SDR');
+
+    const res = await request(app)
+      .post('/api/prospecting/enrich')
+      .send({ url: 'https://empresa.com.br' });
+
+    expect(res.status).toBe(200);
+    expect(scrapeWebsiteMock).toHaveBeenCalledWith('https://empresa.com.br', {
+      forcePlaywright: false,
+    });
+  });
+
+  it('rejeita com 400 URL bloqueada pela política SSRF literal antes de raspar', async () => {
+    isSafeUrlMock.mockReturnValueOnce(false);
+    const app = buildApp('ADMIN');
+
+    const res = await request(app)
+      .post('/api/prospecting/enrich')
+      .send({ url: 'http://192.168.1.1' });
+
+    expect(res.status).toBe(400);
+    expect(scrapeWebsiteMock).not.toHaveBeenCalled();
   });
 });
 

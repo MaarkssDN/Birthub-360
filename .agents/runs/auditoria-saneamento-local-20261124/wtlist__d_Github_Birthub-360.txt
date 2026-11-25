@@ -1,0 +1,383 @@
+worktree D:/Github/Birthub-360
+HEAD a60a76b5e284834a80cdb779d4a7576d60e67dcc
+branch refs/heads/chore/handoff-00-despacho-wave-a-b-20261120
+
+worktree C:/Github/Birthub-360/.claude/worktrees/agent-a24ac917ab11c5f29
+HEAD 2963a0d909740b1144c6115efd7b4cbab9a6ee9c
+branch refs/heads/agente/99-p0-07-bypass-estaticos
+
+worktree C:/Github/Birthub-360/.claude/worktrees/agent-a6335793a5774be5f
+HEAD eb8e945fce77d8340fcaa6480385552ca42304eb
+branch refs/heads/agente/99-p0-02-semgrep-sync
+
+worktree C:/Github/Birthub-360/.claude/worktrees/agent-ab68155b498d20afe
+HEAD 79c97218906397db9207e6e347ab98bd90fcaabd
+branch refs/heads/agente/03-p0-06-falhas-unitarias
+
+worktree C:/Github/Birthub-360/.claude/worktrees/agent-ada1749a7fb0e2c7a
+HEAD 03c38acb6baa8f564e75a7b44d8f553730eabdf9
+branch refs/heads/agente/94-p0-01-format-depcruise
+
+worktree C:/Github/Birthub-360/.claude/worktrees/keen-noyce-69768a
+HEAD 867533ffb56de8d5e230bd63edb3c973c822c49b
+branch refs/heads/agente/00-integracao-p0-local
+
+worktree C:/Github/Birthub-360-audit-main
+HEAD 0d790443d10fed5c9da20394b29e43188a07b467
+detached
+prunable gitdir file points to non-existent location
+
+worktree C:/Github/Birthub-360-worktrees/agente-01-waveF-ux05a
+HEAD 0c5c9804a35140ffb596c3f8f613ffaf85968b41
+branch refs/heads/agente/01-waveF-ux05a-auth-morta
+
+worktree C:/Github/Birthub-360-worktrees/agente-02-waveF-ux09
+HEAD 65eacb196d08d4f32944f53b35a431e68dbacede
+branch refs/heads/agente/02-waveF-ux09-perfil
+
+worktree C:/Github/Birthub-360-worktrees/agente-07-waveF
+HEAD b7e71cba79f04db2e076d73c20f040e34c2a5443
+branch refs/heads/agente/07-waveF-pii-detection
+
+worktree C:/Github/Birthub-360-worktrees/agente-08-handoffs-386
+HEAD aafad8eb7c61fe9e9b3a48a1758f08b82a8ab92e
+branch refs/heads/agente/08-handoffs-20261117
+
+worktree C:/Github/Birthub-360-worktrees/agente-08-waveF-gate
+HEAD 8c13f9d467ea53a5a38f9bf292679a6854045a4e
+branch refs/heads/agente/08-waveF-ownership-gate
+
+worktree C:/Github/Birthub-360-worktrees/agente-08-waveF-orch-e2e
+HEAD 960070acaca07692657bf27ac3d0f9bbbdadeb13
+branch refs/heads/agente/08-waveF-orchestration-e2e
+
+worktree C:/Github/Birthub-360-worktrees/agente-10-waveF-scanner
+HEAD 8e3fcac7b16ad57f08c01052a2b1e6db80d5b162
+branch refs/heads/agente/10-waveF-scanner-real
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda1/wt-00-integracao
+HEAD 815a09305f532153ad8dc07adb9363f1ea694100
+branch refs/heads/integracao/onda-1-dem20261123
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda1/wt-03-unitarios
+HEAD c286185c13bca42ff70c5c95bd15495ec44e794a
+branch refs/heads/agente/03-unitarios-dem20261123
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda1/wt-04-integracao
+HEAD 48e9ac1699757da5f09611ea8ce03eaffc65f126
+branch refs/heads/agente/04-integracao-dem20261123
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda1/wt-05-e2e-visual
+HEAD 8151d8cdaca15a09b2b36d5a82a6e538c9cf1c7d
+branch refs/heads/agente/05-e2e-visual-dem20261123
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda1/wt-09-auditoria
+HEAD 58943b83e99a02e5612312e4733500ecdeeb395a
+branch refs/heads/agente/09-review-dem20261123
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda1/wt-13-rls
+HEAD 283e7ec1ecb8c7b8e981fb5c289368da56d7d9c1
+branch refs/heads/agente/13-rls-dem20261123
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda1/wt-14-fixtures
+HEAD 090de3949e638d3cf4c4da8019398c7814032532
+branch refs/heads/agente/14-fixtures-dem20261123
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda1/wt-93-docker
+HEAD 2596287dd5b88c69c3e4b7e8126fcbb15e3be9de
+branch refs/heads/agente/93-docker-p007-dem20261123
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda1/wt-94-ci
+HEAD 0372d169ba281e5b3cd60dab4f98363744e177fe
+branch refs/heads/agente/94-ci-dem20261123
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda2/wt-00-integracao-o2
+HEAD 32d07c3750c370b63da8b720019413c9a40e0e68
+branch refs/heads/integracao/onda-2-dem20261123
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda2/wt-02-harness
+HEAD d776c8f8f740d58a8ce0e324439c455b676042fd
+branch refs/heads/agente/02-harness-onda2-dem20261123
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda2/wt-04-integracao-o2
+HEAD 0d87b8adf096c385c03086e1fb7c2e208e653dca
+branch refs/heads/agente/04-integracao-onda2-dem20261123
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda2/wt-08-lgpd
+HEAD f2011442e4c47dd68ac722ea078b0b368bb58e85
+branch refs/heads/agente/08-lgpd-onda2-dem20261123
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda2/wt-09-auditoria-o2
+HEAD 32d07c3750c370b63da8b720019413c9a40e0e68
+branch refs/heads/agente/09-review-onda2-final-dem20261123
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda2/wt-90-nginx-p007
+HEAD be14797b6563ed8f522b39d84a6762dc6e468c56
+branch refs/heads/agente/90-nginx-p007-onda2-dem20261123
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda2/wt-93-docker-o2
+HEAD 1074ee1a2565c797914eebbe155130fba8ac4db1
+branch refs/heads/agente/93-docker-onda2-dem20261123
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda2/wt-94-ci-o2
+HEAD f9196627dfbbaa82c3c9cea5c934dca8be63a0cd
+branch refs/heads/agente/94-ci-onda2-dem20261123
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda2/wt-99-appsec
+HEAD 54d10014a54b0a3e48c4a74a829eed879a00ab25
+branch refs/heads/agente/99-appsec-onda2-dem20261123
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda3/wt-00-integracao
+HEAD 32d07c3750c370b63da8b720019413c9a40e0e68
+branch refs/heads/integracao/onda-3-dem20261123
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda3/wt-09-audit-onda3
+HEAD 32d07c3750c370b63da8b720019413c9a40e0e68
+branch refs/heads/agente/09-audit-onda3
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda3/wt-20-core-backend
+HEAD 32d07c3750c370b63da8b720019413c9a40e0e68
+branch refs/heads/agente/20-core-backend-onda3
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda3/wt-21-api-contracts
+HEAD 32d07c3750c370b63da8b720019413c9a40e0e68
+branch refs/heads/agente/21-api-contracts-onda3
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda3/wt-34-accessibility
+HEAD 32d07c3750c370b63da8b720019413c9a40e0e68
+branch refs/heads/agente/34-accessibility-onda3
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda3/wt-42-crm-kanban
+HEAD 32d07c3750c370b63da8b720019413c9a40e0e68
+branch refs/heads/agente/42-crm-kanban-onda3
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda3/wt-45-crm-agenda
+HEAD 32d07c3750c370b63da8b720019413c9a40e0e68
+branch refs/heads/agente/45-crm-agenda-onda3
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda3/wt-65-voice-hub
+HEAD 32d07c3750c370b63da8b720019413c9a40e0e68
+branch refs/heads/agente/65-voice-hub-onda3
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda3/wt-96-auth
+HEAD 32d07c3750c370b63da8b720019413c9a40e0e68
+branch refs/heads/agente/96-auth-onda3
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda4/wt-00-integracao
+HEAD 9f80c07edc2000712e884febbdd3cd2fb2bee55d
+branch refs/heads/integracao/onda-4-dem20261123
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda4/wt-09-review
+HEAD 6603fc11693a0436059da8ae6a861c84d52e30c0
+branch refs/heads/agente/09-review-onda4
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda4/wt-44-cadences
+HEAD a8347fffd3bc12bc8f7875857909fbd02b12834b
+branch refs/heads/agente/44-cadences-onda4
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda4/wt-51-bitrix-auth
+HEAD 42a57d0772dae69edd7aa5f4883b2ef2567072ee
+branch refs/heads/agente/51-bitrix-auth-onda4
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda4/wt-56-whatsapp
+HEAD da43ae198f4a05a9e62a8bbf04d31a349f5572fd
+branch refs/heads/agente/56-whatsapp-onda4
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda4/wt-64-voice-commands
+HEAD 425271b5cb68f0f3c15ac15d12af04ff6c2825d0
+branch refs/heads/agente/64-voice-commands-onda4
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda4/wt-69-optout
+HEAD dafcece91a134ffc93c5222923cfa03e6c62d289
+branch refs/heads/agente/69-optout-onda4
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda4/wt-72-tool-engine
+HEAD 9bf9eb1ed00379caeb8a17092da2a2a56734a2d8
+branch refs/heads/agente/72-tool-engine-onda4
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261123-onda4/wt-85-mobile-offline
+HEAD a6229d90f60c90cb5db35fcfaec1304e524e91c0
+branch refs/heads/agente/85-mobile-offline-onda4
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261124-pos4/wt-00-integracao
+HEAD 9f80c07edc2000712e884febbdd3cd2fb2bee55d
+branch refs/heads/integracao/pos4-dem20261124
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261124-pos4/wt-06-idor-wa
+HEAD 9f80c07edc2000712e884febbdd3cd2fb2bee55d
+branch refs/heads/agente/06-idor-whatsapp-pos4
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261124-pos4/wt-17-cadence-tz
+HEAD 9f80c07edc2000712e884febbdd3cd2fb2bee55d
+branch refs/heads/agente/17-cadence-tz-pos4
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261124-pos4/wt-22-api-idem
+HEAD 9f80c07edc2000712e884febbdd3cd2fb2bee55d
+branch refs/heads/agente/22-api-idem-pos4
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261124-pos4/wt-63-stt
+HEAD 9f80c07edc2000712e884febbdd3cd2fb2bee55d
+branch refs/heads/agente/63-stt-pos4
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261124-pos4/wt-64-stt-cmd
+HEAD 9f80c07edc2000712e884febbdd3cd2fb2bee55d
+branch refs/heads/agente/64-stt-cmd-pos4
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261124-pos4/wt-69-optout
+HEAD 9f80c07edc2000712e884febbdd3cd2fb2bee55d
+branch refs/heads/agente/69-optout-pos4
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261124-pos4/wt-85-mobile-idem
+HEAD 9f80c07edc2000712e884febbdd3cd2fb2bee55d
+branch refs/heads/agente/85-mobile-idem-pos4
+
+worktree C:/Github/Birthub-360-worktrees/dem-20261124-pos4/wt-99-sec
+HEAD 9f80c07edc2000712e884febbdd3cd2fb2bee55d
+branch refs/heads/agente/99-sec-triage-pos4
+
+worktree C:/Github/Birthub-360-worktrees/dossie-gates
+HEAD 9d0d7cf83aa3206dc572ed1d5da67767077556fa
+branch refs/heads/agente/00-dossie-gates-pres005-20261122
+
+worktree C:/Github/Birthub-360-worktrees/handoff-00-reconciliacao-etapa-0
+HEAD ae37cac88585eeae0a0aa1844a657c15d8920259
+branch refs/heads/chore/handoff-00-reconciliacao-etapa-0-20261121
+
+worktree C:/Github/Birthub-360-worktrees/handoff-03-brand-system
+HEAD 29de2d616b5f9805539950e5fac160cfce8e3e72
+branch refs/heads/chore/handoff-03-genesis-brand-system-20261120
+
+worktree C:/Github/Birthub-360-worktrees/handoff-03-tokens-v2
+HEAD d23cec6e2b049ba7367c65b99d9f33655337282e
+branch refs/heads/chore/handoff-03-design-tokens-v2-20261120
+
+worktree C:/Github/Birthub-360-worktrees/handoff-08a-destravamento
+HEAD f5dd709c4a01c91f26a6cc6b36f34446d62faa2a
+branch refs/heads/chore/handoff-08a-destravamento-prs-20261120
+
+worktree C:/Github/Birthub-360-worktrees/handoff-devin-consolidacao
+HEAD 86288f30bd8f3f564d26c7ab0b0d80f2afc787d0
+branch refs/heads/chore/handoff-devin-consolidacao-global-20261120
+
+worktree C:/Github/Birthub-360-worktrees/handoff-devin-encerramento-20261121
+HEAD 0a0ec2e715ea54da04f0354b3f8ba9853ea46b5a
+branch refs/heads/chore/handoff-devin-encerramento-20261121
+
+worktree C:/Github/Birthub-360-worktrees/handoff-devin-encerramento-20261122
+HEAD 9a1ea406067a3f72eebc9074aeea2c793a7ce3c5
+branch refs/heads/devin/handoff-encerramento-20261122
+
+worktree C:/Github/Birthub-360-worktrees/handoff-devin-merge
+HEAD fdb806d7130f4198e4eb1fdc0b807907b9b8a1de
+branch refs/heads/devin/handoff-continuidade-merge-20261120
+
+worktree C:/Github/Birthub-360-worktrees/handoff-devin-v2-consolidacao
+HEAD 3b293bff83d28acaefe26fe34dbb6e1141c0b18a
+branch refs/heads/chore/handoff-devin-v2-consolidacao-20261120
+
+worktree C:/Github/Birthub-360-worktrees/handoff-encerramento-20261122
+HEAD da55b8d6266fceecff3209d1b6435a243cdc3f8e
+branch refs/heads/agente/00-handoff-encerramento-20261122
+
+worktree C:/Github/Birthub-360-worktrees/handoff-restauracao-governanca-20261121
+HEAD 27d0a5b2debdcab4f942621dac6cc8e1acbd70a9
+branch refs/heads/chore/handoff-antigravity-restauracao-governanca-20261121
+
+worktree C:/Github/Birthub-360-worktrees/integracao-consolidacao-20261121
+HEAD 1ee3f812c5a4600582174af852d088ee6330be9b
+branch refs/heads/integracao/consolidacao-20261121
+
+worktree C:/Github/Birthub-360-worktrees/onda1-bloqueadores-p0
+HEAD 4038509fcb24b54a6babf0c736d9e5dcd234d597
+branch refs/heads/agente/00-onda1-bloqueadores-p0
+
+worktree C:/Github/Birthub-360-worktrees/pr471-brand
+HEAD 3a02758c3df82144be37cf92073a8dda17418c3e
+branch refs/heads/pr471-resolve
+
+worktree C:/Github/Birthub-360-worktrees/pr486-guard
+HEAD 6aa35acab5915741c4a476226ee9e777668e1533
+branch refs/heads/pr486-resolve
+
+worktree C:/Github/Birthub-360-worktrees/preserva-etapa-0
+HEAD 5d6a61c19ede9a1746faec1ceee415f18c90f814
+branch refs/heads/chore/00-preservacao-etapa-0-20261122
+
+worktree C:/Github/Birthub-360-worktrees/preserva-handoffs
+HEAD 4d01e6b077405812efcf418c4f14e375424d4568
+branch refs/heads/chore/00-preservacao-handoffs-historicos-20261122
+
+worktree C:/Github/Birthub-360-worktrees/revisao-silas-preservacao
+HEAD f80aca2be2b3be3b3b4e2d91f805b4c2f50eb688
+branch refs/heads/docs/09-silas-revisao-preservacao-20261122
+
+worktree C:/Github/Birthub-360-worktrees/squads/squad-40/wt-46
+HEAD d8cf21b37c1b0177ab8790faa6fc07b47a514531
+branch refs/heads/agente/46-forecast-s40
+
+worktree C:/Github/Birthub-360-worktrees/wE-02-waveE-outbox-idem
+HEAD 716c3c6243bb121fdecdd55329f076f0807c6969
+branch refs/heads/wE-02-waveE-outbox-idem
+
+worktree C:/Github/Birthub-360-worktrees/wE-07-waveE-outbox-idem
+HEAD dfb7da5ddf6616d5a5c3c07f5060d0239f0f6306
+branch refs/heads/wE-07-waveE-outbox-idem
+
+worktree C:/Github/Birthub-360-worktrees/wE-09-waveE-outbox-idem
+HEAD 4ee1990980c8841d344c7d737f8f697520c1d524
+branch refs/heads/wE-09-waveE-outbox-idem
+prunable gitdir file points to non-existent location
+
+worktree C:/Github/Birthub-360-worktrees/wE-10-waveE-outbox-idem
+HEAD 6aea8b1b48e1c2f94c16622ebd8bb27e61737de2
+branch refs/heads/wE-10-waveE-outbox-idem
+prunable gitdir file points to non-existent location
+
+worktree C:/Github/Birthub-360-wt/handoff-devin-central
+HEAD c2405a8e9c4af000d502646bc7bd61d5d0672ca5
+branch refs/heads/chore/handoff-devin-central-auditoria-20261120
+
+worktree C:/Github/Birthub-360-wt/handoff-suite-swarm
+HEAD 42145cadddb0f6fee643acb8f137a5eadea46cd8
+branch refs/heads/chore/handoff-devin-suite-swarm-20261120
+
+worktree C:/Github/wt-447-clean
+HEAD c1a5ce036d980153b45fed7492f0641318ad3403
+branch refs/heads/agente/07-waveE-outbox-idem
+
+worktree C:/Github/wt-466-clean
+HEAD dc54884bb6c2bb9a9c8a5cb3c7e486f8daa15247
+branch refs/heads/agente/03-fix-ownership-coverage
+
+worktree C:/Github/wt-handoff-devin-central
+HEAD 82eb67477484ac9ffd6a8c6a7724118fa6780b2c
+branch refs/heads/chore/handoff-devin-central-operacao-20261121
+
+worktree C:/Users/Marcelo/.gemini/antigravity/worktrees/Birthub-360/atualizar_item_repositorio
+HEAD 0d790443d10fed5c9da20394b29e43188a07b467
+branch refs/heads/atualizar_item_repositorio
+
+worktree C:/Users/Marcelo/.gemini/antigravity/worktrees/Birthub-360/consolidacao_backlog_birthub360
+HEAD 51c82aa5eb41412902b6660f4de7c78ef83c45fc
+branch refs/heads/consolidacao_backlog_birthub360
+
+worktree C:/Users/Marcelo/.gemini/antigravity/worktrees/Birthub-360/execute_setup_script
+HEAD 0d790443d10fed5c9da20394b29e43188a07b467
+branch refs/heads/execute_setup_script
+
+worktree C:/Users/Marcelo/.gemini/antigravity/worktrees/Birthub-360/handle_all_hands_subagents
+HEAD 0d790443d10fed5c9da20394b29e43188a07b467
+branch refs/heads/handle_all_hands_subagents
+
+worktree C:/Users/Marcelo/.gemini/antigravity/worktrees/Birthub-360/parallel_task_force_worktrees
+HEAD 0d790443d10fed5c9da20394b29e43188a07b467
+branch refs/heads/parallel_task_force_worktrees
+
+worktree C:/Users/Marcelo/.gemini/antigravity/worktrees/Birthub-360/reconcile_handoffs_birthub
+HEAD 5b1bc5d45cc078f307980687bae65f408f19e58e
+branch refs/heads/agente/00-plano-mestre-operacional-100-agentes
+
+worktree C:/Users/Marcelo/.gemini/antigravity/worktrees/Birthub-360/update_agents_documentation
+HEAD 7f6c85930f21b4c64a085f6c627380d9243196ce
+branch refs/heads/chore/handoff-antigravity-encerramento-100-agentes-20261121
+

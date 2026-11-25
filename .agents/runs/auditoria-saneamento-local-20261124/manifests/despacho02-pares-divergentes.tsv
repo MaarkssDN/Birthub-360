@@ -1,0 +1,13 @@
+branch	sha_cloneC	sha_cloneD	veredito_detalhado
+agente/09-audit-onda3	727f13e72a0a2d649b7afa66e7f5fa62686f845f	32d07c3750c370b63da8b720019413c9a40e0e68	D=ANCESTRAL ESTRITO de C (merge-base=D tip); 0 commits exclusivos em D; C vence
+agente/20-core-backend-onda3	23b1d31cd15bc741506b9481e0f7a4fa0288ac1c	32d07c3750c370b63da8b720019413c9a40e0e68	D=ANCESTRAL ESTRITO de C; 0 commits exclusivos em D; C vence
+agente/21-api-contracts-onda3	af91a3e0df7e8f610f1148b1324955a101337d15	32d07c3750c370b63da8b720019413c9a40e0e68	D=ANCESTRAL ESTRITO de C; 0 commits exclusivos em D; C vence
+agente/34-accessibility-onda3	27924c7cf96da0eee9d50a531b92c60a4bc8fde5	32d07c3750c370b63da8b720019413c9a40e0e68	D=ANCESTRAL ESTRITO de C; 0 commits exclusivos em D; C vence
+agente/42-crm-kanban-onda3	47846b442bd2b5a112082a127c1fecc225a06fbd	32d07c3750c370b63da8b720019413c9a40e0e68	D=ANCESTRAL ESTRITO de C; 0 commits exclusivos em D; C vence
+agente/45-crm-agenda-onda3	2bf6ffe312aa390da8e36112c964f0ae8318619f	32d07c3750c370b63da8b720019413c9a40e0e68	D=ANCESTRAL ESTRITO de C; 0 commits exclusivos em D; C vence
+agente/65-voice-hub-onda3	b8a39713ec23bee4af39f9dba76d129a52c0f58a	32d07c3750c370b63da8b720019413c9a40e0e68	D=ANCESTRAL ESTRITO de C; 0 commits exclusivos em D; C vence
+agente/96-auth-onda3	dd8351072bc80f752fccc374b11d85568c45c6e4	32d07c3750c370b63da8b720019413c9a40e0e68	D=ANCESTRAL ESTRITO de C; 0 commits exclusivos em D; C vence
+integracao/onda-2-dem20261123	3b40599d68a97361240dafd3059d4d50bd86f7ea	32d07c3750c370b63da8b720019413c9a40e0e68	D=ANCESTRAL ESTRITO de C (0/3 commits a frente); C vence
+integracao/onda-3-dem20261123	656746533fa462427880e4c7a48e8ee867d75ae9	32d07c3750c370b63da8b720019413c9a40e0e68	D=ANCESTRAL ESTRITO de C (=origin/main atual); C vence
+chore/handoff-00-despacho-wave-a-b-20261120	95db5dbd595e4be978b3ae5e7dd68b5533d8b91a	a4d837a5ed114fdbf1477a04d52c7fd7c1782886	C=ANCESTRAL de D; D esta 2 commits a frente (f930d0f6+a4d837a5, consolidacao handoffs); ambos publicados; D superset
+main	0d790443d10fed5c9da20394b29e43188a07b467	656746533fa462427880e4c7a48e8ee867d75ae9	C=ANCESTRAL de D; main local do C: esta stale (behind); D: = origin/main; nao ha perda de conteudo

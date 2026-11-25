@@ -46,7 +46,9 @@ export class ToolInputValidationError extends Error {
   readonly issues: ReadonlyArray<{ path: PropertyKey[]; message: string }>;
 
   constructor(toolName: string, issues: ReadonlyArray<{ path: PropertyKey[]; message: string }>) {
-    super(`Tool '${toolName}' received invalid arguments: ${issues.map((i) => i.message).join('; ')}`);
+    super(
+      `Tool '${toolName}' received invalid arguments: ${issues.map((i) => i.message).join('; ')}`,
+    );
     this.name = 'ToolInputValidationError';
     this.toolName = toolName;
     this.issues = issues;
@@ -118,10 +120,7 @@ export class AiToolRegistry {
     const out: AiToolDescriptor[] = [];
     for (const tool of this.meta.values()) {
       if (!ctx.allowedTools.includes(tool.name)) continue;
-      if (
-        tool.requiredPermission &&
-        !ctx.grantedPermissions.includes(tool.requiredPermission)
-      ) {
+      if (tool.requiredPermission && !ctx.grantedPermissions.includes(tool.requiredPermission)) {
         continue;
       }
       try {

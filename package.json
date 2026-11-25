@@ -173,7 +173,7 @@
     "exceljs": "^4.4.0",
     "express": "^5.2.1",
     "express-rate-limit": "^8.7.0",
-    "framer-motion": "^13.1.1",
+    "framer-motion": "^14.14.0",
     "google-auth-library": "^11.0.2",
     "helmet": "^8.3.0",
     "ioredis": "^6.0.0",
@@ -300,11 +300,12 @@
     },
     "tsx": {
       "esbuild": "$esbuild"
-    }
+    },
+    "effect": "3.22.5"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
-    "@biomejs/biome": "^2.5.14",
+    "@biomejs/biome": "^2.6.8",
     "@cyclonedx/cyclonedx-npm": "^6.0.1",
     "@eslint/js": "^10.0.1",
     "@faker-js/faker": "^10.6.0",
@@ -343,7 +344,7 @@
     "@vitest/browser-playwright": "4.1.12",
     "@vitest/coverage-v8": "^4.1.12",
     "autoprefixer": "^10.6.1",
-    "dependency-cruiser": "^18.7.2",
+    "dependency-cruiser": "^18.8.0",
     "dotenv-cli": "^11.0.0",
     "esbuild": "^0.28.2",
     "eslint": "^9.39.5",
@@ -373,3 +374,4 @@
     "vitest-mock-extended": "^5.0.0"
   }
 }
+

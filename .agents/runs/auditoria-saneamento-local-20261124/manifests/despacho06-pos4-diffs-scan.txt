@@ -1,0 +1,2885 @@
+commit 687ed8d7f06670088e6f955494220d608dbfaf7f
+Author: MaarkssDN <marcelinhomarkss@gmail.com>
+Date:   Tue Nov 24 17:43:56 2026 -0300
+
+    docs(handoff): POS4-06 — IDOR daily-plan + WhatsApp opt-out/throttler concluído
+
+diff --git a/.agents/handoffs/pos4/06-para-00-pos4-idor-whatsapp.md b/.agents/handoffs/pos4/06-para-00-pos4-idor-whatsapp.md
+new file mode 100644
+index 000000000..2df98494b
+--- /dev/null
++++ b/.agents/handoffs/pos4/06-para-00-pos4-idor-whatsapp.md
+@@ -0,0 +1,96 @@
++- De: 06 — Integrações e Bitrix
++- Para: 00 — Astra (Coordenação POS4)
++- Onda: POS4 (pós-onda-4)
++- Status: concluído
++- Prioridade: alta (segurança — IDOR + conformidade opt-out/LGPD + anti-ban B-08)
++
++## Resumo executivo
++
++MISSÃO POS4-06 executada no worktree `wt-06-idor-wa`, branch `agente/06-idor-whatsapp-pos4`
++(base `9f80c07ed`). O trabalho parcial herdado (agente anterior interrompido) foi auditado:
++a implementação estava correta em essência, mas o teste novo `dailyPlanComplete.test.ts` estava
++QUEBRADO (fábricas `vi.mock` referenciando `const` não içadas + path do mock de `prisma` um
++nível curto — 8/10 testes falhavam). Corrigido com `vi.hoisted` e path `../../../../../lib/`.
++Nenhuma linha de produção herdada precisou ser revertida.
++
++## Frente A — IDOR `POST /api/bitrix/daily-plan/complete` (SHA `9cca3b0c7`)
++
++- `src/features/integrations/bitrix/service/dailyPlan.service.ts`: `completeDailyPlanItem`
++  agora valida posse ANTES de qualquer mutação:
++  - `normalizeDailyPlanItemId`: strip de prefixo por `itemType` — prefixo de outro tipo
++    (`bitrix_lead_9` como `BITRIX_TASK`) → 400 (porta de IDOR entre entidades fechada).
++  - `LOCAL_ACTIVITY`: `findFirst` com `{ id, organizationId, owner: userId }` → 404 se não
++    pertencer ao usuário autenticado (o plano só lista `owner: userId` — ver linha ~405).
++  - `BITRIX_TASK`/`BITRIX_ACTIVITY`/`BITRIX_LEAD`: resolve a identidade Bitrix do DONO do
++    plano (`resolvePlanBitrixUser`, mesma ordem de `fetchUserDailyPlan`: override →
++    `User.bitrixUserId` → e-mail → nome) e chama `assertBitrixItemBelongsToPlanUser`, que faz
++    `tasks.task.get`/`crm.activity.get`/`crm.lead.get` e exige `responsibleId`/`RESPONSIBLE_ID`/
++    `ASSIGNED_BY_ID` igual ao BitrixUserId resolvido — os MESMOS filtros que o plano usa para
++    listar (`RESPONSIBLE_ID`/`ASSIGNED_BY_ID: bitrixUserId`, `COMPLETED: 'N'`). Falha fechada
++    com 404 (sem oráculo de existência). Sem identidade Bitrix → 403.
++- `src/features/integrations/bitrix/dailyPlanRoutes.ts`: aceita `assignedById` no body apenas
++  para `ADMIN`/`GESTOR` (mesmo override de GET/POST `/daily-plan`) e repassa como
++  `options.overrideBitrixUserId` — a checagem de posse continua rodando contra o BitrixUserId
++  do membro alvo; o override nunca pula a validação.
++- Testes (`dailyPlanComplete.test.ts`, 10 casos): cross-user mesmo tenant (task/activity/lead),
++  fora-do-plano, legítimo (task/lead/local), org divergente (400), prefixo cruzado (400),
++  usuário sem vínculo Bitrix (403), owner divergente em LOCAL_ACTIVITY.
++
++### Risco residual identificado (NÃO corrigido — fora do escopo da missão, sugerir handoff futuro)
++`addDailyPlanItemNote` (`POST /daily-plan/note`) tem o MESMO padrão IDOR: `_userId` ignorado,
++`prisma.activity.findUnique({ id, organizationId })` sem `owner`, e `callBitrix` de
++`task.commentitem.add`/`crm.timeline.comment.add` sem checagem de posse. Recomendo abrir missão
++de continuação reaproveitando `assertBitrixItemBelongsToPlanUser`.
++
++## Frente B — WhatsApp opt-out + anti-ban (SHA `8bc86d507`)
++
++- `src/features/integrations/whatsapp/whatsappMessage.service.ts`: o bloco de opt-out inbound
++  (`isOptOutKeyword`) saiu de dentro de `if (lead ...)` — agora registra para QUALQUER sujeito
++  identificável via `recordOptOutAndPurgePendingJobs` (contrato do Agente 69,
++  `src/features/notifications/opt-out/optout.service.ts`, READ-ONLY — nenhum arquivo de
++  opt-out/** foi editado). Sujeito = `{ leadId?, email?, phoneE164 }`; `phoneE164` sozinho já é
++  identificador válido e é o que `sendWhatsAppMessage` consulta via `isOptedOut`. Isso cobre
++  (1) contato cadastrado sem lead aberto e (2) número desconhecido — antes, STOP nesses casos
++  não gerava `OptOutRecord` nenhum. A purga de jobs pendentes
++  (`cancelPendingJobsForOptOut` → fila `whatsappCommandQueue`, estados waiting/delayed/
++  prioritized/waiting-children, match por leadId/telefone/e-mail dentro do mesmo tenant) agora
++  tem caller real em produção. Flag legado `customFields.optOutWhatsApp` preservado quando há
++  lead; falha do registro unificado é logada, nunca silenciosa.
++- `src/features/integrations/whatsapp/whatsapp.service.ts`: `sendWhatsAppMessage` agora chama
++  `whatsAppAntiBanThrottler.throttle(organizationId)` (delay humanizado 3–8s serializado por
++  org — implementação do Agente 56 em `src/lib/integrations/whatsapp/baileys.client.ts`,
++  READ-ONLY) e `sock.sendPresenceUpdate('composing', jid)` com timeout e catch não-fatal,
++  ANTES de `sendMessage`. Cobre todos os caminhos: envio direto do worker, reenvio via fila
++  (`whatsappCommand.worker.ts` → `sendWhatsAppMessage`), cadência, follow-up, birth-voice.
++  Antes, o throttler era dead code.
++- Testes:
++  - `whatsappMessage.service.test.ts` (+5 casos POS4): STOP sem lead grava OptOutRecord por
++    telefone/e-mail E remove só o job do mesmo tenant+número (fila fake com getJobs/remove
++    espiões — prova purga real, não só chamada); STOP de número desconhecido; STOP com lead
++    aberto casa por leadId; mensagem comum e outbound não disparam nada.
++  - `whatsapp.service.send.test.ts` (novo, 3 casos): presença `composing` antes de
++    `sendMessage` + registro no throttler; concorrência mesma org serializada com delay real
++    (≥2,5s); orgs diferentes não bloqueiam. Throttler NÃO mockado de propósito.
++
++## Gates executados
++
++- `npx tsc --noEmit` → limpo (exit 0).
++- `npx biome lint` nos 7 arquivos alterados → limpo.
++- `vitest run -c vitest.unit.config.ts src/features/integrations` → **39 arquivos / 464 testes,
++  todos verdes** (inclui os 3 arquivos novos/alterados; whatsapp.service.send leva ~14s por
++  usar delays reais do throttler).
++- `npm run build` NÃO executado (demorado; typecheck+lint+testes cobrem o escopo — sinalizar
++  se o gate de integração exigir).
++
++## Arquivos
++
++- `src/features/integrations/bitrix/dailyPlanRoutes.ts` (M)
++- `src/features/integrations/bitrix/service/dailyPlan.service.ts` (M)
++- `src/features/integrations/bitrix/service/__tests__/dailyPlanComplete.test.ts` (novo)
++- `src/features/integrations/whatsapp/whatsapp.service.ts` (M)
++- `src/features/integrations/whatsapp/whatsappMessage.service.ts` (M)
++- `src/features/integrations/whatsapp/__tests__/whatsappMessage.service.test.ts` (M)
++- `src/features/integrations/whatsapp/__tests__/whatsapp.service.send.test.ts` (novo)
++- `.agents/handoffs/pos4/06-para-00-pos4-idor-whatsapp.md` (este arquivo)
++
++Sem push, sem PR, sem main — commits locais apenas, um por frente.
+commit 8bc86d507d84e796da9a58d92d09e986ca154233
+Author: MaarkssDN <marcelinhomarkss@gmail.com>
+Date:   Tue Nov 24 17:43:11 2026 -0300
+
+    fix(whatsapp): opt-out STOP sem lead registra sujeito identificável + purga de jobs; anti-ban throttler/composing no envio real (POS4)
+
+diff --git a/src/features/integrations/whatsapp/__tests__/whatsapp.service.send.test.ts b/src/features/integrations/whatsapp/__tests__/whatsapp.service.send.test.ts
+new file mode 100644
+index 000000000..e193c122c
+--- /dev/null
++++ b/src/features/integrations/whatsapp/__tests__/whatsapp.service.send.test.ts
+@@ -0,0 +1,190 @@
++import { afterEach, describe, expect, it, vi } from 'vitest';
++
++/**
++ * POS4 — prova de que `sendWhatsAppMessage` (src/features/integrations/whatsapp/whatsapp.service.ts)
++ * realmente aplica o anti-ban do Agente 56 (`whatsAppAntiBanThrottler` + `sendPresenceUpdate
++ * ('composing')`) no caminho de envio via socket Baileys. Antes da correção, o throttler existia
++ * mas era dead code: nenhuma chamada o alcançava.
++ *
++ * O throttler NÃO é mockado de propósito — os testes medem o comportamento real (delay
++ * humanizado serializado por organização). Cada teste usa uma organização própria para não
++ * herdar `lastDispatchedAt` de execuções anteriores (o throttler é singleton de módulo).
++ */
++
++const redisStore = new Map<string, string>();
++vi.mock('../../../../../src/lib/queue/redis.js', () => ({
++  queuesEnabled: false,
++  isDedicatedWorkerProcess: false,
++  redisConfigured: false,
++  connection: {},
++  cacheConnection: {
++    get: vi.fn(async (key: string) => redisStore.get(key) ?? null),
++    set: vi.fn(async (key: string, value: string) => {
++      redisStore.set(key, value);
++      return 'OK';
++    }),
++  },
++}));
++
++vi.mock('../../../../../src/lib/logger.js', () => ({
++  logger: { warn: vi.fn(), error: vi.fn(), info: vi.fn() },
++}));
++
++vi.mock('../../../../../src/lib/async-context.js', () => ({
++  requestContext: { run: (_ctx: unknown, fn: () => unknown) => fn() },
++}));
++
++vi.mock('../../../../../src/features/integrations/whatsapp/whatsappMessage.service.js', () => ({
++  extractMessageText: vi.fn(() => ''),
++  persistWhatsAppMessage: vi.fn().mockResolvedValue(undefined),
++}));
++
++const isOptedOutMock = vi.fn().mockResolvedValue(false);
++vi.mock('../../../../../src/features/cadence/application/optOutService.js', () => ({
++  isOptedOut: (...args: unknown[]) => isOptedOutMock(...args),
++}));
++vi.mock('../../../../../src/features/cadence/infra/PrismaOptOutRepository.js', () => ({
++  prismaOptOutRepository: {},
++}));
++
++vi.mock('fs', () => ({
++  default: {
++    existsSync: vi.fn(() => true),
++    mkdirSync: vi.fn(),
++    rmSync: vi.fn(),
++  },
++  existsSync: vi.fn(() => true),
++  mkdirSync: vi.fn(),
++  rmSync: vi.fn(),
++}));
++
++vi.mock('qrcode', () => ({
++  default: { toDataURL: vi.fn(async (qr: string) => `data:image/png;base64,${qr}`) },
++}));
++
++const enqueueWhatsAppCommandMock = vi.fn().mockResolvedValue(undefined);
++vi.mock('../../../../../src/lib/queue/whatsappCommand.queue.js', () => ({
++  enqueueWhatsAppCommand: (...args: unknown[]) => enqueueWhatsAppCommandMock(...args),
++}));
++
++type EventHandler = (...args: unknown[]) => unknown;
++const socketHandlers = new Map<string, EventHandler>();
++const mockSocket = {
++  ev: {
++    on: vi.fn((event: string, handler: EventHandler) => {
++      socketHandlers.set(event, handler);
++    }),
++  },
++  logout: vi.fn(),
++  onWhatsApp: vi.fn(async () => [{ exists: true, jid: 'fake-jid@s.whatsapp.net' }]),
++  sendPresenceUpdate: vi.fn().mockResolvedValue(undefined),
++  sendMessage: vi.fn().mockResolvedValue(undefined),
++};
++
++vi.mock('@whiskeysockets/baileys', async (importOriginal) => {
++  const actual = await importOriginal();
++  return {
++    ...actual,
++    default: vi.fn(() => mockSocket),
++    useMultiFileAuthState: vi.fn(async () => ({ state: {}, saveCreds: vi.fn() })),
++    fetchLatestBaileysVersion: vi
++      .fn()
++      .mockResolvedValue({ version: [2, 3000, 1015901307], isLatest: true }),
++    DisconnectReason: { loggedOut: 401 },
++    Browsers: { macOS: () => ['Atlas', 'Desktop', '1.0'] },
++    initAuthCreds: vi.fn(() => ({})),
++  };
++});
++
++const { initWhatsApp, sendWhatsAppMessage } =
++  await import('../../../../../src/features/integrations/whatsapp/whatsapp.service');
++const { whatsAppAntiBanThrottler } =
++  await import('../../../../../src/lib/integrations/whatsapp/baileys.client');
++
++let orgCounter = 0;
++async function connectFreshOrg(): Promise<string> {
++  const orgId = `org-throttle-${Date.now()}-${orgCounter++}`;
++  await initWhatsApp(orgId);
++  const connectionUpdate = socketHandlers.get('connection.update')!;
++  await connectionUpdate({ connection: 'open' });
++  return orgId;
++}
++
++afterEach(() => {
++  vi.clearAllMocks();
++  isOptedOutMock.mockResolvedValue(false);
++  redisStore.clear();
++  socketHandlers.clear();
++});
++
++describe('sendWhatsAppMessage — anti-ban throttler + presença (POS4)', () => {
++  it('aplica sendPresenceUpdate(composing) antes do sendMessage e registra disparo no throttler', async () => {
++    const orgId = await connectFreshOrg();
++
++    const result = await sendWhatsAppMessage(orgId, '11999998888', 'Olá!');
++
++    expect(result).toBe(true);
++    expect(mockSocket.sendPresenceUpdate).toHaveBeenCalledWith(
++      'composing',
++      'fake-jid@s.whatsapp.net',
++    );
++    expect(mockSocket.sendMessage).toHaveBeenCalledWith('fake-jid@s.whatsapp.net', {
++      text: 'Olá!',
++    });
++    // Ordem: presença ANTES da mensagem.
++    const presenceOrder = mockSocket.sendPresenceUpdate.mock.invocationCallOrder[0];
++    const sendOrder = mockSocket.sendMessage.mock.invocationCallOrder[0];
++    expect(presenceOrder).toBeLessThan(sendOrder);
++    // O throttler registrou o disparo desta organização.
++    expect(whatsAppAntiBanThrottler.getRecord(orgId)?.totalDispatched).toBe(1);
++  });
++
++  it('disparos concorrentes da MESMA organização são serializados pelo throttler (delay humanizado real)', async () => {
++    const orgId = await connectFreshOrg();
++
++    const startedAt = Date.now();
++    // Duas chamadas "ao mesmo tempo", como o worker BullMQ (concurrency > 1) faria.
++    const [first, second] = await Promise.all([
++      sendWhatsAppMessage(orgId, '11999997777', 'msg 1'),
++      sendWhatsAppMessage(orgId, '11999997777', 'msg 2'),
++    ]);
++    const elapsed = Date.now() - startedAt;
++
++    expect(first).toBe(true);
++    expect(second).toBe(true);
++    expect(mockSocket.sendMessage).toHaveBeenCalledTimes(2);
++    expect(whatsAppAntiBanThrottler.getRecord(orgId)?.totalDispatched).toBe(2);
++    // Sem serialização as duas leriam "sem registro anterior" e nenhuma dormiria (~0ms).
++    // Com a cadeia por org, a segunda espera o delay humanizado (3–8s) — piso conservador
++    // de 2,5s cobre jitter de timer sem tornar o teste flaky.
++    expect(elapsed).toBeGreaterThanOrEqual(2_500);
++  }, 20_000);
++
++  it('organizações diferentes não bloqueiam uma à outra no throttler', async () => {
++    const orgA = await connectFreshOrg();
++    const orgB = await connectFreshOrg();
++
++    // Org A já disparou → próximo disparo dela dorme; org B nunca disparou → imediato.
++    await sendWhatsAppMessage(orgA, '11999996666', 'primeiro A');
++
++    const startedAt = Date.now();
++    let bResolvedInMs = -1;
++    const bPromise = sendWhatsAppMessage(orgB, '11999995555', 'primeiro B').then((r) => {
++      bResolvedInMs = Date.now() - startedAt;
++      return r;
++    });
++    const [resA, resB] = await Promise.all([
++      sendWhatsAppMessage(orgA, '11999996666', 'segundo A'),
++      bPromise,
++    ]);
++
++    expect(resA).toBe(true);
++    expect(resB).toBe(true);
++    expect(whatsAppAntiBanThrottler.getRecord(orgA)?.totalDispatched).toBe(2);
++    expect(whatsAppAntiBanThrottler.getRecord(orgB)?.totalDispatched).toBe(1);
++    // B resolveu sem esperar o sleep humanizado (3–8s) do 2º disparo de A — a fila do
++    // throttler é por organização, não global.
++    expect(bResolvedInMs).toBeGreaterThanOrEqual(0);
++    expect(bResolvedInMs).toBeLessThan(2_500);
++  }, 20_000);
++});
+diff --git a/src/features/integrations/whatsapp/__tests__/whatsappMessage.service.test.ts b/src/features/integrations/whatsapp/__tests__/whatsappMessage.service.test.ts
+index c3f435ead..e1d803b6c 100644
+--- a/src/features/integrations/whatsapp/__tests__/whatsappMessage.service.test.ts
++++ b/src/features/integrations/whatsapp/__tests__/whatsappMessage.service.test.ts
+@@ -18,8 +18,10 @@ vi.mock('../../../../lib/prisma.js', () => ({
+       groupBy: vi.fn(),
+       findFirst: vi.fn(),
+     },
+-    lead: { findFirst: vi.fn() },
++    lead: { findFirst: vi.fn(), update: vi.fn() },
+     timelineEvent: { create: vi.fn() },
++    // Usado pelo caminho real de opt-out (recordOptOutAndPurgePendingJobs -> PrismaOptOutRepository).
++    optOutRecord: { create: vi.fn(), findMany: vi.fn() },
+   },
+   withRlsContext: (fn: (tx: { $queryRaw: typeof txQueryRaw }) => unknown) => withRlsContextMock(fn),
+ }));
+@@ -37,6 +39,24 @@ vi.mock('../../../../lib/queue/domainEventMesh.service.js', () => ({
+   domainEventMesh: { publish: publishMock },
+ }));
+ 
++// Fila real do opt-out (`cancelPendingJobsForOptOut`, Agente 69) varre `whatsappCommandQueue`.
++// Aqui entra uma fila fake com `getJobs`/`remove` espiões — prova de que a purga de jobs
++// pendentes é de fato disparada pelo fluxo inbound de STOP, sem BullMQ/Redis reais.
++const { whatsappCommandQueueMock } = vi.hoisted(() => ({
++  whatsappCommandQueueMock: {
++    name: 'whatsapp-command',
++    getJobs: vi.fn(),
++  },
++}));
++vi.mock('../../../../lib/queue/whatsappCommand.queue.js', () => ({
++  WHATSAPP_COMMAND_QUEUE_NAME: 'whatsapp-command',
++  WHATSAPP_DLQ_QUEUE_NAME: 'whatsapp-messages-dlq',
++  whatsappCommandQueue: whatsappCommandQueueMock,
++  whatsappDlqQueue: null,
++  enqueueWhatsAppCommand: vi.fn(),
++  enqueueWhatsAppDlq: vi.fn(),
++}));
++
+ import { prisma } from '../../../../lib/prisma.js';
+ import {
+   extractMessageText,
+@@ -51,8 +71,15 @@ const messageMock = prisma.whatsAppMessage as unknown as {
+   groupBy: ReturnType<typeof vi.fn>;
+   findFirst: ReturnType<typeof vi.fn>;
+ };
+-const leadMock = prisma.lead as unknown as { findFirst: ReturnType<typeof vi.fn> };
++const leadMock = prisma.lead as unknown as {
++  findFirst: ReturnType<typeof vi.fn>;
++  update: ReturnType<typeof vi.fn>;
++};
+ const timelineMock = prisma.timelineEvent as unknown as { create: ReturnType<typeof vi.fn> };
++const optOutRecordMock = prisma.optOutRecord as unknown as {
++  create: ReturnType<typeof vi.fn>;
++  findMany: ReturnType<typeof vi.fn>;
++};
+ const queryRawMock = txQueryRaw;
+ 
+ const ORG = 'org-1';
+@@ -65,7 +92,23 @@ beforeEach(() => {
+   messageMock.groupBy.mockResolvedValue([]);
+   messageMock.findFirst.mockResolvedValue(null);
+   leadMock.findFirst.mockResolvedValue(null);
++  leadMock.update.mockResolvedValue({});
+   timelineMock.create.mockResolvedValue({});
++  optOutRecordMock.create.mockResolvedValue({
++    id: 'optout-1',
++    organizationId: ORG,
++    scope: 'Global',
++    leadId: null,
++    email: null,
++    phoneE164: null,
++    originChannel: 'whatsapp',
++    reason: null,
++    evidence: null,
++    requestedBy: null,
++    createdAt: new Date(),
++  });
++  optOutRecordMock.findMany.mockResolvedValue([]);
++  whatsappCommandQueueMock.getJobs.mockResolvedValue([]);
+   queryRawMock.mockResolvedValue([]);
+ });
+ 
+@@ -300,3 +343,161 @@ describe('listConversations — sem N+1', () => {
+     expect(result.map((c) => c.phoneE164)).toEqual(['+5511999990004', '+5511999990003']);
+   });
+ });
++
++// POS4 (Onda 4 — achados do Agente 69): STOP inbound sem Lead aberto não registrava opt-out, e
++// a purga de jobs pendentes (`cancelPendingJobsForOptOut`) não tinha caller em produção. Estes
++// testes rodam o caminho REAL de opt-out (recordOptOutAndPurgePendingJobs -> PrismaOptOutRepository
++// -> prisma.optOutRecord.create mockado + cancelPendingJobsForOptOut -> fila fake), então provam
++// registro E purga de ponta a ponta, não só que uma função foi chamada.
++describe('persistWhatsAppMessage — opt-out inbound sem lead aberto + purga de jobs (POS4)', () => {
++  const STOP_JID = '5511999998888@s.whatsapp.net';
++
++  function pendingJob(id: string, data: Record<string, unknown>) {
++    return { id, data, remove: vi.fn().mockResolvedValue(undefined) };
++  }
++
++  it('STOP de contato identificável SEM lead aberto grava OptOutRecord por telefone/e-mail e remove jobs pendentes do mesmo número', async () => {
++    queryRawMock.mockResolvedValue([{ id: 'cont-1', email: 'contato@example.com' }]);
++    leadMock.findFirst.mockResolvedValue(null); // contato existe, mas nenhum lead em aberto
++
++    const matchingJob = pendingJob('job-match', {
++      organizationId: ORG,
++      number: '(11) 99999-8888',
++      context: {},
++    });
++    const otherOrgJob = pendingJob('job-other-org', {
++      organizationId: 'org-vizinha',
++      number: '5511999998888',
++    });
++    const otherNumberJob = pendingJob('job-other-number', {
++      organizationId: ORG,
++      number: '5511888880000',
++    });
++    whatsappCommandQueueMock.getJobs.mockResolvedValue([
++      matchingJob,
++      otherOrgJob,
++      otherNumberJob,
++    ]);
++
++    await persistWhatsAppMessage({
++      organizationId: ORG,
++      waMessageId: 'm-stop-sem-lead',
++      direction: 'inbound',
++      remoteJid: STOP_JID,
++      body: 'STOP',
++    });
++
++    // Opt-out registrado com sujeito identificável (sem leadId) — antes da correção isto não
++    // acontecia porque o bloco inteiro dependia de `lead` existir.
++    expect(optOutRecordMock.create).toHaveBeenCalledTimes(1);
++    expect(optOutRecordMock.create).toHaveBeenCalledWith({
++      data: expect.objectContaining({
++        organizationId: ORG,
++        scope: 'Global',
++        originChannel: 'whatsapp',
++        leadId: null,
++        email: 'contato@example.com',
++        phoneE164: '+5511999998888',
++        evidence: 'STOP',
++      }),
++    });
++
++    // Purga real: só o job do MESMO tenant e MESMO número foi removido.
++    expect(whatsappCommandQueueMock.getJobs).toHaveBeenCalled();
++    expect(matchingJob.remove).toHaveBeenCalledTimes(1);
++    expect(otherOrgJob.remove).not.toHaveBeenCalled();
++    expect(otherNumberJob.remove).not.toHaveBeenCalled();
++  });
++
++  it('STOP de número totalmente desconhecido (sem contato no CRM) ainda registra opt-out por telefone', async () => {
++    queryRawMock.mockResolvedValue([]); // nenhum contato cadastrado
++    leadMock.findFirst.mockResolvedValue(null);
++
++    await persistWhatsAppMessage({
++      organizationId: ORG,
++      waMessageId: 'm-stop-desconhecido',
++      direction: 'inbound',
++      remoteJid: STOP_JID,
++      body: 'parar',
++    });
++
++    expect(optOutRecordMock.create).toHaveBeenCalledWith({
++      data: expect.objectContaining({
++        organizationId: ORG,
++        scope: 'Global',
++        leadId: null,
++        email: null,
++        phoneE164: '+5511999998888',
++      }),
++    });
++  });
++
++  it('STOP com lead aberto registra opt-out casável por leadId E dispara a purga', async () => {
++    queryRawMock.mockResolvedValue([{ id: 'cont-1', email: null }]);
++    leadMock.findFirst.mockResolvedValue({
++      id: 'lead-9',
++      customFields: {},
++      organizationId: ORG,
++    });
++    const leadJob = pendingJob('job-lead', {
++      organizationId: ORG,
++      leadId: 'lead-9',
++      number: '5511777776666',
++    });
++    whatsappCommandQueueMock.getJobs.mockResolvedValue([leadJob]);
++
++    await persistWhatsAppMessage({
++      organizationId: ORG,
++      waMessageId: 'm-stop-com-lead',
++      direction: 'inbound',
++      remoteJid: STOP_JID,
++      body: 'sair',
++    });
++
++    // Flag legado preservado + registro unificado com leadId.
++    expect(leadMock.update).toHaveBeenCalledWith({
++      where: { id: 'lead-9' },
++      data: { customFields: { optOutWhatsApp: true } },
++    });
++    expect(optOutRecordMock.create).toHaveBeenCalledWith({
++      data: expect.objectContaining({
++        leadId: 'lead-9',
++        phoneE164: '+5511999998888',
++      }),
++    });
++    // Job casado por leadId (não por telefone — o número do job é outro) também é purgado.
++    expect(leadJob.remove).toHaveBeenCalledTimes(1);
++  });
++
++  it('mensagem comum inbound não grava opt-out nem consulta a fila', async () => {
++    queryRawMock.mockResolvedValue([{ id: 'cont-1', email: 'a@b.com' }]);
++    leadMock.findFirst.mockResolvedValue({ id: 'lead-1', customFields: {}, organizationId: ORG });
++
++    await persistWhatsAppMessage({
++      organizationId: ORG,
++      waMessageId: 'm-normal',
++      direction: 'inbound',
++      remoteJid: STOP_JID,
++      body: 'Quero saber mais sobre o produto',
++    });
++
++    expect(optOutRecordMock.create).not.toHaveBeenCalled();
++    expect(whatsappCommandQueueMock.getJobs).not.toHaveBeenCalled();
++  });
++
++  it('STOP em mensagem OUTBOUND (enviada por nós) não registra opt-out', async () => {
++    queryRawMock.mockResolvedValue([{ id: 'cont-1', email: null }]);
++    leadMock.findFirst.mockResolvedValue(null);
++
++    await persistWhatsAppMessage({
++      organizationId: ORG,
++      waMessageId: 'm-outbound-stop',
++      direction: 'outbound',
++      remoteJid: STOP_JID,
++      body: 'STOP',
++    });
++
++    expect(optOutRecordMock.create).not.toHaveBeenCalled();
++    expect(whatsappCommandQueueMock.getJobs).not.toHaveBeenCalled();
++  });
++});
+diff --git a/src/features/integrations/whatsapp/whatsapp.service.ts b/src/features/integrations/whatsapp/whatsapp.service.ts
+index 76032333c..420468b61 100644
+--- a/src/features/integrations/whatsapp/whatsapp.service.ts
++++ b/src/features/integrations/whatsapp/whatsapp.service.ts
+@@ -10,6 +10,7 @@ import makeWASocket, {
+ } from '@whiskeysockets/baileys';
+ import pino from 'pino';
+ import qrcode from 'qrcode';
++import { whatsAppAntiBanThrottler } from '../../../lib/integrations/whatsapp/baileys.client.js';
+ import { requestContext } from '../../../lib/async-context.js';
+ import { withTimeout } from '../../../lib/http.js';
+ import { logger } from '../../../lib/logger.js';
+@@ -478,6 +479,22 @@ export async function sendWhatsAppMessage(
+     throw new AppError('O número fornecido não está registrado no WhatsApp.', 422);
+   }
+ 
++  // Anti-ban (B-08, Agente 56): delay humanizado serializado por organização antes do disparo
++  // + sinal de "digitando..." — sem isso, envios em rajada via Baileys têm perfil robótico e o
++  // número arrisca bloqueio. O throttler é no-op no 1º disparo da org e serializa chamadas
++  // concorrentes da MESMA org (ver WhatsAppAntiBanThrottler); orgs diferentes seguem paralelas.
++  // Cobre tanto o envio direto do worker quanto o reenviado via fila — todos convergem aqui.
++  await whatsAppAntiBanThrottler.throttle(organizationId);
++  try {
++    await withTimeout(
++      sock.sendPresenceUpdate('composing', result.jid),
++      BAILEYS_CALL_TIMEOUT_MS,
++    );
++  } catch (err: any) {
++    // Presença é cosmética — uma falha aqui nunca pode impedir o envio da mensagem em si.
++    logger.warn({ err, organizationId }, '[whatsapp] Falha ao enviar presença (composing)');
++  }
++
+   try {
+     let finalMessage = text;
+     if (buttons && buttons.length > 0) {
+diff --git a/src/features/integrations/whatsapp/whatsappMessage.service.ts b/src/features/integrations/whatsapp/whatsappMessage.service.ts
+index 93e7356b8..f0da612bd 100644
+--- a/src/features/integrations/whatsapp/whatsappMessage.service.ts
++++ b/src/features/integrations/whatsapp/whatsappMessage.service.ts
+@@ -5,8 +5,8 @@ import { logger } from '../../../lib/logger.js';
+ import { toE164BR } from '../../../lib/phone.js';
+ import { prisma, withRlsContext } from '../../../lib/prisma.js';
+ import { scheduleConversationAnalysis } from '../../../lib/queue/whatsappSignal.worker.js';
+-import { recordOptOut } from '../../cadence/application/optOutService.js';
+ import { prismaOptOutRepository } from '../../cadence/infra/PrismaOptOutRepository.js';
++import { recordOptOutAndPurgePendingJobs } from '../../notifications/opt-out/optout.service.js';
+ import { isOptOutKeyword } from '../../../shared/services/optOutCheck.service.js';
+ import { domainEventMesh } from '../../../lib/queue/domainEventMesh.service.js';
+ import type { WhatsAppMessageEventPayload } from '../../../shared/contracts/domainEventMesh.contract.js';
+@@ -174,14 +174,22 @@ export async function persistWhatsAppMessage(input: PersistWhatsAppMessageInput)
+       );
+     });
+ 
+-  if (lead && input.direction === 'inbound') {
+-    if (isOptOutKeyword(input.body)) {
++  // Opt-out inbound (STOP/SAIR/...): registrado para QUALQUER sujeito identificável — com lead
++  // aberto, só com contato cadastrado, ou até só pelo telefone (o `phoneE164` já é um
++  // identificador válido do contrato de opt-out e é o que `sendWhatsAppMessage` consulta via
++  // `isOptedOut`). Antes desta correção o registro só acontecia dentro do bloco `if (lead ...)`
++  // abaixo: um contato identificável SEM lead aberto que pedisse para parar não gerava
++  // OptOutRecord nenhum — o número continuava elegível a disparos. `recordOptOutAndPurgePendingJobs`
++  // registra E remove na hora os jobs já enfileirados para o mesmo sujeito (WhatsApp/cadência),
++  // fechando a janela entre "pedir para parar" e "próximo envio agendado".
++  if (input.direction === 'inbound' && isOptOutKeyword(input.body)) {
++    if (lead) {
+       const currentFields = (lead.customFields as Record<string, unknown>) || {};
+       // Mantém o flag legado (`customFields.optOutWhatsApp`) — outros pontos do código já
+       // dependem dele (crm/jobs/followUp.worker.ts, birth-voice/*.webhook.ts) e não são
+-      // escopo desta mudança. `recordOptOut` é ADICIONAL, não substituto: registra no
+-      // registro unificado (`OptOutRecord`) para que este pedido também bloqueie e-mail/voz
+-      // do mesmo lead, não só WhatsApp — ver contrato em
++      // escopo desta mudança. O `OptOutRecord` abaixo é ADICIONAL, não substituto: registra no
++      // registro unificado para que este pedido também bloqueie e-mail/voz do mesmo lead, não
++      // só WhatsApp — ver contrato em
+       // .agents/handoffs/onda-7/17-para-05-06-12-contrato-optout.md.
+       await prisma.lead.update({
+         where: { id: lead.id },
+@@ -190,27 +198,31 @@ export async function persistWhatsAppMessage(input: PersistWhatsAppMessageInput)
+         },
+       });
+       logger.info({ leadId: lead.id }, 'Lead solicitou opt-out do WhatsApp');
+-
+-      // scope 'global': "sair"/"parar"/"stop" são pedidos genéricos de parar contato, não uma
+-      // restrição explícita a um canal ("não me liga mais, pode mandar e-mail") — mesma regra
+-      // de interpretação do contrato de opt-out unificado.
+-      await recordOptOut(prismaOptOutRepository, {
+-        organizationId: input.organizationId,
+-        scope: 'global',
+-        subject: { leadId: lead.id, email: contact?.email ?? null, phoneE164 },
+-        originChannel: 'whatsapp',
+-        reason: 'Lead pediu para parar de receber mensagens via WhatsApp',
+-        evidence: input.body,
+-      }).catch((error) => {
+-        // O flag legado já foi salvo acima — a falha aqui não pode apagar essa evidência,
+-        // mas precisa ficar visível (não é um catch silencioso).
+-        logger.error(
+-          { err: error, leadId: lead.id },
+-          'Falha ao registrar opt-out unificado a partir do WhatsApp.',
+-        );
+-      });
+     }
+ 
++    // scope 'global': "sair"/"parar"/"stop" são pedidos genéricos de parar contato, não uma
++    // restrição explícita a um canal ("não me liga mais, pode mandar e-mail") — mesma regra
++    // de interpretação do contrato de opt-out unificado.
++    await recordOptOutAndPurgePendingJobs(prismaOptOutRepository, {
++      organizationId: input.organizationId,
++      scope: 'global',
++      subject: { leadId: lead?.id ?? null, email: contact?.email ?? null, phoneE164 },
++      originChannel: 'whatsapp',
++      reason: lead
++        ? 'Lead pediu para parar de receber mensagens via WhatsApp'
++        : 'Contato pediu para parar de receber mensagens via WhatsApp',
++      evidence: input.body,
++    }).catch((error) => {
++      // O flag legado (quando há lead) já foi salvo acima — a falha aqui não pode apagar essa
++      // evidência, mas precisa ficar visível (não é um catch silencioso).
++      logger.error(
++        { err: error, leadId: lead?.id ?? null },
++        'Falha ao registrar opt-out unificado a partir do WhatsApp.',
++      );
++    });
++  }
++
++  if (lead && input.direction === 'inbound') {
+     await prisma.timelineEvent
+       .create({
+         data: {
+commit 9cca3b0c7ea7bfb7e56b502111606d0cd5a4205c
+Author: MaarkssDN <marcelinhomarkss@gmail.com>
+Date:   Tue Nov 24 17:41:55 2026 -0300
+
+    fix(bitrix): IDOR em POST /daily-plan/complete — valida posse do item antes de mutar no Bitrix (POS4)
+
+diff --git a/src/features/integrations/bitrix/dailyPlanRoutes.ts b/src/features/integrations/bitrix/dailyPlanRoutes.ts
+index a54810ea1..73f5823a1 100644
+--- a/src/features/integrations/bitrix/dailyPlanRoutes.ts
++++ b/src/features/integrations/bitrix/dailyPlanRoutes.ts
+@@ -75,13 +75,22 @@ router.post(
+   '/daily-plan/complete',
+   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+     try {
+-      const { organizationId, id: userId } = (req as AuthRequest).user;
+-      const { itemType, itemId } = req.body;
++      const { organizationId, id: userId, role } = (req as AuthRequest).user;
++      const { itemType, itemId, assignedById } = req.body;
+       if (!itemType || !itemId) {
+         res.status(400).json({ success: false, error: 'itemType e itemId são obrigatórios.' });
+         return;
+       }
+-      const result = await completeDailyPlanItem(organizationId, userId, itemType, itemId);
++      // Mesmo override de GET/POST /daily-plan: ADMIN/GESTOR pode operar o plano de outro
++      // membro — mas a posse do item continua validada no serviço contra o BitrixUserId do
++      // membro alvo (nunca pula a checagem de IDOR).
++      const overrideBitrixUserId =
++        hasRequiredRole(role, ['ADMIN', 'GESTOR']) && assignedById
++          ? String(assignedById)
++          : undefined;
++      const result = await completeDailyPlanItem(organizationId, userId, itemType, itemId, {
++        overrideBitrixUserId,
++      });
+       res.json({ success: true, message: result.message });
+     } catch (error: any) {
+       next(error);
+diff --git a/src/features/integrations/bitrix/service/__tests__/dailyPlanComplete.test.ts b/src/features/integrations/bitrix/service/__tests__/dailyPlanComplete.test.ts
+new file mode 100644
+index 000000000..79bc15b45
+--- /dev/null
++++ b/src/features/integrations/bitrix/service/__tests__/dailyPlanComplete.test.ts
+@@ -0,0 +1,202 @@
++import { beforeEach, describe, expect, it, vi } from 'vitest';
++
++/**
++ * POS4 — correção do IDOR em `completeDailyPlanItem` (POST /api/bitrix/daily-plan/complete).
++ * Antes: qualquer `itemId` arbitrário era repassado ao Bitrix (`tasks.task.complete`,
++ * `crm.activity.update`, `crm.timeline.comment.add`) sem verificar que o item pertencia ao
++ * plano do usuário — um usuário autenticado concluía task/activity/lead de OUTRO responsável
++ * do portal. Estes testes provam a validação de posse nas 4 frentes exigidas:
++ * (a) item de outro usuário do mesmo tenant → negado;
++ * (b) item fora do plano → negado;
++ * (c) item legítimo → sucesso;
++ * (d) organizationId divergente → negado.
++ */
++
++vi.mock('../../../../lib/logger.js', () => ({
++  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
++}));
++
++const { prismaMock, clientMock, connectionsMock, dealsMock } = vi.hoisted(() => ({
++  prismaMock: {
++    user: { findUnique: vi.fn() },
++    activity: { findFirst: vi.fn(), update: vi.fn() },
++  },
++  clientMock: {
++    callBitrix: vi.fn(),
++    getConnectionWebhookUrl: vi.fn(),
++  },
++  connectionsMock: {
++    listBitrixConnections: vi.fn(),
++  },
++  // deals.ts puxa audit/enrichment/customFields — aqui só interessa getBitrixUsers (usado por
++  // resolvePlanBitrixUser para resolver a identidade Bitrix do dono do plano).
++  dealsMock: {
++    getBitrixUsers: vi.fn(),
++  },
++}));
++vi.mock('../../../../../lib/prisma.js', () => ({ prisma: prismaMock }));
++vi.mock('../client.js', () => clientMock);
++vi.mock('../connections.js', () => connectionsMock);
++vi.mock('../deals.js', () => dealsMock);
++
++import { completeDailyPlanItem } from '../dailyPlan.service.js';
++
++const ORG = 'org-1';
++const USER = 'user-1';
++const WEBHOOK = 'https://portal.bitrix24.com/rest/1/token/';
++
++/** callBitrix mockado por método — cada caso define o que o "get" de verificação devolve. */
++function mockBitrixGet(method: string, result: unknown) {
++  clientMock.callBitrix.mockImplementation(async (_url: string, m: string) => {
++    if (m === method) return { result };
++    return { result: {} };
++  });
++}
++
++function bitrixCalls(method: string) {
++  return clientMock.callBitrix.mock.calls.filter((c) => c[1] === method);
++}
++
++async function expectStatus(promise: Promise<unknown>, statusCode: number) {
++  try {
++    await promise;
++    expect.unreachable('devia ter lançado AppError');
++  } catch (err: any) {
++    expect(err?.statusCode).toBe(statusCode);
++  }
++}
++
++beforeEach(() => {
++  vi.clearAllMocks();
++  connectionsMock.listBitrixConnections.mockResolvedValue([{ id: 'conn-1' }]);
++  clientMock.getConnectionWebhookUrl.mockResolvedValue(WEBHOOK);
++  dealsMock.getBitrixUsers.mockResolvedValue([]);
++  // Usuário com vínculo Bitrix explícito (User.bitrixUserId) → planoBitrixUserId = '77'.
++  prismaMock.user.findUnique.mockResolvedValue({
++    email: 'vendedor@empresa.com',
++    name: 'Vendedor',
++    bitrixUserId: 77,
++  });
++  clientMock.callBitrix.mockResolvedValue({ result: {} });
++});
++
++describe('completeDailyPlanItem — IDOR (POS4)', () => {
++  it('(a) BITRIX_TASK de outro responsável do mesmo tenant → 404 e NENHUMA mutação no Bitrix', async () => {
++    mockBitrixGet('tasks.task.get', { task: { id: '555', responsibleId: '88' } });
++
++    await expectStatus(
++      completeDailyPlanItem(ORG, USER, 'BITRIX_TASK', 'bitrix_task_555'),
++      404,
++    );
++
++    expect(bitrixCalls('tasks.task.complete')).toHaveLength(0);
++    expect(bitrixCalls('tasks.task.get')).toHaveLength(1); // só a verificação de posse rodou
++  });
++
++  it('(b) BITRIX_ACTIVITY fora do plano (responsável diverso) → 404 e crm.activity.update não chamado', async () => {
++    mockBitrixGet('crm.activity.get', { ID: '900', RESPONSIBLE_ID: '42' });
++
++    await expectStatus(
++      completeDailyPlanItem(ORG, USER, 'BITRIX_ACTIVITY', 'bitrix_act_900'),
++      404,
++    );
++
++    expect(bitrixCalls('crm.activity.update')).toHaveLength(0);
++  });
++
++  it('BITRIX_LEAD atribuído a outro usuário → 404 e crm.timeline.comment.add não chamado', async () => {
++    mockBitrixGet('crm.lead.get', { ID: '12', ASSIGNED_BY_ID: '5' });
++
++    await expectStatus(
++      completeDailyPlanItem(ORG, USER, 'BITRIX_LEAD', 'bitrix_lead_12'),
++      404,
++    );
++
++    expect(bitrixCalls('crm.timeline.comment.add')).toHaveLength(0);
++  });
++
++  it('(c) BITRIX_TASK legítimo (responsável = usuário do plano) → tasks.task.complete executado', async () => {
++    mockBitrixGet('tasks.task.get', { task: { id: '555', responsibleId: '77' } });
++
++    const result = await completeDailyPlanItem(ORG, USER, 'BITRIX_TASK', 'bitrix_task_555');
++
++    expect(result.success).toBe(true);
++    expect(bitrixCalls('tasks.task.complete')).toEqual([
++      [WEBHOOK, 'tasks.task.complete', { taskId: '555' }],
++    ]);
++  });
++
++  it('(c2) BITRIX_LEAD legítimo (ASSIGNED_BY_ID = usuário do plano) → comentário na timeline do lead', async () => {
++    mockBitrixGet('crm.lead.get', { ID: '12', ASSIGNED_BY_ID: '77' });
++
++    const result = await completeDailyPlanItem(ORG, USER, 'BITRIX_LEAD', 'bitrix_lead_12');
++
++    expect(result.success).toBe(true);
++    expect(bitrixCalls('crm.timeline.comment.add')).toHaveLength(1);
++  });
++
++  it('(d) organizationId divergente (sem conexão Bitrix do tenant) → 400 antes de qualquer mutação', async () => {
++    connectionsMock.listBitrixConnections.mockResolvedValue([]); // org sem conexão
++
++    await expectStatus(
++      completeDailyPlanItem('org-intrusa', USER, 'BITRIX_TASK', 'bitrix_task_555'),
++      400,
++    );
++
++    expect(clientMock.callBitrix).not.toHaveBeenCalled();
++  });
++
++  it('(d2) LOCAL_ACTIVITY de outro usuário do mesmo tenant → 404 (owner divergente no where)', async () => {
++    prismaMock.activity.findFirst.mockResolvedValue(null); // owner != userId ou outra org
++
++    await expectStatus(
++      completeDailyPlanItem(ORG, USER, 'LOCAL_ACTIVITY', 'local_act-1'),
++      404,
++    );
++
++    // A busca já carrega organizationId + owner do usuário autenticado.
++    expect(prismaMock.activity.findFirst).toHaveBeenCalledWith(
++      expect.objectContaining({
++        where: expect.objectContaining({ id: 'act-1', organizationId: ORG, owner: USER }),
++      }),
++    );
++    expect(prismaMock.activity.update).not.toHaveBeenCalled();
++  });
++
++  it('(c3) LOCAL_ACTIVITY legítimo → status Concluida', async () => {
++    prismaMock.activity.findFirst.mockResolvedValue({ id: 'act-1' });
++
++    const result = await completeDailyPlanItem(ORG, USER, 'LOCAL_ACTIVITY', 'local_act-1');
++
++    expect(result.success).toBe(true);
++    expect(prismaMock.activity.update).toHaveBeenCalledWith({
++      where: { id: 'act-1' },
++      data: { status: 'Concluida' },
++    });
++  });
++
++  it('itemId com prefixo de OUTRO tipo (bitrix_lead_9 como BITRIX_TASK) → 400 sem chamar o Bitrix', async () => {
++    await expectStatus(
++      completeDailyPlanItem(ORG, USER, 'BITRIX_TASK', 'bitrix_lead_9'),
++      400,
++    );
++
++    expect(clientMock.callBitrix).not.toHaveBeenCalled();
++  });
++
++  it('usuário sem identidade Bitrix resolvida → 403 (fail-closed) antes da mutação', async () => {
++    prismaMock.user.findUnique.mockResolvedValue({
++      email: 'sem-vinculo@empresa.com',
++      name: 'Sem Vínculo',
++      bitrixUserId: null,
++    });
++    dealsMock.getBitrixUsers.mockResolvedValue([]); // e-mail/nome não casam com ninguém
++
++    await expectStatus(
++      completeDailyPlanItem(ORG, USER, 'BITRIX_TASK', 'bitrix_task_555'),
++      403,
++    );
++
++    expect(clientMock.callBitrix).not.toHaveBeenCalled();
++  });
++});
+diff --git a/src/features/integrations/bitrix/service/dailyPlan.service.ts b/src/features/integrations/bitrix/service/dailyPlan.service.ts
+index ed59bad91..454270cae 100644
+--- a/src/features/integrations/bitrix/service/dailyPlan.service.ts
++++ b/src/features/integrations/bitrix/service/dailyPlan.service.ts
+@@ -636,32 +636,171 @@ export async function fetchUserDailyPlan(
+   };
+ }
+ 
++/** Prefixo que o frontend envia em `item.id` para cada origem do plano (ver montagem dos itens
++ * acima: `local_...`, `bitrix_task_...`, `bitrix_act_...`, `bitrix_lead_...`). */
++const DAILY_PLAN_ITEM_PREFIX: Record<DailyPlanItemOrigin, string> = {
++  LOCAL_ACTIVITY: 'local_',
++  BITRIX_TASK: 'bitrix_task_',
++  BITRIX_ACTIVITY: 'bitrix_act_',
++  BITRIX_LEAD: 'bitrix_lead_',
++};
++
++/**
++ * Extrai o ID externo do `itemId` recebido, exigindo coerência com o `itemType`: um
++ * `bitrix_lead_9` enviado como `BITRIX_TASK` não pode virar "task 9" (o strip antigo removia
++ * qualquer prefixo conhecido, o que era uma porta de IDOR entre tipos de entidade).
++ */
++function normalizeDailyPlanItemId(itemType: DailyPlanItemOrigin, itemId: string): string {
++  const trimmed = itemId.trim();
++  const expected = DAILY_PLAN_ITEM_PREFIX[itemType];
++  if (expected && trimmed.startsWith(expected)) return trimmed.slice(expected.length);
++  for (const [type, prefix] of Object.entries(DAILY_PLAN_ITEM_PREFIX)) {
++    if (type !== itemType && trimmed.startsWith(prefix)) {
++      throw new AppError('itemId não corresponde ao itemType informado.', 400);
++    }
++  }
++  return trimmed;
++}
++
++/** Lê um campo de resposta do Bitrix tolerando variações de caixa/nome entre métodos
++ * (`tasks.task.get` devolve camelCase, `crm.*.get` devolve UPPERCASE). */
++function pickBitrixField(source: unknown, ...keys: string[]): string | undefined {
++  if (!source || typeof source !== 'object') return undefined;
++  const rec = source as Record<string, unknown>;
++  for (const key of keys) {
++    const value = rec[key];
++    if (value !== undefined && value !== null) return String(value);
++  }
++  return undefined;
++}
++
++/**
++ * Confirma que a entidade Bitrix apontada por `rawId` pertence ao plano diário do sujeito —
++ * ou seja, que o responsável/atribuído dela é o usuário Bitrix resolvido para quem está
++ * autenticado (ou para o membro cujo plano um ADMIN/GESTOR está operando via override).
++ *
++ * Sem esta checagem, `POST /api/bitrix/daily-plan/complete` aceitava qualquer `itemId`
++ * arbitrário e executava a mutação (`tasks.task.complete`, `crm.activity.update`,
++ * `crm.timeline.comment.add`) em entidades de OUTROS usuários do mesmo portal — IDOR clássico.
++ * Falha fechada: sem identidade Bitrix resolvida ou sem dono correspondente, nega com 404
++ * (mesmo status de "não encontrado", para não virar oráculo de existência da entidade).
++ */
++async function assertBitrixItemBelongsToPlanUser(
++  webhookUrl: string,
++  itemType: DailyPlanItemOrigin,
++  rawId: string,
++  bitrixUserId: string,
++): Promise<void> {
++  const deny = (): never => {
++    throw new AppError('Item não encontrado no seu plano diário.', 404);
++  };
++
++  if (itemType === 'BITRIX_TASK') {
++    const res = await callBitrix<{
++      result?: ({ task?: Record<string, unknown> } & Record<string, unknown>) | null;
++    }>(webhookUrl, 'tasks.task.get', { taskId: rawId });
++    const task = res?.result?.task ?? res?.result ?? null;
++    const responsibleId = pickBitrixField(task, 'responsibleId', 'responsible_id', 'RESPONSIBLE_ID');
++    if (!responsibleId || responsibleId !== bitrixUserId) deny();
++    return;
++  }
++
++  if (itemType === 'BITRIX_ACTIVITY') {
++    const res = await callBitrix<{ result?: Record<string, unknown> | null }>(
++      webhookUrl,
++      'crm.activity.get',
++      { id: rawId },
++    );
++    const responsibleId = pickBitrixField(
++      res?.result,
++      'RESPONSIBLE_ID',
++      'responsibleId',
++      'responsible_id',
++    );
++    if (!responsibleId || responsibleId !== bitrixUserId) deny();
++    return;
++  }
++
++  if (itemType === 'BITRIX_LEAD') {
++    const res = await callBitrix<{ result?: Record<string, unknown> | null }>(
++      webhookUrl,
++      'crm.lead.get',
++      { id: rawId },
++    );
++    const assignedById = pickBitrixField(res?.result, 'ASSIGNED_BY_ID', 'assignedById');
++    if (!assignedById || assignedById !== bitrixUserId) deny();
++    return;
++  }
++}
++
+ /**
+  * Conclui um item do plano diário, sincronizando com o Bitrix24 se aplicável.
++ *
++ * Segurança (IDOR — correção POS4): antes de qualquer mutação, o item é validado contra o
++ * plano do usuário autenticado — `LOCAL_ACTIVITY` precisa pertencer ao usuário (`owner`) na
++ * organização; `BITRIX_*` precisa ter o usuário Bitrix do chamador como responsável/atribuído.
++ * `options.overrideBitrixUserId` existe só para ADMIN/GESTOR operarem o plano de outro membro
++ * (mesmo override já aceito por GET/POST /daily-plan), nunca para pular a checagem.
+  */
+ export async function completeDailyPlanItem(
+   organizationId: string,
+-  _userId: string,
++  userId: string,
+   itemType: DailyPlanItemOrigin,
+   itemId: string,
++  options?: { overrideBitrixUserId?: string },
+ ): Promise<{ success: boolean; message: string }> {
+-  const connection = await resolvePlanConnection(organizationId);
++  const rawId = normalizeDailyPlanItemId(itemType, itemId);
+ 
+   if (itemType === 'LOCAL_ACTIVITY') {
+-    const rawId = itemId.replace(/^local_/, '');
++    // O plano só lista atividades com `owner: userId` na organização — concluir item de outro
++    // usuário do mesmo tenant (ou de outra org) é negado aqui, não só no update.
++    const activity = await prisma.activity.findFirst({
++      where: { id: rawId, organizationId, owner: userId },
++      select: { id: true },
++    });
++    if (!activity) {
++      throw new AppError('Item não encontrado no seu plano diário.', 404);
++    }
+     await prisma.activity.update({
+-      where: { id: rawId, organizationId },
++      where: { id: rawId },
+       data: { status: 'Concluida' },
+     });
+     return { success: true, message: 'Atividade marcada como realizada na Central.' };
+   }
+ 
++  const connection = await resolvePlanConnection(organizationId);
+   if (!connection) {
+     throw new AppError('Conexão com Bitrix24 não encontrada para esta organização.', 400);
+   }
+ 
++  // Resolve a identidade Bitrix do DONO do plano sendo operado (o próprio usuário, ou o membro
++  // do override de ADMIN/GESTOR) — mesma ordem de fetchUserDailyPlan: vínculo explícito
++  // (`User.bitrixUserId`) -> e-mail -> nome completo.
++  const user = await prisma.user.findUnique({
++    where: { id: userId },
++    select: { email: true, name: true, bitrixUserId: true },
++  });
++  if (!user?.email) {
++    throw new AppError('Não foi possível identificar o usuário para validar o plano diário.', 403);
++  }
++  const { id: planBitrixUserId } = await resolvePlanBitrixUser(
++    organizationId,
++    connection.id,
++    { email: user.email, name: user.name, bitrixUserId: user.bitrixUserId },
++    options?.overrideBitrixUserId,
++  );
++  if (!planBitrixUserId) {
++    throw new AppError(
++      'Seu usuário não está vinculado a um usuário do Bitrix24 — não é possível concluir itens do plano diário.',
++      403,
++    );
++  }
++
+   const webhookUrl = await getConnectionWebhookUrl(organizationId, connection.id);
+-  const rawId = itemId.replace(/^(bitrix_task_|bitrix_act_|bitrix_lead_)/, '');
++
++  // Validação de posse ANTES da mutação: a entidade precisa ter sido listada no plano deste
++  // usuário (responsável da tarefa/atividade ou atribuído do lead).
++  await assertBitrixItemBelongsToPlanUser(webhookUrl, itemType, rawId, planBitrixUserId);
+ 
+   if (itemType === 'BITRIX_TASK') {
+     await callBitrix(webhookUrl, 'tasks.task.complete', { taskId: rawId });
+commit 506f8cdcd7dbf80bab70d81851c40512a96f1884
+Author: MaarkssDN <marcelinhomarkss@gmail.com>
+Date:   Tue Nov 24 17:43:31 2026 -0300
+
+    feat(opt-out): sujeito identificavel sem leadId + purga multi-fila (POS4-69-OPTOUT2)
+    
+    - recordOptOutAndPurgePendingJobs aceita subject sem leadId (phoneE164/email)
+      com a mesma normalizacao de recordOptOut; leadId null e persistido.
+    - queueInstance aceita Queue | Queue[] | null; undefined mantem default
+      whatsappCommandQueue (retrocompativel); null = nao purgar.
+    - cancelPendingJobsForOptOut: early return quando nenhum identificador
+      aproveitavel; assinatura alargada para Queue | null (corrige TS2345).
+    - Purga segue isolada por organizationId e por job; estados BullMQ v6
+      completos; falha de remove() nao aborta varredura.
+    - Testes: 11/11 (novos casos sem-lead, multi-fila, early-return).
+    - Handoffs pos4: 69-para-00 e 69-para-06 (contrato exato para o Agente 06).
+
+diff --git a/.agents/handoffs/pos4/69-para-00-optout-pos4.md b/.agents/handoffs/pos4/69-para-00-optout-pos4.md
+new file mode 100644
+index 000000000..d49d0104d
+--- /dev/null
++++ b/.agents/handoffs/pos4/69-para-00-optout-pos4.md
+@@ -0,0 +1,81 @@
++# Handoff 69 → 00 — POS4-69-OPTOUT2: opt-out por sujeito identificável sem lead
++
++De: 69 — Eli (Opt-Out e Conformidade de Canal)
++Para: 00 — Astra (Coordenador Global)
++Missão: POS4-69-OPTOUT2
++Onda: POS4
++Status: concluído (aguardando integração/auditoria)
++Prioridade: alto
++Bloqueador-ref: LGPD Art. 18 / supressão de envios
++
++## Resumo
++
++O serviço de opt-out (`src/features/notifications/opt-out/optout.service.ts`) agora
++suporta opt-out por sujeito identificável **sem `leadId`** — telefone (`phoneE164`) e/ou
++`email` bastam para persistir o `OptOutRecord` (`leadId: null`) e purgar jobs pendentes
++das filas BullMQ. Trabalho parcial herdado de sessão anterior do agente foi avaliado,
++completado (1 erro de tipo corrigido + 1 teste adicionado) e commitado.
++
++## O que foi entregue
++
++### `optout.service.ts` (ownership 69)
++
++- `recordOptOutAndPurgePendingJobs(repo, input, queueInstance?)`:
++  - `input.subject` aceita `leadId`/`email`/`phoneE164` com `leadId` omitido ou `null`;
++    normalização (`normalizeOptOutSubject` → `toE164BR`, e-mail trim/minúsculo) é a MESMA
++    de `recordOptOut`, então o persistido é o que a purga persegue.
++  - Sujeito sem nenhum identificador → `record: null`, purga vazia, fila nem varrida
++    (WARN) — simétrico ao comportamento de `recordOptOut`.
++  - `queueInstance` agora aceita `Queue | Queue[] | null`; omitido (`undefined`) mantém o
++    default histórico `whatsappCommandQueue` (retrocompatível). `null` = não purgar.
++    Arrays permitem purga agregada em múltiplas filas comerciais.
++  - Purga itera as filas e agrega `jobIds`; `cancelledJobsCount` = total removido.
++- `cancelPendingJobsForOptOut(params, queueInstance)`:
++  - `params.leadId`/`phoneE164`/`email` todos opcionais, mas exige ≥1 identificador
++    aproveitável (early return com WARN antes de `getJobs`).
++  - Assinatura alargada para `Queue<any> | null` (o corpo já tratava `null`; era erro de
++    tipo TS2345 na chamada interna — corrigido).
++  - Inalterado: estados `waiting|delayed|prioritized|waiting-children`, casamento por
++    leadId/telefone(sufixo 8 dígitos)/e-mail, isolamento `organizationId` por job,
++    isolamento de falhas por job (`remove()` que falha não aborta a varredura).
++
++### Testes — `__tests__/optout.service.test.ts` (11/11 verdes)
++
++Novos casos POS4: opt-out por telefone sem lead (persiste `leadId:null`, purga só job do
++mesmo número/tenant), opt-out por e-mail sem lead (normalização do e-mail persistido),
++sujeito sem identificador (no-op, `getJobs` não chamado), array de filas com agregação,
++early-return direto de `cancelPendingJobsForOptOut`. Casos anteriores (estados BullMQ,
++falha por job, payload malformado, fila nula, opt-out por leadId) seguem verdes —
++retrocompatibilidade confirmada.
++
++## Gates executados
++
++- `npx vitest run -c vitest.unit.config.ts src/features/notifications/opt-out/__tests__/optout.service.test.ts` → **11/11**
++- `npx tsc --noEmit` → **0 erros** (incluindo o erro pré-existente introduzido pelo trabalho parcial, corrigido)
++- `npx biome lint src/features/notifications/opt-out/` → **limpo**
++
++## Contrato para consumidores
++
++Handoff dedicado: `.agents/handoffs/pos4/69-para-06-optout-pos4.md` — documenta assinatura
++exata, semântica de `queueInstance` (undefined/null/fila/array), regra do identificador
++mínimo, ausência de `subjectId`/`contactId` no contrato (contato sem lead é coberto por
++email/phoneE164 e resolvido pelo gate de envio), garantias LGPD inalteradas e o gap do
++lado do Agente 06: o handler de STOP inbound hoje está sob `if (lead && ...)` e precisa
++chamar o serviço também quando `lead === null`.
++
++## Race residual check-then-send
++
++Reproduzível apenas como janela teórica (job `active` entre `getJobs` e `remove` falha o
++`remove()` — coberto por teste). Não corrigível sem lock/versão no registro; mitigação
++real é o gate de envio (`isOptedOut`/`checkOptOutStatus`) consultado no momento do envio.
++Documentado como limitação aceita no handoff 69→06 e já registrado na Onda 4 (69→56).
++
++## Arquivos alterados
++
++- `src/features/notifications/opt-out/optout.service.ts` (M)
++- `src/features/notifications/opt-out/__tests__/optout.service.test.ts` (M)
++- `.agents/handoffs/pos4/69-para-06-optout-pos4.md` (novo)
++- `.agents/handoffs/pos4/69-para-00-optout-pos4.md` (novo)
++
++Sem envios reais, sem enfraquecimento de LGPD/RLS, commits apenas locais na branch
++`agente/69-optout-pos4`.
+diff --git a/.agents/handoffs/pos4/69-para-06-optout-pos4.md b/.agents/handoffs/pos4/69-para-06-optout-pos4.md
+new file mode 100644
+index 000000000..d9b316581
+--- /dev/null
++++ b/.agents/handoffs/pos4/69-para-06-optout-pos4.md
+@@ -0,0 +1,124 @@
++# Handoff 69 → 06 — Contrato de opt-out por sujeito identificável SEM lead (POS4)
++
++De: 69 — Eli (Opt-Out e Conformidade de Canal)
++Para: 06 — Verificação de Realidade / consumidor do contrato de opt-out
++Missão: POS4-69-OPTOUT2
++Onda: POS4
++Status: aberto (contrato pronto para consumo)
++Prioridade: alto
++Bloqueador-ref: LGPD Art. 18 / supressão de envios
++
++## O que mudou (esta missão)
++
++`src/features/notifications/opt-out/optout.service.ts` agora suporta opt-out por
++**sujeito identificável sem `leadId`** — telefone e/ou e-mail bastam. Antes, um STOP
++de número que só existe como `Contact` (ou ainda não sincronizado como Lead) não
++tinha como ser registrado/purgado por este serviço; agora tem.
++
++Ponto de entrada (inalterado no nome, retrocompatível):
++
++```ts
++import { recordOptOutAndPurgePendingJobs } from '../../notifications/opt-out/optout.service.js';
++import { prismaOptOutRepository } from '../../../shared/infra/PrismaOptOutRepository.js';
++```
++
++### Assinatura exata
++
++```ts
++recordOptOutAndPurgePendingJobs(
++  repo: OptOutRepository,                    // usar prismaOptOutRepository em produção
++  input: RecordOptOutInput,                  // de src/shared/domain/optOut.ts
++  queueInstance?: Queue<any> | Queue<any>[] | null,  // OPCIONAL — ver abaixo
++): Promise<{ record: OptOutRecord | null; purgeResult: { cancelledJobsCount: number; jobIds: string[] } }>
++```
++
++### `input` — campos que importam para sujeito sem lead
++
++```ts
++{
++  organizationId: string;          // OBRIGATÓRIO — isolamento de tenant na persistência E na purga
++  scope: 'global' | 'email' | 'whatsapp' | 'voice',
++  originChannel: 'email' | 'whatsapp' | 'voice' | 'manual' | 'import',
++  subject: {
++    leadId?: string | null,        // PODE SER null/omitido — opt-out sem lead é válido
++    email?: string | null,         // normalizado internamente (trim + minúsculo + exige '@')
++    phoneE164?: string | null,     // normalizado internamente via toE164BR
++  },
++  reason?: string | null,
++  evidence?: string | null,        // trecho real do pedido (ex.: body do STOP) — nunca inferência
++  requestedBy?: string | null,
++}
++```
++
++**Regra de ouro:** pelo menos UM identificador aproveitável (`leadId`, `email` válido ou
++`phoneE164` válido após normalização) é obrigatório. Sem nenhum, `record` volta `null`,
++nada é gravado e a fila nem é varrida (WARN logado) — não é erro, é no-op intencional.
++
++Não existe campo `subjectId`/`contactId` no contrato: um contato sem lead é identificado
++pelos MESMOS `email`/`phoneE164` do `Contact`. O gate de envio
++(`checkOptOutStatus`/`isOptedOut` em `src/shared/services/optOutCheck.service.ts` /
++`optOutService.ts`) já resolve Contact → leads → OptOutRecord por esses identificadores.
++
++### `queueInstance` — purga de jobs pendentes
++
++- **Omitido (`undefined`)**: default retrocompatível = `whatsappCommandQueue`
++  (fila `whatsapp-command`; pode ser `null` com `ENABLE_QUEUES=false` — tratado com WARN).
++- **`null` explícito**: "não purgar fila" — registro do opt-out ainda é gravado.
++- **`Queue` única** ou **`Queue[]`**: purga agregada em todas (ex.: whatsapp-command +
++  futuras filas de envio comercial).
++
++A purga remove jobs nos estados BullMQ `waiting`, `delayed`, `prioritized`,
++`waiting-children`, casando por `organizationId` (job.data.organizationId === input)
++E por qualquer identificador: `leadId` (job.data.leadId ou job.data.context.leadId),
++teléfone (sufixo de 8 dígitos de job.data.number) ou e-mail (job.data.email ou
++job.data.context.email, minúsculo). Jobs de outro tenant nunca são tocados.
++
++### Caso de uso alvo (STOP inbound sem lead — lado do Agente 06/WhatsApp)
++
++Hoje `whatsappMessage.service.ts` (~L177) só trata `isOptOutKeyword` dentro de
++`if (lead && ...)`. Para cobrir contato sem lead aberto, o chamador deve invocar o
++serviço **fora** desse guard, com `subject` montado a partir do que já está em mãos:
++
++```ts
++subject: {
++  leadId: lead?.id ?? null,
++  email: contact?.email ?? null,   // findContactByPhone já retorna email decriptado
++  phoneE164,                        // já normalizado E.164 no topo de persistWhatsAppMessage
++}
++```
++
++`phoneE164` sozinho já basta para registrar e purgar — o casamento por telefone usa
++sufixo de dígitos, então o formato do `number` no payload do job não precisa ser idêntico.
++
++## Garantias que NÃO mudaram (não reimplementar do lado do chamador)
++
++- **Anonimizados/excluídos (LGPD Art. 18)**: bloqueio acontece no gate de envio
++  (`checkOptOutStatus`, matchedBy `'anonymized'`), não na gravação — registrar opt-out
++  para contato anonimizado é inócuo e a supressão de envio continua garantida.
++- **Race residual check-then-send**: um job que transita para `active` entre `getJobs`
++  e `remove` falha o `remove()` (log ERROR) e não é contado como cancelado — a última
++  linha de defesa é o gate `isOptedOut`/`checkOptOutStatus` consultado no momento do
++  envio real. Janela residual documentada: opt-out gravado entre o gate e o `sendMessage`
++  físico ainda passa; fechar 100% exigiria lock/versão — risco residual aceito e
++  registrado (mesma nota do handoff 69→56 da Onda 4).
++- **Multi-tenant**: `organizationId` filtra tanto a persistência (`OptOutRecord`) quanto
++  cada job avaliado na fila — purga nunca cruza tenants.
++
++## Testes de referência (11/11 verdes)
++
++`src/features/notifications/opt-out/__tests__/optout.service.test.ts` cobre:
++opt-out por telefone sem lead (persiste `leadId: null`, purga só o job do mesmo número
++no mesmo tenant), opt-out por e-mail sem lead, sujeito sem identificador (no-op sem
++varrer fila), array de filas com agregação, fila nula, early-return de
++`cancelPendingJobsForOptOut`, isolamento de falhas por job, e retrocompatibilidade por
++`leadId`.
++
++## O que falta do lado do Agente 06
++
++1. Chamar `recordOptOutAndPurgePendingJobs` no handler de STOP **inclusive quando
++   `lead === null`** (hoje o bloco inteiro está sob `if (lead && ...)` em
++   `whatsappMessage.service.ts:177`).
++2. Opcional: passar `[whatsappCommandQueue, <outras filas de envio>]` se houver mais de
++   uma fila com jobs comerciais pendentes.
++3. Manter o gate `isOptedOut` no envio (`whatsapp.service.ts`) — é a mitigação do race
++   residual, não substituto da purga.
+diff --git a/src/features/notifications/opt-out/__tests__/optout.service.test.ts b/src/features/notifications/opt-out/__tests__/optout.service.test.ts
+index 126914328..3a97de953 100644
+--- a/src/features/notifications/opt-out/__tests__/optout.service.test.ts
++++ b/src/features/notifications/opt-out/__tests__/optout.service.test.ts
+@@ -1,9 +1,6 @@
+ import { describe, expect, it, vi } from 'vitest';
+-import {
+-  cancelPendingJobsForOptOut,
+-  recordOptOutAndPurgePendingJobs,
+-} from '../optout.service.js';
+ import type { OptOutRepository } from '../../../../shared/domain/optOut.js';
++import { cancelPendingJobsForOptOut, recordOptOutAndPurgePendingJobs } from '../optout.service.js';
+ 
+ /**
+  * Regressão Onda4-69: a purga de opt-out precisa cobrir TODOS os estados BullMQ v6 em que um
+@@ -116,6 +113,18 @@ describe('cancelPendingJobsForOptOut — cobertura de estados e resiliência (Ag
+     expect(result.cancelledJobsCount).toBe(1);
+   });
+ 
++  it('sem nenhum identificador aproveitável, não varre a fila (early return antes do getJobs)', async () => {
++    const queue = createMockQueue([createMockJob('j1', { organizationId: 'org-1' })]);
++
++    const result = await cancelPendingJobsForOptOut(
++      { organizationId: 'org-1', leadId: '   ', phoneE164: null, email: null },
++      queue,
++    );
++
++    expect(queue.getJobs).not.toHaveBeenCalled();
++    expect(result).toEqual({ cancelledJobsCount: 0, jobIds: [] });
++  });
++
+   it('retorna resultado vazio sem lançar quando a fila está indisponível (queues desabilitadas)', async () => {
+     const result = await cancelPendingJobsForOptOut(
+       { organizationId: 'org-1', leadId: 'lead-target' },
+@@ -126,6 +135,170 @@ describe('cancelPendingJobsForOptOut — cobertura de estados e resiliência (Ag
+     expect(result.jobIds).toEqual([]);
+   });
+ 
++  it('opt-out por sujeito identificável SEM lead: persiste por telefone e purga jobs do mesmo número', async () => {
++    // Cenário POS4-69-OPTOUT2: contato sem Lead aberto diz STOP — o serviço precisa
++    // registrar o opt-out por phoneE164 (leadId null) e purgar os jobs pendentes dele.
++    const mockRepo: OptOutRepository = {
++      create: vi.fn().mockImplementation((record) =>
++        Promise.resolve({
++          id: 'optout-rec-phone',
++          createdAt: new Date(),
++          ...record,
++        }),
++      ),
++      findMatches: vi.fn().mockResolvedValue([]),
++      list: vi.fn().mockResolvedValue([]),
++    };
++
++    const matchingJob = createMockJob('job-send-pending', {
++      type: 'send',
++      organizationId: 'org-1',
++      number: '+55 11 98765-4321',
++      context: { email: null, leadId: null },
++    });
++    const otherPhoneJob = createMockJob('job-other-phone', {
++      type: 'send',
++      organizationId: 'org-1',
++      number: '+5511911111111',
++    });
++    const otherTenantJob = createMockJob('job-other-tenant', {
++      type: 'send',
++      organizationId: 'org-2',
++      number: '+5511987654321',
++    });
++    const queue = createMockQueue([matchingJob, otherPhoneJob, otherTenantJob]);
++
++    const outcome = await recordOptOutAndPurgePendingJobs(
++      mockRepo,
++      {
++        organizationId: 'org-1',
++        scope: 'global',
++        originChannel: 'whatsapp',
++        // Sem leadId — só o telefone identifica o titular.
++        subject: { phoneE164: '5511987654321' },
++      },
++      queue,
++    );
++
++    // 1. Persistência: registro criado com leadId null e telefone normalizado E.164.
++    expect(mockRepo.create).toHaveBeenCalledOnce();
++    const persisted = (mockRepo.create as any).mock.calls[0][0];
++    expect(persisted.leadId).toBeNull();
++    expect(persisted.phoneE164).toBe('+5511987654321');
++    expect(persisted.organizationId).toBe('org-1');
++    expect(outcome.record?.id).toBe('optout-rec-phone');
++
++    // 2. Purga: só o job do mesmo número no mesmo tenant foi removido.
++    expect(matchingJob.remove).toHaveBeenCalledOnce();
++    expect(otherPhoneJob.remove).not.toHaveBeenCalled();
++    expect(otherTenantJob.remove).not.toHaveBeenCalled();
++    expect(outcome.purgeResult).toEqual({
++      cancelledJobsCount: 1,
++      jobIds: ['job-send-pending'],
++    });
++  });
++
++  it('opt-out por e-mail sem lead: purga job que carrega o e-mail no payload/context', async () => {
++    const mockRepo: OptOutRepository = {
++      create: vi
++        .fn()
++        .mockImplementation((record) =>
++          Promise.resolve({ id: 'optout-rec-email', createdAt: new Date(), ...record }),
++        ),
++      findMatches: vi.fn().mockResolvedValue([]),
++      list: vi.fn().mockResolvedValue([]),
++    };
++
++    const jobByEmail = createMockJob('job-email', {
++      organizationId: 'org-1',
++      number: '+5511000000000',
++      context: { email: 'Titular@Example.com ' },
++    });
++    const queue = createMockQueue([jobByEmail]);
++
++    const outcome = await recordOptOutAndPurgePendingJobs(
++      mockRepo,
++      {
++        organizationId: 'org-1',
++        scope: 'email',
++        originChannel: 'email',
++        subject: { email: '  titular@example.com' },
++      },
++      queue,
++    );
++
++    expect(jobByEmail.remove).toHaveBeenCalledOnce();
++    expect(outcome.purgeResult.cancelledJobsCount).toBe(1);
++    // O registro persistido carrega o e-mail já normalizado (minúsculo/trim).
++    const persisted = (mockRepo.create as any).mock.calls[0][0];
++    expect(persisted.email).toBe('titular@example.com');
++    expect(persisted.leadId).toBeNull();
++  });
++
++  it('sujeito sem nenhum identificador: não varre a fila e retorna purga vazia', async () => {
++    const mockRepo: OptOutRepository = {
++      create: vi.fn(),
++      findMatches: vi.fn().mockResolvedValue([]),
++      list: vi.fn().mockResolvedValue([]),
++    };
++    const queue = createMockQueue([createMockJob('j1', { organizationId: 'org-1' })]);
++
++    const outcome = await recordOptOutAndPurgePendingJobs(
++      mockRepo,
++      {
++        organizationId: 'org-1',
++        scope: 'global',
++        originChannel: 'manual',
++        subject: { leadId: '  ', email: null, phoneE164: null },
++      },
++      queue,
++    );
++
++    expect(mockRepo.create).not.toHaveBeenCalled();
++    expect(outcome.record).toBeNull();
++    expect(queue.getJobs).not.toHaveBeenCalled();
++    expect(outcome.purgeResult).toEqual({ cancelledJobsCount: 0, jobIds: [] });
++  });
++
++  it('aceita array de filas e agrega a purga de todas', async () => {
++    const mockRepo: OptOutRepository = {
++      create: vi
++        .fn()
++        .mockImplementation((record) =>
++          Promise.resolve({ id: 'optout-rec-multi', createdAt: new Date(), ...record }),
++        ),
++      findMatches: vi.fn().mockResolvedValue([]),
++      list: vi.fn().mockResolvedValue([]),
++    };
++
++    const jobA = createMockJob('job-q1', {
++      organizationId: 'org-1',
++      context: { leadId: 'lead-x' },
++    });
++    const jobB = createMockJob('job-q2', {
++      organizationId: 'org-1',
++      context: { leadId: 'lead-x' },
++    });
++    const queueA = createMockQueue([jobA]);
++    const queueB = createMockQueue([jobB]);
++
++    const outcome = await recordOptOutAndPurgePendingJobs(
++      mockRepo,
++      {
++        organizationId: 'org-1',
++        scope: 'global',
++        originChannel: 'manual',
++        subject: { leadId: 'lead-x' },
++      },
++      [queueA, queueB],
++    );
++
++    expect(jobA.remove).toHaveBeenCalledOnce();
++    expect(jobB.remove).toHaveBeenCalledOnce();
++    expect(outcome.purgeResult.cancelledJobsCount).toBe(2);
++    expect(outcome.purgeResult.jobIds).toEqual(['job-q1', 'job-q2']);
++  });
++
+   it('recordOptOutAndPurgePendingJobs registra o opt-out mesmo se a fila estiver nula', async () => {
+     const mockRepo: OptOutRepository = {
+       create: vi.fn().mockResolvedValue({
+diff --git a/src/features/notifications/opt-out/optout.service.ts b/src/features/notifications/opt-out/optout.service.ts
+index 6ebe61d5e..f26b911ef 100644
+--- a/src/features/notifications/opt-out/optout.service.ts
++++ b/src/features/notifications/opt-out/optout.service.ts
+@@ -6,21 +6,30 @@
+  * para o titular nas filas de mensageria (WhatsApp, Cadência, Notificações), prevenindo disparos indevidos.
+  */
+ 
+-import type { Queue, JobType } from 'bullmq';
++import type { JobType, Queue } from 'bullmq';
+ import { logger } from '../../../lib/logger.js';
+ import {
+-  whatsappCommandQueue,
+   type WhatsAppCommand,
++  whatsappCommandQueue,
+ } from '../../../lib/queue/whatsappCommand.queue.js';
++import { hasAnyIdentifier, normalizeOptOutSubject } from '../../../shared/domain/optOut.js';
+ import {
+-  recordOptOut,
+-  type RecordOptOutInput,
+   type OptOutRecord,
+   type OptOutRepository,
++  type RecordOptOutInput,
++  recordOptOut,
+ } from '../../../shared/services/optOutService.js';
+ 
+ export interface CancelPendingJobsParams {
+   organizationId: string;
++  /**
++   * Sujeito identificável — NENHUM campo é obrigatório isoladamente, mas pelo menos um
++   * identificador aproveitável (leadId, telefone ou e-mail) precisa existir para a purga
++   * ter o que casar. Um opt-out por contato SEM lead aberto (ex.: STOP de número que só
++   * existe como Contact, ou telefone ainda não sincronizado) é válido: `leadId` fica
++   * `null` e o casamento acontece por `phoneE164`/`email` — mesma regra de
++   * `normalizeOptOutSubject`/`hasAnyIdentifier` usada na persistência do `OptOutRecord`.
++   */
+   leadId?: string | null;
+   phoneE164?: string | null;
+   email?: string | null;
+@@ -50,12 +59,7 @@ function extractSignificantDigits(phone: string | null | undefined): string | nu
+  * 'waiting-children' deixaria escapar exatamente os envios comerciais mais "quentes" do opt-out —
+  * a revogação precisa ser a trava mais forte (LGPD).
+  */
+-const PENDING_JOB_STATES: JobType[] = [
+-  'waiting',
+-  'delayed',
+-  'prioritized',
+-  'waiting-children',
+-];
++const PENDING_JOB_STATES: JobType[] = ['waiting', 'delayed', 'prioritized', 'waiting-children'];
+ 
+ /** Extrai string de forma defensiva — payloads de fila não são contratualmente confiáveis. */
+ function asNonEmptyString(value: unknown): string | null {
+@@ -66,12 +70,29 @@ function asNonEmptyString(value: unknown): string | null {
+ 
+ export async function cancelPendingJobsForOptOut(
+   params: CancelPendingJobsParams,
+-  queueInstance: Queue<any> = whatsappCommandQueue as Queue<any>,
++  // `null` explícito é aceito (e tratado com WARN + purga vazia abaixo): callers como
++  // `recordOptOutAndPurgePendingJobs` repassam filas que podem estar desabilitadas
++  // (`whatsappCommandQueue` é `null` quando ENABLE_QUEUES=false).
++  queueInstance: Queue<any> | null = whatsappCommandQueue as Queue<any>,
+ ): Promise<CancelJobsResult> {
+   const { organizationId, leadId, phoneE164, email } = params;
+   const targetPhoneSuffix = extractSignificantDigits(phoneE164);
+   const targetEmail = email ? email.trim().toLowerCase() : null;
+ 
++  // Sem NENHUM identificador aproveitável não há o que casar — evita varrer a fila inteira
++  // à toa (e mantém simetria com `recordOptOut`, que também não grava registro inerte).
++  // `hasAnyIdentifier` espera a forma normalizada; aqui os alvos já são derivadas
++  // (sufixo de telefone/e-mail normalizado), então a checagem equivalente é direta.
++  const hasMatchableIdentifier =
++    (leadId?.trim().length ?? 0) > 0 || targetPhoneSuffix !== null || targetEmail !== null;
++  if (!hasMatchableIdentifier) {
++    logger.warn(
++      { organizationId },
++      'Opt-Out Real: purga de jobs ignorada — sujeito sem identificador aproveitável (leadId, telefone ou e-mail).',
++    );
++    return { cancelledJobsCount: 0, jobIds: [] };
++  }
++
+   const cancelledJobIds: string[] = [];
+ 
+   // A fila pode estar nula quando queues estão desabilitadas (ENABLE_QUEUES=false) ou em
+@@ -173,26 +194,64 @@ export async function cancelPendingJobsForOptOut(
+ 
+ /**
+  * Ponto de entrada unificado: registra o opt-out e purga mensagens agendadas simultaneamente.
++ *
++ * Sujeito identificável SEM lead: `input.subject` aceita `phoneE164`/`email` sem `leadId`
++ * (ex.: STOP inbound de um número que só existe como Contact, ou ainda não sincronizado).
++ * O registro é persistido por esses identificadores (`OptOutRecord.leadId` fica `null`) e a
++ * purga casa os jobs pendentes pelos mesmos identificadores normalizados — a normalização
++ * (`normalizeOptOutSubject`: E.164 via `toE164BR`, e-mail minúsculo/trim) é a MESMA aplicada
++ * por `recordOptOut` na gravação, garantindo que o que foi persistido é o que a purga persegue.
++ *
++ * `queueInstance` aceita uma fila única, um array de filas (ex.: whatsapp-command + futuras
++ * filas de envio comercial) ou `null`/`undefined` (queues desabilitadas — purga vazia, WARN).
+  */
+ export async function recordOptOutAndPurgePendingJobs(
+   repo: OptOutRepository,
+   input: RecordOptOutInput,
+-  queueInstance?: Queue<any>,
++  queueInstance?: Queue<any> | Queue<any>[] | null,
+ ): Promise<{ record: OptOutRecord | null; purgeResult: CancelJobsResult }> {
+   const record = await recordOptOut(repo, input);
+ 
+-  const purgeResult = await cancelPendingJobsForOptOut(
+-    {
+-      organizationId: input.organizationId,
+-      leadId: input.subject.leadId,
+-      phoneE164: input.subject.phoneE164,
+-      email: input.subject.email,
+-    },
+-    queueInstance,
+-  );
++  const normalized = normalizeOptOutSubject(input.subject);
++
++  // Sem identificador aproveitável não há registro nem o que purgar — `recordOptOut` já
++  // devolveu `null` com WARN; pular a varredura da fila é só higiene (mesmo resultado).
++  if (!hasAnyIdentifier(normalized)) {
++    return {
++      record,
++      purgeResult: { cancelledJobsCount: 0, jobIds: [] },
++    };
++  }
++
++  // Retrocompatível: argumento omitido (`undefined`) mantém o default histórico —
++  // `whatsappCommandQueue` (que pode ser `null` com queues desabilitadas; a função de
++  // purga trata isso com WARN + resultado vazio). `null` explícito = "não purgar fila".
++  const queues =
++    queueInstance === undefined
++      ? [whatsappCommandQueue as Queue<any>]
++      : Array.isArray(queueInstance)
++        ? queueInstance
++        : [queueInstance];
++
++  const jobIds: string[] = [];
++  for (const queue of queues) {
++    const result = await cancelPendingJobsForOptOut(
++      {
++        organizationId: input.organizationId,
++        leadId: normalized.leadId,
++        phoneE164: normalized.phoneE164,
++        email: normalized.email,
++      },
++      queue,
++    );
++    jobIds.push(...result.jobIds);
++  }
+ 
+   return {
+     record,
+-    purgeResult,
++    purgeResult: {
++      cancelledJobsCount: jobIds.length,
++      jobIds,
++    },
+   };
+ }
+commit 7f70bab6927c7f814b6a9e0206db5f54ad842bfa
+Merge: 73945c8d2 9e152f461
+Author: MaarkssDN <marcelinhomarkss@gmail.com>
+Date:   Tue Nov 24 17:41:14 2026 -0300
+
+    merge(pos4): Agente 64 — adapter STT→voice-command-router (9e152f461)
+
+commit 9e152f4616a1ee1064c0336caaabe2d9bbb64c89
+Author: MaarkssDN <marcelinhomarkss@gmail.com>
+Date:   Tue Nov 24 17:39:04 2026 -0300
+
+    feat(voice-hub/commands): adapter STT→voice-command-router POS4-64-STT-WIRE (B-07)
+
+diff --git a/.agents/handoffs/pos4/64-para-00-stt-adapter.md b/.agents/handoffs/pos4/64-para-00-stt-adapter.md
+new file mode 100644
+index 000000000..06ab86c8b
+--- /dev/null
++++ b/.agents/handoffs/pos4/64-para-00-stt-adapter.md
+@@ -0,0 +1,70 @@
++# Handoff 64 → 00 — Adapter STT → Voice Command Router (POS4-64-STT-WIRE)
++
++- **De:** Agente 64 — Tito (Comandos de Voz e Ações)
++- **Para:** Agente 00 — Astra (Coordenador Global)
++- **Onda/POS:** POS4-64-STT-WIRE (pos4)
++- **Status:** resolvido — commits locais na branch `agente/64-stt-cmd-pos4`
++- **Prioridade:** alto (conclusão da ponte STT→router do B-07)
++
++## Entrega
++
++Dois arquivos novos dentro do ownership `src/features/voice-hub/commands/**`:
++
++- `src/features/voice-hub/commands/stt-adapter.ts` (~500 linhas)
++- `src/features/voice-hub/commands/__tests__/sttCommandAdapter.test.ts` (29 testes)
++
++Continuação de trabalho parcial não-commitado do agente anterior: os dois
++arquivos foram auditados, o cabeçalho foi atualizado para o contrato REAL do
++Agente 63 (lido via `git show agente/63-stt-pos4:...`), e a suíte foi
++executada — 49/49 verde (29 adapter + 20 router Onda 4).
++
++## Contrato STT do Agente 63 — conformidade
++
++O contrato canônico (`SttTranscriptEvent` com `transcript`, `isFinal`,
++`sessionId`, `organizationId`, `userId`, `speaker?`, `confidence?`,
++`startSec?`, `endSec?`) é reconhecido pelo extrator tolerante do adapter
++SEM import cross-branch. Após o merge das branches, eventos canônicos podem
++ser passados diretamente em `input.stt` sem alteração de código.
++
++Decisão deliberada registrada: o adapter ignora `organizationId`/`userId`
++do payload STT e resolve o ator exclusivamente da `session` autenticada
++(`resolveVoiceActorFromSession` aceita `req.user`, `{user}` better-auth ou
++usuário direto; roles mapeadas ADMIN→admin, GESTOR→manager,
++CLOSER/SDR→agent, demais→viewer fail-closed). Divergência gera WARN de
++auditoria. Isso é mais estrito que o contrato do 63 (que confia nos campos
++do evento, populados upstream pela sessão) — defesa em profundidade.
++
++## Contratos Onda 4 preservados (verificado em teste)
++
++- Tenant: payload STT com organizationId/userId de outro tenant é ignorado;
++  confirmação cross-tenant → `confirmation_denied`, zero mutação.
++- Confirmação: TTL + uso único + revalidação de autorização no consumo;
++  replay → `confirmation_expired`.
++- Real vs simulação: executor `simulation: true` → `failed`/`simulated`,
++  `confirmed: false`, `mutate` nunca chamado.
++- Erros honestos: interim → `stt_interim`, vazio → `stt_empty`, sessão sem
++  ator → `actor_unauthenticated`, sem executor → `executor_not_bound`,
++  ambíguo/não reconhecido/incompleto propagados do router.
++
++## Pendências registradas (não bloqueantes)
++
++1. **Bindings de executores** (handoff detalhado em `64-para-65`): apenas
++   `create_lead` tem executor real via `container.resolve('LeadUseCases')`.
++   `update_deal_stage`, `schedule_meeting`, `log_activity`, `generic_action`
++   retornam `executor_not_bound` até decisão de domínio (Agentes 04/20/45/47).
++   Sugestão: abrir handoff 64→20 (Ciro) para priorização dos bindings.
++2. **Merge 63↔64**: nenhum conflito esperado — o 63 criou
++   `transcription/sttTranscript.contract.ts` + handoffs; este entregou
++   `commands/stt-adapter.ts` + handoffs. Paths disjuntos.
++3. **Consumidor**: a UI/serviço que invoca `handleTranscript` é responsabilidade
++   do Agente 65 (ver `64-para-65-stt-adapter.md` para o contrato de status).
++
++## Verificação executada
++
++- `npx vitest run -c vitest.unit.config.ts src/features/voice-hub/commands/__tests__/sttCommandAdapter.test.ts src/features/voice-hub/commands/__tests__/voiceCommandRouter.test.ts` → **49/49 verde**.
++- `npx tsc --noEmit -p tsconfig.json` → **0 erros**.
++
++## SHAs
++
++- Base: `9f80c07ed` (merge onda-4)
++- Commit(s) desta entrega: ver `git log agente/64-stt-cmd-pos4` (registrado no relatório final da sessão).
+diff --git a/.agents/handoffs/pos4/64-para-65-stt-adapter.md b/.agents/handoffs/pos4/64-para-65-stt-adapter.md
+new file mode 100644
+index 000000000..40bafa2e0
+--- /dev/null
++++ b/.agents/handoffs/pos4/64-para-65-stt-adapter.md
+@@ -0,0 +1,103 @@
++# Handoff 64 → 65 — Adapter STT → Voice Command Router pronto para consumo
++
++- **De:** Agente 64 — Tito (Comandos de Voz e Ações)
++- **Para:** Agente 65 — Lena (Voice Hub UI)
++- **Onda/POS:** POS4-64-STT-WIRE (pos4)
++- **Status:** resolvido — aguardando integração de branches
++- **Prioridade:** alto (último quilômetro do pipeline B-07)
++- **Branch:** `agente/64-stt-cmd-pos4` (worktree `wt-64-stt-cmd`)
++
++## O que foi entregue
++
++`src/features/voice-hub/commands/stt-adapter.ts` — adapter que recebe o
++resultado FINAL de transcrição STT e o conecta ao
++`createVoiceCommandRouter` da Onda 4, preservando todos os contratos
++aprovados (tenant, autorização, confirmação TTL/uso-único, real vs simulação).
++
++API pública:
++
++```ts
++import {
++  createSttVoiceCommandAdapter,
++  createDomainVoiceCommandExecutors,
++} from './stt-adapter.js'; // ou caminho relativo do consumidor
++
++const adapter = createSttVoiceCommandAdapter({
++  executors: createDomainVoiceCommandExecutors(), // ou registry injetado
++});
++
++// Fluxo de voz:
++const result = await adapter.handleTranscript({
++  stt,                    // resultado bruto do STT (ver contrato abaixo)
++  session,                // req.user / {user} do better-auth — OBRIGATÓRIO
++  commandId?,             // opcional, para correlação
++});
++// result.status: 'executed' | 'failed' | 'needs_confirmation' |
++//   'confirmation_cancelled' | 'confirmation_expired' | 'confirmation_denied' |
++//   'denied' | 'ambiguous' | 'incomplete' | 'unrecognized' |
++//   'executor_not_bound' | 'stt_interim' | 'stt_empty' | 'actor_unauthenticated'
++
++// Confirmação via UI (botão) ou intent mapeada:
++await adapter.handleConfirmationDecision({
++  confirmationId: result.confirmationId,
++  decision: 'confirm' | 'cancel',
++  session,                // MESMA sessão do usuário que originou o comando
++});
++```
++
++## Contrato de entrada `stt` (tolerante)
++
++O adapter aceita, sem import do módulo do Agente 63:
++
++| Shape | Origem |
++|---|---|
++| `SttTranscriptEvent` canônico do 63 (`{transcript, isFinal, sessionId, organizationId, userId, ...}`) | `transcription/sttTranscript.contract.ts` (branch `agente/63-stt-pos4`) |
++| `{transcript, isFinal}` / `{text}` / `{finalTranscript}` | Whisper, serviços server-side |
++| `{results: [...]}` | Web Speech API (`event.results[i].isFinal` + `transcript`) |
++| `{segments: [{text}]}` | Whisper batch diarizado |
++| string pura | atalhos/testes |
++
++**Regra de tenancy (decisão deliberada):** `organizationId`/`userId` no payload
++STT são SEMPRE ignorados para autorização. O ator vem exclusivamente de
++`session` (resolvido no servidor). Divergência gera WARN de auditoria —
++nunca troca de tenant. Isso é defesa em profundidade sobre o contrato do 63,
++que já popula esses campos a partir da sessão.
++
++## Como a UI deve tratar os status
++
++- `stt_interim` / `stt_empty`: não mostrar como erro — interim é normal;
++  empty pede nova tentativa ou fallback para texto.
++- `needs_confirmation`: exibir `confirmationId` + `expiresAt` e chamar
++  `handleConfirmationDecision` no confirm/cancel — NÃO reenviar transcript.
++- `ambiguous`: listar `candidates` para o usuário escolher.
++- `incomplete`: mostrar `missingSlots` (ex.: "informe data/hora").
++- `denied` / `confirmation_denied`: mostrar `reason` (permissão/tenant).
++- `executor_not_bound`: honesto — comando reconhecido mas sem executor real
++  vinculado (ver pendências abaixo).
++- `executed`: `execution.confirmed === true` e `committedAt` presente —
++  SÓ então anunciar sucesso ao usuário.
++- `failed`: `execution.error` explica; NUNCA anunciar sucesso.
++
++## Pendências de binding de executores (handoff 64→00/04)
++
++`createDomainVoiceCommandExecutors()` vincula SOMENTE `create_lead`
++(via `container.resolve('LeadUseCases')` — registrado em
++`src/shared/di/setup.ts:224`). Os demais tipos retornam
++`executor_not_bound` honestamente até haver binding:
++
++- `update_deal_stage`: `DealsService` exige `expectedVersion` (optimistic
++  lock) + mapeamento stage-name→stageId.
++- `schedule_meeting`: exige leadId, e-mails e janela; criar evento em Google
++  Calendar seria ação externa real (proibida nesta fase).
++- `log_activity`: `ActivityUseCases.createActivity` exige `leadId`; parser
++  emite `dealId`.
++- `generic_action`: sem domínio executável.
++
++Para testes/preview, injete `executors` mockados via
++`createSttVoiceCommandAdapter({ executors })` — registry é
++`Partial<Record<VoiceCommandType, DatabaseMutationRunner>>`.
++
++## Verificação
++
++- `npx vitest run -c vitest.unit.config.ts src/features/voice-hub/commands` → 49/49 verde (29 adapter + 20 router).
++- `npx tsc --noEmit` → limpo.
+diff --git a/src/features/voice-hub/commands/__tests__/sttCommandAdapter.test.ts b/src/features/voice-hub/commands/__tests__/sttCommandAdapter.test.ts
+new file mode 100644
+index 000000000..42f27d004
+--- /dev/null
++++ b/src/features/voice-hub/commands/__tests__/sttCommandAdapter.test.ts
+@@ -0,0 +1,466 @@
++import { describe, expect, it, vi } from 'vitest';
++import type { DatabaseMutationRunner } from '../command.processor.js';
++import { VoiceCommandConfirmationManager } from '../confirmation.manager.js';
++import {
++  createDomainVoiceCommandExecutors,
++  createSttVoiceCommandAdapter,
++  extractSttTranscript,
++  mapSystemRoleToVoiceRole,
++  resolveVoiceActorFromSession,
++} from '../stt-adapter.js';
++import type { VoiceCommandExecutorRegistry } from '../voice-command-router.js';
++
++const ORG = 'tenant-voice-hub';
++
++/** Sessão autenticada — shape de `req.user`/`{user}` do better-auth. */
++const sessionAgent = {
++  user: { id: 'u-agent', organizationId: ORG, role: 'SDR', email: 'a@x.com' },
++};
++const sessionManager = {
++  user: { id: 'u-manager', organizationId: ORG, role: 'GESTOR' },
++};
++const sessionViewer = {
++  user: { id: 'u-viewer', organizationId: ORG, role: 'VISUALIZADOR' },
++};
++const sessionOtherOrg = {
++  user: { id: 'u-intruso', organizationId: 'tenant-invasor', role: 'ADMIN' },
++};
++
++function realRunner(result: unknown = { id: 'persisted-1' }): DatabaseMutationRunner & {
++  mutate: ReturnType<typeof vi.fn>;
++} {
++  return { mutate: vi.fn().mockResolvedValue(result) };
++}
++
++function allExecutors(overrides: VoiceCommandExecutorRegistry = {}): VoiceCommandExecutorRegistry {
++  return {
++    create_lead: realRunner({ id: 'lead-1' }),
++    log_activity: realRunner({ id: 'act-1' }),
++    schedule_meeting: realRunner({ id: 'mtg-1' }),
++    update_deal_stage: realRunner({ id: 'deal-1' }),
++    generic_action: realRunner({ id: 'gen-1' }),
++    ...overrides,
++  };
++}
++
++// ---------------------------------------------------------------------------
++// Extração de transcript STT (contrato tolerante)
++// ---------------------------------------------------------------------------
++
++describe('extractSttTranscript — contrato STT tolerante', () => {
++  it('aceita string pura', () => {
++    expect(extractSttTranscript('criar lead chamado Ana')).toEqual({
++      kind: 'final',
++      transcript: 'criar lead chamado Ana',
++    });
++  });
++
++  it('aceita { transcript, isFinal: true } (contrato assumido do Agente 63)', () => {
++    expect(
++      extractSttTranscript({ transcript: 'criar lead', isFinal: true, sessionId: 's1' }),
++    ).toEqual({ kind: 'final', transcript: 'criar lead' });
++  });
++
++  it('aceita alias { text } (Whisper) e { finalTranscript }', () => {
++    expect(extractSttTranscript({ text: 'olá', isFinal: true })).toEqual({
++      kind: 'final',
++      transcript: 'olá',
++    });
++    expect(extractSttTranscript({ finalTranscript: 'tchau' })).toEqual({
++      kind: 'final',
++      transcript: 'tchau',
++    });
++  });
++
++  it('aceita Whisper { text, segments }', () => {
++    const result = extractSttTranscript({
++      text: 'criar lead chamado Bob',
++      segments: [{ start: 0, end: 1, text: 'criar lead ' }, { start: 1, end: 2, text: 'chamado Bob' }],
++    });
++    expect(result.kind).toBe('final');
++    if (result.kind === 'final') expect(result.transcript).toContain('criar lead');
++  });
++
++  it('aceita Web Speech API results[] com resultado final', () => {
++    const event = {
++      results: [
++        { 0: { transcript: 'criar lead chamado ' }, isFinal: false },
++        { 0: { transcript: 'criar lead chamado Carla' }, isFinal: true },
++      ],
++    };
++    const result = extractSttTranscript(event);
++    expect(result).toEqual({ kind: 'final', transcript: 'criar lead chamado Carla' });
++  });
++
++  it('results[] só com interinos → interim', () => {
++    const event = { results: [{ 0: { transcript: 'cri' }, isFinal: false }] };
++    expect(extractSttTranscript(event)).toEqual({ kind: 'interim' });
++  });
++
++  it('isFinal:false explícito → interim mesmo com transcript presente', () => {
++    expect(extractSttTranscript({ transcript: 'parcial', isFinal: false })).toEqual({
++      kind: 'interim',
++    });
++  });
++
++  it('transcrição vazia/branca → empty', () => {
++    expect(extractSttTranscript({ transcript: '   ', isFinal: true })).toEqual({ kind: 'empty' });
++    expect(extractSttTranscript(null)).toEqual({ kind: 'empty' });
++    expect(extractSttTranscript({})).toEqual({ kind: 'empty' });
++  });
++});
++
++// ---------------------------------------------------------------------------
++// Resolução de ator a partir da sessão (nunca do payload STT)
++// ---------------------------------------------------------------------------
++
++describe('resolveVoiceActorFromSession / mapSystemRoleToVoiceRole', () => {
++  it('mapeia papéis reais do sistema para VoiceActorRole', () => {
++    expect(mapSystemRoleToVoiceRole('ADMIN')).toBe('admin');
++    expect(mapSystemRoleToVoiceRole('GESTOR')).toBe('manager');
++    expect(mapSystemRoleToVoiceRole('CLOSER')).toBe('agent');
++    expect(mapSystemRoleToVoiceRole('SDR')).toBe('agent');
++    expect(mapSystemRoleToVoiceRole('VISUALIZADOR')).toBe('viewer');
++    expect(mapSystemRoleToVoiceRole('QUALQUER_COISA')).toBe('viewer'); // fail-closed
++    expect(mapSystemRoleToVoiceRole(undefined)).toBe('viewer');
++  });
++
++  it('resolve {user:{id,organizationId,role}}', () => {
++    expect(resolveVoiceActorFromSession(sessionManager)).toEqual({
++      userId: 'u-manager',
++      organizationId: ORG,
++      role: 'manager',
++    });
++  });
++
++  it('resolve user direto e aliases de tenant', () => {
++    expect(
++      resolveVoiceActorFromSession({ id: 'u1', tenantId: 't1', role: 'ADMIN' }),
++    ).toEqual({ userId: 'u1', organizationId: 't1', role: 'admin' });
++  });
++
++  it('retorna null sem userId ou organizationId — nunca inventa tenant', () => {
++    expect(resolveVoiceActorFromSession(null)).toBeNull();
++    expect(resolveVoiceActorFromSession({ user: { id: 'u1' } })).toBeNull();
++    expect(resolveVoiceActorFromSession({ user: { organizationId: ORG } })).toBeNull();
++    expect(resolveVoiceActorFromSession({})).toBeNull();
++  });
++});
++
++// ---------------------------------------------------------------------------
++// Adapter STT → Router — respostas honestas sem execução
++// ---------------------------------------------------------------------------
++
++describe('createSttVoiceCommandAdapter — gates honestos', () => {
++  it('resultado interim NUNCA chega ao router nem toca executores', async () => {
++    const executors = allExecutors();
++    const adapter = createSttVoiceCommandAdapter({ executors });
++
++    const result = await adapter.handleTranscript({
++      stt: { transcript: 'cri', isFinal: false },
++      session: sessionAgent,
++    });
++
++    expect(result.status).toBe('stt_interim');
++    for (const runner of Object.values(executors)) {
++      expect(runner!.mutate).not.toHaveBeenCalled();
++    }
++  });
++
++  it('transcrição vazia → stt_empty sem executar', async () => {
++    const executors = allExecutors();
++    const adapter = createSttVoiceCommandAdapter({ executors });
++
++    const result = await adapter.handleTranscript({
++      stt: { transcript: '   ', isFinal: true },
++      session: sessionAgent,
++    });
++
++    expect(result.status).toBe('stt_empty');
++    for (const runner of Object.values(executors)) {
++      expect(runner!.mutate).not.toHaveBeenCalled();
++    }
++  });
++
++  it('sessão sem contexto de ator → actor_unauthenticated sem executar', async () => {
++    const executors = allExecutors();
++    const adapter = createSttVoiceCommandAdapter({ executors });
++
++    const result = await adapter.handleTranscript({
++      stt: { transcript: 'criar lead chamado Maria', isFinal: true },
++      session: null,
++    });
++
++    expect(result.status).toBe('actor_unauthenticated');
++    for (const runner of Object.values(executors)) {
++      expect(runner!.mutate).not.toHaveBeenCalled();
++    }
++  });
++
++  it('payload STT com organizationId/userId NÃO define tenancy — sessão vence', async () => {
++    const executors = allExecutors();
++    const adapter = createSttVoiceCommandAdapter({ executors });
++
++    // Payload tenta se passar por outro tenant — deve ser ignorado.
++    const result = await adapter.handleTranscript({
++      stt: {
++        transcript: 'criar lead chamado Maria Silva',
++        isFinal: true,
++        organizationId: 'tenant-invasor',
++        userId: 'u-intruso',
++      },
++      session: sessionAgent,
++    });
++
++    expect(result.status).toBe('executed');
++    expect(result.organizationId).toBe(ORG);
++    const payload = executors.create_lead!.mutate.mock.calls[0][1] as {
++      organizationId: string;
++      userId: string;
++    };
++    expect(payload.organizationId).toBe(ORG);
++    expect(payload.userId).toBe('u-agent');
++  });
++});
++
++// ---------------------------------------------------------------------------
++// Adapter STT → Router — pipeline completo transcript→execute
++// ---------------------------------------------------------------------------
++
++describe('createSttVoiceCommandAdapter — pipeline ponta a ponta', () => {
++  it('transcript final → parse → authorize → commit real (create_lead, agent)', async () => {
++    const executors = allExecutors();
++    const adapter = createSttVoiceCommandAdapter({ executors });
++
++    const result = await adapter.handleTranscript({
++      stt: { transcript: 'criar lead chamado Maria Silva', isFinal: true, sessionId: 'sess-1' },
++      session: sessionAgent,
++      commandId: 'cmd-stt-001',
++    });
++
++    expect(result.status).toBe('executed');
++    expect(result.transcript).toBe('criar lead chamado Maria Silva');
++    expect(result.commandId).toBe('cmd-stt-001');
++    expect(result.execution?.confirmed).toBe(true);
++    expect(result.execution?.committedAt).toBeDefined();
++    expect(executors.create_lead!.mutate).toHaveBeenCalledTimes(1);
++  });
++
++  it('transcrição ambígua → ambiguous sem executar', async () => {
++    const executors = allExecutors();
++    const adapter = createSttVoiceCommandAdapter({ executors });
++
++    const result = await adapter.handleTranscript({
++      stt: 'criar lead e agendar reunião amanhã',
++      session: sessionManager,
++    });
++
++    expect(result.status).toBe('ambiguous');
++    expect(result.candidates).toContain('create_lead');
++    expect(result.candidates).toContain('schedule_meeting');
++    for (const runner of Object.values(executors)) {
++      expect(runner!.mutate).not.toHaveBeenCalled();
++    }
++  });
++
++  it('transcrição irreconhecível → unrecognized sem executar', async () => {
++    const executors = allExecutors();
++    const adapter = createSttVoiceCommandAdapter({ executors });
++
++    const result = await adapter.handleTranscript({
++      stt: 'como está o tempo hoje?',
++      session: sessionAgent,
++    });
++
++    expect(result.status).toBe('unrecognized');
++    for (const runner of Object.values(executors)) {
++      expect(runner!.mutate).not.toHaveBeenCalled();
++    }
++  });
++
++  it('papel insuficiente (VISUALIZADOR→viewer) → denied sem executar', async () => {
++    const executors = allExecutors();
++    const adapter = createSttVoiceCommandAdapter({ executors });
++
++    const result = await adapter.handleTranscript({
++      stt: 'criar lead chamado Maria',
++      session: sessionViewer,
++    });
++
++    expect(result.status).toBe('denied');
++    expect(result.reason).toContain('Permissão negada');
++    expect(executors.create_lead!.mutate).not.toHaveBeenCalled();
++  });
++
++  it('comando crítico via STT → needs_confirmation; confirmação por handleConfirmationDecision executa 1x', async () => {
++    const executors = allExecutors();
++    const adapter = createSttVoiceCommandAdapter({ executors });
++
++    const pending = await adapter.handleTranscript({
++      stt: 'mover deal DEAL-42 para Ganho',
++      session: sessionManager,
++    });
++
++    expect(pending.status).toBe('needs_confirmation');
++    expect(pending.confirmationId).toBeDefined();
++    expect(executors.update_deal_stage!.mutate).not.toHaveBeenCalled();
++
++    const confirmed = await adapter.handleConfirmationDecision({
++      confirmationId: pending.confirmationId!,
++      decision: 'confirm',
++      session: sessionManager,
++    });
++
++    expect(confirmed.status).toBe('executed');
++    expect(confirmed.execution?.confirmed).toBe(true);
++    expect(executors.update_deal_stage!.mutate).toHaveBeenCalledTimes(1);
++
++    // Uso único: replay é bloqueado.
++    const replay = await adapter.handleConfirmationDecision({
++      confirmationId: pending.confirmationId!,
++      decision: 'confirm',
++      session: sessionManager,
++    });
++    expect(replay.status).toBe('confirmation_expired');
++    expect(executors.update_deal_stage!.mutate).toHaveBeenCalledTimes(1);
++  });
++
++  it('cross-tenant: confirmação de OUTRA organização é negada — zero mutação', async () => {
++    const executors = allExecutors();
++    const adapter = createSttVoiceCommandAdapter({ executors });
++
++    const pending = await adapter.handleTranscript({
++      stt: 'mover deal DEAL-42 para Ganho',
++      session: sessionManager,
++    });
++    expect(pending.status).toBe('needs_confirmation');
++
++    // Atacante de outro tenant tenta confirmar com o confirmationId vazado.
++    const denied = await adapter.handleConfirmationDecision({
++      confirmationId: pending.confirmationId!,
++      decision: 'confirm',
++      session: sessionOtherOrg,
++    });
++
++    expect(denied.status).toBe('confirmation_denied');
++    expect(executors.update_deal_stage!.mutate).not.toHaveBeenCalled();
++  });
++
++  it('executor SIMULADO via STT → failed/simulated, nunca confirmed', async () => {
++    const sim: DatabaseMutationRunner = {
++      mutate: vi.fn().mockResolvedValue({ ok: true }),
++      simulation: true,
++    };
++    const executors = allExecutors({ create_lead: sim });
++    const adapter = createSttVoiceCommandAdapter({ executors });
++
++    const result = await adapter.handleTranscript({
++      stt: 'criar lead chamado Maria',
++      session: sessionAgent,
++    });
++
++    expect(result.status).toBe('failed');
++    expect(result.execution?.confirmed).toBe(false);
++    expect(result.execution?.simulated).toBe(true);
++    expect(sim.mutate).not.toHaveBeenCalled();
++  });
++
++  it('executor ausente → executor_not_bound honesto', async () => {
++    const adapter = createSttVoiceCommandAdapter({ executors: {} });
++
++    const result = await adapter.handleTranscript({
++      stt: 'criar lead chamado Maria',
++      session: sessionAgent,
++    });
++
++    expect(result.status).toBe('executor_not_bound');
++  });
++
++  it('confirmação com TTL: expiração bloqueia execução via adapter', async () => {
++    let currentTime = 5_000_000;
++    const confirmations = new VoiceCommandConfirmationManager({
++      ttlMs: 1_000,
++      now: () => currentTime,
++    });
++    const executors = allExecutors();
++    const adapter = createSttVoiceCommandAdapter({ executors, confirmations });
++
++    const pending = await adapter.handleTranscript({
++      stt: 'agendar reunião amanhã',
++      session: sessionAgent,
++    });
++    // 'amanhã' satisfaz dateTime → schedule_meeting é crítico → needs_confirmation
++    expect(pending.status).toBe('needs_confirmation');
++
++    currentTime += 5_000;
++
++    const expired = await adapter.handleConfirmationDecision({
++      confirmationId: pending.confirmationId!,
++      decision: 'confirm',
++      session: sessionAgent,
++    });
++
++    expect(expired.status).toBe('confirmation_expired');
++    expect(executors.schedule_meeting!.mutate).not.toHaveBeenCalled();
++  });
++});
++
++// ---------------------------------------------------------------------------
++// Executores de domínio reais (createDomainVoiceCommandExecutors)
++// ---------------------------------------------------------------------------
++
++describe('createDomainVoiceCommandExecutors — binding honesto', () => {
++  it('vincula SOMENTE create_lead — demais tipos ficam executor_not_bound', () => {
++    const executors = createDomainVoiceCommandExecutors();
++
++    expect(Object.keys(executors)).toEqual(['create_lead']);
++    expect(executors.update_deal_stage).toBeUndefined();
++    expect(executors.schedule_meeting).toBeUndefined();
++    expect(executors.log_activity).toBeUndefined();
++    expect(executors.generic_action).toBeUndefined();
++  });
++
++  it('mutate de create_lead falha honestamente quando LeadUseCases não está no container', async () => {
++    const executors = createDomainVoiceCommandExecutors();
++    const runner = executors.create_lead!;
++
++    await expect(
++      runner.mutate(ORG, {
++        type: 'create_lead',
++        organizationId: ORG,
++        userId: 'u1',
++        parameters: { leadName: 'Teste' },
++      }),
++    ).rejects.toThrow(/not found in container|LeadUseCases/);
++  });
++
++  it('mutate de create_lead rejeita leadName ausente antes de resolver o container', async () => {
++    const executors = createDomainVoiceCommandExecutors();
++    const runner = executors.create_lead!;
++
++    await expect(
++      runner.mutate(ORG, {
++        type: 'create_lead',
++        organizationId: ORG,
++        userId: 'u1',
++        parameters: {},
++      }),
++    ).rejects.toThrow(/leadName/);
++  });
++
++  it('pipeline STT→domínio: sem container → failed honesto, nunca confirmed', async () => {
++    const adapter = createSttVoiceCommandAdapter({
++      executors: createDomainVoiceCommandExecutors(),
++    });
++
++    const result = await adapter.handleTranscript({
++      stt: 'criar lead chamado Maria Silva',
++      session: sessionAgent,
++    });
++
++    // Passa por parse+autorização e falha no commit — resposta honesta.
++    expect(result.status).toBe('failed');
++    expect(result.execution?.confirmed).toBe(false);
++    expect(result.execution?.success).toBe(false);
++  });
++});
+diff --git a/src/features/voice-hub/commands/stt-adapter.ts b/src/features/voice-hub/commands/stt-adapter.ts
+new file mode 100644
+index 000000000..07032f01d
+--- /dev/null
++++ b/src/features/voice-hub/commands/stt-adapter.ts
+@@ -0,0 +1,503 @@
++/**
++ * STT → Voice Command Adapter
++ * POS4-64-STT-WIRE — Agente 64 (Tito)
++ *
++ * Último quilômetro do pipeline B-07: recebe o resultado FINAL de uma transcrição
++ * STT (Web Speech API, Whisper, serviço realtime — contrato tolerante a variações)
++ * e o conecta ao `createVoiceCommandRouter` da Onda 4, preservando TODOS os
++ * contratos aprovados: isolamento por tenant, autorização por comando,
++ * confirmação ativa com TTL/uso único, expiração e distinção execução real vs
++ * simulação.
++ *
++ * REGRAS INVIOLÁVEIS DESTE ADAPTER:
++ * 1. Actor context (organizationId/userId/role) vem EXCLUSIVAMENTE da sessão
++ *    autenticada resolvida no servidor — NUNCA do payload do cliente/STT.
++ *    Campos organizationId/userId presentes no evento STT são ignorados;
++ *    divergência com a sessão gera WARN de auditoria, nunca troca de tenant.
++ * 2. Resultado STT não-final (interino) ou transcrição vazia NUNCA executa —
++ *    resposta honesta, sem tocar em parser/autorização/executor.
++ * 3. Sem executor real vinculado → `executor_not_bound` (falha honesta).
++ * 4. Nenhuma ação externa real (Bitrix, Google Calendar, WhatsApp) é disparada
++ *    por este adapter — apenas mutações de banco via executores vinculados.
++ *
++ * CONTRATO STT (Agente 63 — `transcription/sttTranscript.contract.ts`, branch
++ * `agente/63-stt-pos4`; integração de branches pendente):
++ *   SttTranscriptEvent { sessionId, organizationId, userId, transcript,
++ *     isFinal, speaker?, confidence?, startSec?, endSec? }
++ * Mapeamento: este adapter NÃO importa o módulo do 63 (branch separada) — o
++ * `stt` de entrada aceita o shape canônico `SttTranscriptEvent` diretamente
++ * (transcript + isFinal) e, por tolerância, também `text`, `finalTranscript`,
++ * `results[]` (Web Speech API) e `segments[]` (Whisper batch). Quando o merge
++ * das branches acontecer, o chamador pode continuar passando o evento canônico
++ * sem alteração — `extractSttTranscript` já o reconhece.
++ *
++ * DIFERENÇA DE TENANCY (decisão deliberada, documentada no handoff 64→00):
++ * o contrato do 63 carrega organizationId/userId NO evento (populados a partir
++ * do contexto autenticado da sessão pelo emissor). Este adapter IGNORA esses
++ * campos para autorização e usa EXCLUSIVAMENTE o `session` resolvido no
++ * servidor — divergência gera WARN de auditoria. Defesa em profundidade:
++ * mesmo um evento STT malformado não consegue trocar de tenant.
++ */
++
++import { logger } from '../../../lib/logger.js';
++import { container } from '../../../shared/di/container.js';
++import type {
++  VoiceCommandExecutionResult,
++  VoiceCommandPayload,
++  VoiceCommandType,
++} from './command.processor.js';
++import type { VoiceCommandConfirmationManager } from './confirmation.manager.js';
++import type { VoiceActorRole, VoiceCommandActor } from './permission.guard.js';
++import {
++  createVoiceCommandRouter,
++  type VoiceCommandExecutorRegistry,
++  type VoiceCommandRouterStatus,
++} from './voice-command-router.js';
++
++// ---------------------------------------------------------------------------
++// 1. Contrato STT tolerante e extração do transcript final
++// ---------------------------------------------------------------------------
++
++/**
++ * Evento de transcrição STT — forma canônica esperada + aliases tolerados.
++ * Campos de tenancy (organizationId/userId) podem existir no payload de origem,
++ * mas são ESTRITAMENTE ignorados para autorização (ver cabeçalho, regra 1).
++ */
++export interface SttTranscriptEvent {
++  transcript?: unknown;
++  text?: unknown;
++  finalTranscript?: unknown;
++  isFinal?: unknown;
++  final?: unknown;
++  sessionId?: unknown;
++  organizationId?: unknown;
++  userId?: unknown;
++  /** Web Speech API: `event.results` — array-like de {0:{transcript}, isFinal}. */
++  results?: unknown;
++  /** Whisper: `segments: [{start,end,text}]`. */
++  segments?: unknown;
++  confidence?: unknown;
++  [key: string]: unknown;
++}
++
++export type SttTranscriptExtraction =
++  | { kind: 'final'; transcript: string }
++  | { kind: 'interim' }
++  | { kind: 'empty' };
++
++function asNonEmptyString(value: unknown): string | undefined {
++  if (typeof value !== 'string') return undefined;
++  const trimmed = value.trim();
++  return trimmed.length > 0 ? trimmed : undefined;
++}
++
++function finalizeTranscript(raw: string): SttTranscriptExtraction {
++  const transcript = raw.trim();
++  if (!transcript) return { kind: 'empty' };
++  return { kind: 'final', transcript };
++}
++
++interface SpeechResultLikeItem {
++  transcript?: unknown;
++  text?: unknown;
++  isFinal?: unknown;
++  0?: { transcript?: unknown; text?: unknown };
++}
++
++/**
++ * Extrai o texto de um resultado interim/final da Web Speech API.
++ * Aceita tanto `{0:{transcript}, isFinal}` quanto `{transcript, isFinal}`.
++ */
++function readSpeechResultItem(item: unknown): {
++  transcript?: string;
++  isFinal: boolean;
++} {
++  if (typeof item === 'string') {
++    return { transcript: asNonEmptyString(item), isFinal: true };
++  }
++  if (!item || typeof item !== 'object') return { isFinal: false };
++  const record = item as SpeechResultLikeItem & Record<string, unknown>;
++  const nested = record[0];
++  const transcript =
++    asNonEmptyString(record.transcript) ??
++    asNonEmptyString(record.text) ??
++    (nested && typeof nested === 'object'
++      ? asNonEmptyString((nested as { transcript?: unknown }).transcript) ??
++        asNonEmptyString((nested as { text?: unknown }).text)
++      : undefined);
++  return { transcript, isFinal: record.isFinal === true };
++}
++
++/**
++ * Interpreta o resultado bruto do STT e decide se existe um transcript FINAL
++ * utilizável. Nunca executa nada — apenas classifica.
++ *
++ * - `isFinal === false` / `final === false` explícito → 'interim' (ignorar).
++ * - Ausência de flag de finalidade é tratada como final: resultados de
++ *   Whisper/serviços server-side já chegam prontos; a Web Speech API sempre
++ *   envia `isFinal` quando o chamador usa o shape `results[]`.
++ */
++export function extractSttTranscript(stt: unknown): SttTranscriptExtraction {
++  if (stt == null) return { kind: 'empty' };
++  if (typeof stt === 'string') return finalizeTranscript(stt);
++  if (typeof stt !== 'object') return { kind: 'empty' };
++
++  const event = stt as SttTranscriptEvent & Record<string, unknown>;
++
++  // Web Speech API: event.results (array-like)
++  const results = event.results;
++  if (results != null && typeof results === 'object') {
++    const items = Array.from(results as ArrayLike<unknown>);
++    const finals: string[] = [];
++    let sawInterim = false;
++    for (const item of items) {
++      const parsed = readSpeechResultItem(item);
++      if (parsed.isFinal && parsed.transcript) {
++        finals.push(parsed.transcript);
++      } else if (!parsed.isFinal) {
++        sawInterim = true;
++      }
++    }
++    if (finals.length > 0) return finalizeTranscript(finals.join(' '));
++    if (sawInterim) return { kind: 'interim' };
++    return { kind: 'empty' };
++  }
++
++  // Whisper e afins: segments[].text (resultado já é final por natureza)
++  if (Array.isArray(event.segments) && event.segments.length > 0) {
++    const text = event.segments
++      .map((segment) => {
++        if (!segment || typeof segment !== 'object') return '';
++        const s = segment as { text?: unknown };
++        return typeof s.text === 'string' ? s.text : '';
++      })
++      .join(' ')
++      .trim();
++    if (text) return { kind: 'final', transcript: text };
++  }
++
++  // Flags explícitas de interino vencem qualquer texto presente.
++  const explicitFinal = event.isFinal ?? event.final;
++  if (explicitFinal === false) return { kind: 'interim' };
++
++  const raw =
++    asNonEmptyString(event.transcript) ??
++    asNonEmptyString(event.finalTranscript) ??
++    asNonEmptyString(event.text);
++
++  if (!raw) return { kind: 'empty' };
++  return finalizeTranscript(raw);
++}
++
++// ---------------------------------------------------------------------------
++// 2. Actor context — SEMPRE da sessão autenticada, nunca do payload STT
++// ---------------------------------------------------------------------------
++
++/** Papel de domínio do Voice Hub → papel do guard de comandos de voz. */
++export function mapSystemRoleToVoiceRole(role: unknown): VoiceActorRole {
++  switch (String(role ?? '').trim().toUpperCase()) {
++    case 'ADMIN':
++      return 'admin';
++    case 'GESTOR':
++      return 'manager';
++    case 'CLOSER':
++    case 'SDR':
++      return 'agent';
++    // VISUALIZADOR, UNVERIFIED e qualquer papel desconhecido → fail-closed.
++    default:
++      return 'viewer';
++  }
++}
++
++function readField(source: Record<string, unknown>, keys: string[]): string | undefined {
++  for (const key of keys) {
++    const value = asNonEmptyString(source[key]);
++    if (value) return value;
++  }
++  return undefined;
++}
++
++/**
++ * Resolve o ator de voz a partir do contexto de sessão AUTENTICADO.
++ *
++ * Formatos aceitos (o chamador decide qual passa — tipicamente `req.user` de
++ * `authenticateToken`, `{user}` de better-auth, ou o próprio usuário):
++ *   - { id|userId, organizationId|organization_id|tenantId|orgId, role|userRole }
++ *   - { user: { ...mesmos campos... } }
++ *
++ * Retorna `null` quando não há userId/organizationId válidos — o adapter
++ * responde `actor_unauthenticated` em vez de adivinhar tenant.
++ */
++export function resolveVoiceActorFromSession(session: unknown): VoiceCommandActor | null {
++  if (!session || typeof session !== 'object') return null;
++
++  const root = session as Record<string, unknown>;
++  // Desembrulha `{ user: {...} }` (better-auth / AuthRequest-like).
++  const user =
++    root.user && typeof root.user === 'object'
++      ? (root.user as Record<string, unknown>)
++      : root;
++
++  const userId = readField(user, ['id', 'userId', 'user_id']);
++  const organizationId = readField(user, [
++    'organizationId',
++    'organization_id',
++    'tenantId',
++    'tenant_id',
++    'orgId',
++  ]);
++  if (!userId || !organizationId) return null;
++
++  const role = readField(user, ['role', 'userRole', 'user_role']);
++  return { userId, organizationId, role: mapSystemRoleToVoiceRole(role) };
++}
++
++/** Campos de tenancy que um payload STT/client pode tentar injetar — sempre ignorados. */
++function readClaimedTenancy(stt: unknown): { organizationId?: string; userId?: string } {
++  if (!stt || typeof stt !== 'object') return {};
++  const event = stt as Record<string, unknown>;
++  return {
++    organizationId: asNonEmptyString(event.organizationId) ?? asNonEmptyString(event.tenantId),
++    userId: asNonEmptyString(event.userId),
++  };
++}
++
++// ---------------------------------------------------------------------------
++// 3. Executores de domínio reais (via container — sem import cross-feature)
++// ---------------------------------------------------------------------------
++
++/**
++ * Contrato estrutural local de `LeadUseCases` (Agente 04) — mesmo padrão de
++ * `toolExecutors.ts`: resolve via `container.resolve`, nunca import direto de
++ * `src/features/crm/**` (regra `no-cross-feature-imports` do dependency-cruiser).
++ */
++interface LeadUseCasesContract {
++  createLead(
++    organizationId: string,
++    data: Record<string, unknown>,
++    actor?: { userId: string; role: string },
++  ): Promise<unknown>;
++}
++
++function resolveLeadUseCases(): LeadUseCasesContract {
++  return container.resolve<LeadUseCasesContract>('LeadUseCases');
++}
++
++/**
++ * Registro de executores reais disponíveis HOJE para comandos de voz.
++ *
++ * `create_lead` é o único tipo com executor honesto: `LeadUseCases.createLead`
++ * persiste via `LeadRepository` (commit real) e, sem `companyId`, não dispara
++ * enriquecimento externo — mutação de banco pura, exatamente o que
++ * `DatabaseMutationRunner.mutate` exige.
++ *
++ * Os demais tipos permanecem SEM executor de propósito (→ `executor_not_bound`):
++ * - `update_deal_stage`: `DealsService` exige `expectedVersion` (optimistic
++ *   lock) e mapeamento stage-name→stageId que a fala não fornece.
++ * - `schedule_meeting`: `scheduleVerifiedMeeting` exige leadId, e-mails e
++ *   janela start/end; criar evento em Google Calendar seria ação externa real.
++ * - `log_activity`: `ActivityUseCases.createActivity` exige `leadId` — o parser
++ *   emite `dealId` (namespaces Lead/Deal são distintos no schema).
++ * - `generic_action`: não existe domínio de ação genérica executável.
++ * Pendências registradas no handoff 64→00/04 para binding futuro.
++ */
++export function createDomainVoiceCommandExecutors(): VoiceCommandExecutorRegistry {
++  return {
++    create_lead: {
++      async mutate(organizationId: string, command: VoiceCommandPayload) {
++        const leadName = asNonEmptyString(command.parameters.leadName);
++        if (!leadName) {
++          throw new Error("Parâmetro obrigatório 'leadName' ausente para create_lead.");
++        }
++        // owner = usuário que falou o comando (criador do lead). Sem companyId,
++        // createLead não agenda enriquecimento externo nem round-robin indevido.
++        const useCases = resolveLeadUseCases();
++        return useCases.createLead(organizationId, {
++          title: leadName,
++          owner: command.userId,
++        });
++      },
++    },
++  };
++}
++
++// ---------------------------------------------------------------------------
++// 4. Adapter STT → Router
++// ---------------------------------------------------------------------------
++
++export type SttAdapterStatus =
++  | 'stt_interim'
++  | 'stt_empty'
++  | 'actor_unauthenticated'
++  | VoiceCommandRouterStatus;
++
++export interface SttVoiceCommandResult {
++  status: SttAdapterStatus;
++  /** Transcript final efetivamente enviado ao router (quando houver). */
++  transcript?: string;
++  organizationId?: string;
++  commandId?: string;
++  type?: VoiceCommandType;
++  execution?: VoiceCommandExecutionResult;
++  confirmationId?: string;
++  expiresAt?: string;
++  reason?: string;
++  candidates?: VoiceCommandType[];
++  missingSlots?: string[];
++}
++
++export interface SttVoiceCommandInput {
++  /** Resultado bruto do STT — contrato tolerante (ver extractSttTranscript). */
++  stt: unknown;
++  /**
++   * Contexto de sessão AUTENTICADO resolvido no servidor (ex.: `req.user`,
++   * `{user}` do better-auth). NUNCA dados do payload do cliente.
++   */
++  session: unknown;
++  commandId?: string;
++  /**
++   * Decisão explícita de confirmação (botão na UI ou intent de voz mapeada
++   * pelo chamador). Quando presente, o transcript é irrelevante — o router
++   * resolve a confirmação pendente original.
++   */
++  confirmation?: { confirmationId: string; decision: 'confirm' | 'cancel' };
++}
++
++export interface SttVoiceCommandAdapterOptions {
++  executors: VoiceCommandExecutorRegistry;
++  confirmations?: VoiceCommandConfirmationManager;
++  /**
++   * Resolvedor de ator a partir da sessão. Default:
++   * `resolveVoiceActorFromSession`. Injetável para contextos de sessão
++   * customizados — mas NUNCA deve ler tenancy do payload STT.
++   */
++  resolveActor?: (
++    session: unknown,
++  ) => VoiceCommandActor | null | Promise<VoiceCommandActor | null>;
++}
++
++export function createSttVoiceCommandAdapter(options: SttVoiceCommandAdapterOptions) {
++  const router = createVoiceCommandRouter({
++    executors: options.executors,
++    confirmations: options.confirmations,
++  });
++  const resolveActor = options.resolveActor ?? resolveVoiceActorFromSession;
++
++  /** Telemetria de tentativa de injeção de tenancy via payload STT. */
++  function auditClaimedTenancy(stt: unknown, actor: VoiceCommandActor): void {
++    const claimed = readClaimedTenancy(stt);
++    if (claimed.organizationId && claimed.organizationId !== actor.organizationId) {
++      logger.warn(
++        {
++          claimedOrganizationId: claimed.organizationId,
++          sessionOrganizationId: actor.organizationId,
++          userId: actor.userId,
++        },
++        'VoiceHub STT: payload STT alegou organizationId divergente da sessão — campo ignorado (tenancy vem só da sessão).',
++      );
++    }
++    if (claimed.userId && claimed.userId !== actor.userId) {
++      logger.warn(
++        {
++          claimedUserId: claimed.userId,
++          sessionUserId: actor.userId,
++          organizationId: actor.organizationId,
++        },
++        'VoiceHub STT: payload STT alegou userId divergente da sessão — campo ignorado.',
++      );
++    }
++  }
++
++  async function resolveActorOrReject(
++    session: unknown,
++    stt: unknown,
++  ): Promise<{ actor: VoiceCommandActor } | { rejection: SttVoiceCommandResult }> {
++    const actor = await resolveActor(session);
++    if (!actor) {
++      logger.warn(
++        { hasSttPayload: stt != null },
++        'VoiceHub STT: comando de voz rejeitado — sessão sem contexto de ator válido (userId/organizationId).',
++      );
++      return {
++        rejection: {
++          status: 'actor_unauthenticated',
++          reason:
++            'Não foi possível identificar o usuário autenticado da sessão de voz. Faça login novamente.',
++        },
++      };
++    }
++    auditClaimedTenancy(stt, actor);
++    return { actor };
++  }
++
++  /**
++   * Processa um resultado de transcrição STT.
++   *
++   * Ordem honesta:
++   * 1. Extração/classificação do transcript (interim/vazio → nunca executa);
++   *    decisão de confirmação explícita dispensa transcript;
++   * 2. Resolução do ator SOMENTE a partir da sessão;
++   * 3. Delegação ao router da Onda 4 (parse → autorização → confirmação → commit).
++   */
++  async function handleTranscript(input: SttVoiceCommandInput): Promise<SttVoiceCommandResult> {
++    const extraction = extractSttTranscript(input.stt);
++    const hasConfirmation = input.confirmation != null;
++
++    // Sem decisão de confirmação, resultado não-final/vazio é rejeitado aqui —
++    // o router nem é consultado (resposta honesta, zero mutação possível).
++    if (!hasConfirmation) {
++      if (extraction.kind === 'interim') {
++        return {
++          status: 'stt_interim',
++          reason: 'Transcrição ainda parcial (interina). Aguardando resultado final.',
++        };
++      }
++      if (extraction.kind === 'empty') {
++        return {
++          status: 'stt_empty',
++          reason: 'Nenhuma fala reconhecida. Tente novamente ou use o texto.',
++        };
++      }
++    }
++
++    // Com confirmação explícita o router ignora o transcript de qualquer forma;
++    // sem transcript final utilizável, enviamos string vazia (nunca executa por si).
++    const transcript = extraction.kind === 'final' ? extraction.transcript : '';
++
++    const resolved = await resolveActorOrReject(input.session, input.stt);
++    if ('rejection' in resolved) return resolved.rejection;
++    const { actor } = resolved;
++
++    const routerResult = await router.processVoiceCommand({
++      transcript,
++      actor,
++      commandId: input.commandId,
++      confirmation: input.confirmation,
++    });
++
++    return { ...routerResult, transcript: transcript || undefined };
++  }
++
++  /**
++   * Atalho para decisões de confirmação vindas da UI (botão confirmar/cancelar)
++   * sem evento STT — o router resolve o comando pendente original.
++   */
++  async function handleConfirmationDecision(input: {
++    confirmationId: string;
++    decision: 'confirm' | 'cancel';
++    session: unknown;
++  }): Promise<SttVoiceCommandResult> {
++    return handleTranscript({
++      stt: undefined,
++      session: input.session,
++      confirmation: { confirmationId: input.confirmationId, decision: input.decision },
++    });
++  }
++
++  return {
++    handleTranscript,
++    handleConfirmationDecision,
++    /** Exposto para testes/diagnóstico — mesma instância usada pelo router. */
++    confirmations: router.confirmations,
++  };
++}

@@ -5,6 +5,7 @@
  * Docs: https://developer.monday.com/api-reference/reference
  */
 
+import { fetchWithProviderRetry } from '@/lib/enrichment/providerFetch.js';
 import {
   type CrmConnectionConfig,
   type CrmProvider,
@@ -13,6 +14,7 @@ import {
 } from '../shared/CrmProvider.js';
 
 const MONDAY_API_URL = 'https://api.monday.com/v2';
+const MONDAY_ALLOWED_HOSTS = ['api.monday.com'] as const;
 
 async function mondayQuery<T>(
   query: string,
@@ -20,15 +22,19 @@ async function mondayQuery<T>(
   config: CrmConnectionConfig,
 ): Promise<T> {
   const token = config.apiKey ?? config.accessToken;
-  const res = await fetch(MONDAY_API_URL, {
-    method: 'POST',
-    headers: {
-      Authorization: token ?? '',
-      'Content-Type': 'application/json',
-      'API-Version': '2024-01',
+  const res = await fetchWithProviderRetry(
+    MONDAY_API_URL,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: token ?? '',
+        'Content-Type': 'application/json',
+        'API-Version': '2024-01',
+      },
+      body: JSON.stringify({ query, variables }),
     },
-    body: JSON.stringify({ query, variables }),
-  });
+    { providerName: 'monday', timeoutMs: 15_000, allowedHosts: MONDAY_ALLOWED_HOSTS },
+  );
 
   if (!res.ok) {
     const body = await res.text();

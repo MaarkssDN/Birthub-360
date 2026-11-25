@@ -1,0 +1,60 @@
+src/services/bitrix/exportFormatter.service.ts: ExtractionEntityDataset
+src/services/bitrix/extraction.ts: ChunkProcessResult
+src/services/cadence/stepScheduler.service.ts: ScheduleOptions
+src/services/cadence/templateRenderer.service.ts: RenderTemplateOptions
+src/services/telephony/billing.service.ts: BillingCyclePeriod
+src/services/telephony/transcription.service.ts: MaskTranscriptionResult
+src/services/telephony/webhookHandler.service.ts: Webhook3CXEnqueueResult
+src/shared/application/BaseUseCases.ts: FilterablePaginatedRepository
+src/shared/contracts/autonomousSdr.contract.ts: SdrCallDisposition, LeadQualificationStatus
+src/shared/contracts/autonomyLimits.contract.ts: AutonomyLevel
+src/shared/contracts/behavioralEngine.contract.ts: CommercialBottleneckMetric, BottleneckSeverity, MissionStatus, MissionVerifiableCriteria, MissionReward
+src/shared/contracts/bimodalLiveVoice.contract.ts: LiveTurn
+src/shared/contracts/continuousSecurityAudit.contract.ts: VulnerabilitySeverity
+src/shared/contracts/copilotoTranscription.contract.ts: TranscribeConversationJobInput
+src/shared/contracts/copilotoVoiceIngestion.contract.ts: VoiceCallConsentStatus, VoiceCallConsentInput, VoiceCallTranscriptTurn
+src/shared/contracts/decisionCommittee.contract.ts: CommitteeBuyingRole, CommitteeContactInput, IDecisionCommitteePort
+src/shared/contracts/domainEventMesh.contract.ts: DomainEventSubscription
+src/shared/contracts/fitScore.contract.ts: ScoreBreakdownItem, FitScoreGrade, IFitScorePort
+src/shared/contracts/liveCallRisk.contract.ts: LiveCallInsightInput
+src/shared/contracts/marketSignals.contract.ts: MarketSignalSource, MarketSignalConfidence
+src/shared/contracts/meetingSynthesis.contract.ts: MeetingTranscriptInput, MeetingActionItem, MeetingSynthesisOutput
+src/shared/contracts/methodologicalDigitalTwin.contract.ts: CommercialMethodologyCategory
+src/shared/contracts/mobileEdgeAi.contract.ts: PreVisitBriefing, GeofenceCoordinate, GeofenceVisitCheckResult, OfflineMeetingNotePayload
+src/shared/contracts/multiRegionResilience.contract.ts: RegionHealthStatus
+src/shared/contracts/multichannelCadence.contract.ts: CadenceStepAction
+src/shared/contracts/predictiveRevenueOracle.contract.ts: ExecutiveRevenueCockpit, IPredictiveRevenueOraclePortLegacy, OracleDataStatus
+src/shared/contracts/proposalAutomation.contract.ts: ProposalStatus
+src/shared/contracts/roiSimulator.contract.ts: BusinessCaseSection
+src/shared/contracts/selfDrivingCrm.contract.ts: AutonomyLevel, CadenceOptimizationAction, ReactivationStrategy
+src/shared/contracts/tacticalSwarm.contract.ts: AccountDossierSection, PromiseApprovalResult
+src/shared/contracts/warRoomArena.contract.ts: ArenaMode, ArenaSessionStatus, ArenaRound, ArenaMatch, StartArenaMatchInput, SubmitRoundTurnInput
+src/shared/contracts/workloadWellbeing.contract.ts: WorkloadRecommendationType
+src/shared/domain/Repository.ts: PaginationMeta
+src/shared/domain/optOut.ts: OptOutOriginChannel
+src/shared/middlewares/authenticateToken.ts: AuthUser
+src/shared/middlewares/errorHandler.ts: ApiErrorCode, ApiResponse
+src/shared/services/dataSubjectPortability.service.ts: DataSubjectDossier
+src/shared/services/objectionDetection.service.ts: RebuttalStrategy, DetectionOptions, SessionObjectionState
+src/shared/services/optOutService.ts: OptOutChannel, OptOutCheckResult
+src/shared/services/retentionPurge.service.ts: RetentionPolicy
+src/shared/services/rntrcTerritorialRisk.service.ts: RntrcTerritorialRow, RntrcTerritorialSnapshot
+src/shared/types/crm.ts: ExternalCrmStageMapping, LiveCallObjectionCategory, LiveCallInsight
+src/types/index.ts: ACTIVITY_STATUS, ACTIVITY_TYPE, ActivityStatus, ActivityType, COMPANY_STATUS, CONTACT_STATUS, CompanyStatus, ContactStatus, LEAD_STATUS, LEAD_TEMPERATURE, LeadTemperature, PaginatedMeta, TimelineEvent
+src/types/prospecting.ts: ConfidenceLevel, ISourceData, IEnrichedDecisionMaker, IProspectingFilter
+Duplicate exports (15)
+src/components/brand/BirthHubOrbit360.tsx: BirthHubOrbit360, default
+src/components/layout/PageTransition.tsx: PageTransition, default
+src/features/auth/components/NewLoginScreen.tsx: NewLoginScreen, default
+src/features/intelligence/agents/supervisor.agent.ts: SwarmOrchestrator, SupervisorAgent
+src/features/intelligence/tools/integrationTools.ts: multiCrmSyncTool, pipedriveSyncTool
+src/features/landing/components/pillars/viewers/HubComercialViewer.tsx: HubComercialViewer, VisualizerHubComercial
+src/features/landing/components/pillars/viewers/MercadoViewer.tsx: MercadoViewer, VisualizerMercado
+src/features/landing/components/pillars/viewers/OrquestracaoViewer.tsx: OrquestracaoViewer, VisualizerOrquestracao
+src/features/landing/luxury/LuxuryLandingPage.tsx: LuxuryLandingPage, default
+src/features/signals-risks/components/SignalsAndRisksHub.tsx: SignalsAndRisksHub, default
+src/features/voice-hub/components/NotificationCenter/NotificationCenter.tsx: NotificationCenter, default
+src/features/voice-hub/components/design-system/index.tsx: BirthubLogo, AtlasLogo
+src/lib/queue/outbox/tenantGuard.ts: outboxUnitOfWorkContext, systemJobOutboxContext
+src/lib/security/subjectTokenizer.ts: KmsEnvelopeTenantKeyProvider, KmsTenantPepperProvider
+src/lib/voice-hub/features/prospecting/lib/webhookIdempotency.ts: BIRTHHUB360_OUTBOUND_IDEMPOTENCY_PREFIX, ATLASGR_OUTBOUND_IDEMPOTENCY_PREFIX

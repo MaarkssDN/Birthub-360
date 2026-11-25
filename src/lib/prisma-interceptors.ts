@@ -220,10 +220,7 @@ export function isAuditableModel(model: string): boolean {
  * em vez de escrever silenciosamente menos campos.
  */
 const DMMF_MODEL_FIELDS = new Map(
-  Prisma.dmmf.datamodel.models.map((m) => [
-    m.name,
-    new Set(m.fields.map((f) => f.name)),
-  ]),
+  Prisma.dmmf.datamodel.models.map((m) => [m.name, new Set(m.fields.map((f) => f.name))]),
 );
 
 /**

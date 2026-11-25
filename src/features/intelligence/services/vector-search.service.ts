@@ -36,22 +36,21 @@ export const VectorSearchService = {
     limit: number = 5,
   ): Promise<SearchResult[]> {
     if (!organizationId) return [];
-    try {
-      const response = await searchService.hybridSearch(organizationId, query, limit);
-      return response.hits.map((hit) => ({
-        id: hit.chunkId,
-        content: hit.content,
-        metadata: {
-          documentId: hit.documentId,
-          documentTitle: hit.documentTitle,
-          chunkIndex: hit.chunkIndex,
-          matchedBy: hit.matchedBy,
-        },
-        similarity: hit.similarity ?? 0,
-      }));
-    } catch (error: any) {
-      logger.error({ err: error, query }, 'Erro ao realizar busca vetorial');
-      return [];
-    }
+    // BT360-DT-0041 (TAREFA-SANEAMENTO-023): erro de infraestrutura na busca NÃO pode virar
+    // lista vazia — `[]` significa "busca sem correspondências", não "busca fora do ar".
+    // `hybridSearch` já lança quando as duas estratégias falham; aqui o erro propaga para o
+    // chamador (rota → 500; scanner → conta como falha observável da execução).
+    const response = await searchService.hybridSearch(organizationId, query, limit);
+    return response.hits.map((hit) => ({
+      id: hit.chunkId,
+      content: hit.content,
+      metadata: {
+        documentId: hit.documentId,
+        documentTitle: hit.documentTitle,
+        chunkIndex: hit.chunkIndex,
+        matchedBy: hit.matchedBy,
+      },
+      similarity: hit.similarity ?? 0,
+    }));
   },
 };

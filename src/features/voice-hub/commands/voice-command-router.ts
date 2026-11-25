@@ -8,6 +8,16 @@
  * - exige confirmação ativa e válida para comandos críticos (confirmation.manager);
  * - executa SOMENTE via executor real vinculado — executor ausente ou simulado
  *   produz falha honesta, nunca falso positivo.
+ *
+ * STATUS (2026-11-24, Agente 64 — DEM-20261123-001): pipeline B-07 completo e
+ * testado, porém SEM call-site de produção — contrato-futuro. A montagem
+ * (endpoint HTTP/WS + registro de executores reais por tipo de comando)
+ * depende de arquivos de outros donos (`src/lib/voice-hub/routes|controllers/**`
+ * → Agente 60; `src/bootstrap/routes.ts` → Agente 22; executores de mutação →
+ * domínio CRM). Proposta de wiring completa em
+ * `.agents/handoffs/squad-60/64-para-60-voice-commands-wiring.md`.
+ * Contrato do consumidor (o que o call-site futuro DEVE respeitar) está
+ * coberto por `tests/unit/features/voice-hub/voiceCommandContract.test.ts`.
  */
 
 import { randomUUID } from 'node:crypto';
@@ -21,10 +31,7 @@ import {
 } from './command.processor.js';
 import { VoiceCommandConfirmationManager } from './confirmation.manager.js';
 import { parseVoiceTranscript } from './intent.parser.js';
-import {
-  authorizeVoiceCommand,
-  type VoiceCommandActor,
-} from './permission.guard.js';
+import { authorizeVoiceCommand, type VoiceCommandActor } from './permission.guard.js';
 
 /** Comandos que exigem confirmação ativa do usuário antes de executar (B-07). */
 export const CRITICAL_VOICE_COMMANDS: ReadonlySet<VoiceCommandType> = new Set([
@@ -131,8 +138,7 @@ async function runExecution(
 }
 
 export function createVoiceCommandRouter(options: VoiceCommandRouterOptions) {
-  const confirmations =
-    options.confirmations ?? new VoiceCommandConfirmationManager();
+  const confirmations = options.confirmations ?? new VoiceCommandConfirmationManager();
 
   /**
    * Resolve uma decisão de confirmação (confirm/cancel) sem depender do
@@ -209,7 +215,8 @@ export function createVoiceCommandRouter(options: VoiceCommandRouterOptions) {
         commandId: pendingCommand.commandId,
         type: pendingCommand.type,
         confirmationId: decision.confirmationId,
-        reason: 'Confirmação emitida para outro usuário. Somente o criador do comando pode confirmá-lo.',
+        reason:
+          'Confirmação emitida para outro usuário. Somente o criador do comando pode confirmá-lo.',
       });
     }
 
@@ -234,7 +241,11 @@ export function createVoiceCommandRouter(options: VoiceCommandRouterOptions) {
     }
 
     logger.info(
-      { commandId: pendingCommand.commandId, type: pendingCommand.type, confirmationId: decision.confirmationId },
+      {
+        commandId: pendingCommand.commandId,
+        type: pendingCommand.type,
+        confirmationId: decision.confirmationId,
+      },
       'VoiceHub [B-07]: confirmação ativa válida — executando comando crítico',
     );
 
@@ -307,7 +318,12 @@ export function createVoiceCommandRouter(options: VoiceCommandRouterOptions) {
     if (CRITICAL_VOICE_COMMANDS.has(type)) {
       const pending = confirmations.create(command);
       logger.info(
-        { commandId, type, confirmationId: pending.confirmationId, organizationId: actor.organizationId },
+        {
+          commandId,
+          type,
+          confirmationId: pending.confirmationId,
+          organizationId: actor.organizationId,
+        },
         'VoiceHub [B-07]: comando crítico aguardando confirmação ativa do usuário',
       );
       return baseResult('needs_confirmation', actor.organizationId, {

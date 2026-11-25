@@ -59,6 +59,34 @@ export interface CadenceSequenceDefinition {
 }
 
 /**
+ * Entrada do mapa de sequências do scan do worker (achado 2 do handoff 44→17 /
+ * POS4-17-CADENCE-TZ): a definição parseada (ou `null` quando malformada — ver
+ * `parseCadenceSequenceDefinition` no worker) mais o `organizationId` da linha. O tenant da
+ * sequência viaja junto porque a descoberta roda sob `bypassRls` e um `CadenceRun` corrompido ou
+ * criado manualmente poderia apontar para a sequência de OUTRO tenant — sem a checagem de
+ * `sequenceDefinitionForRun`, os `touches` do outro tenant seriam despachados.
+ */
+export interface CadenceSequenceLookup {
+  organizationId: string;
+  definition: CadenceSequenceDefinition | null;
+}
+
+/**
+ * Resolve a sequência de um run exigindo que a sequência pertença ao MESMO tenant do run.
+ * Devolve `null` — e o chamador encerra o run como `failed`/`policy-guardrail` — quando:
+ *  - a sequência não está no mapa (ausente OU soft-deletada, já filtrada na query do scan);
+ *  - a sequência é de outra organização (dado corrompido/manual — isolamento de tenant);
+ *  - a definição é `null` (touches malformados/inválidos).
+ */
+export function sequenceDefinitionForRun(
+  lookup: CadenceSequenceLookup | null | undefined,
+  runOrganizationId: string,
+): CadenceSequenceDefinition | null {
+  if (!lookup || lookup.organizationId !== runOrganizationId) return null;
+  return lookup.definition;
+}
+
+/**
  * 5 estados do roadmap (CYC-002): `completed`/`failed` são terminais distintos de `stopped` —
  * `completed` é o fim natural da sequência (todos os toques resolvidos), `failed` é uma falha
  * estrutural do próprio run (hoje, só a sequência associada ter ficado inválida/inacessível —
@@ -123,8 +151,18 @@ export interface CadenceRunState {
 export interface CadenceDecisionContext {
   isOptedOut: boolean;
   hasLeadReplied: boolean;
-  /** Injeção da regra de janela comercial (reaproveite `isWithinCallWindow`, não reimplemente aqui). */
-  isWithinBusinessWindow: (now: Date) => boolean;
+  /**
+   * Fuso IANA do destinatário (lead), resolvido por quem chama — `null`/`undefined` quando o
+   * lead não tem sinal de localização e a implementação deve cair no fallback documentado
+   * (`America/Sao_Paulo`, ver `domain/businessWindow.ts`).
+   */
+  leadTimeZone?: string | null;
+  /**
+   * Injeção da regra de janela comercial (reaproveite `isWithinCallWindow`, não reimplemente aqui).
+   * O segundo parâmetro carrega o fuso do lead (POS4-17-CADENCE-TZ): implementações antigas que
+   * ignoram o argumento continuam válidas — `(now) => boolean` é compatível com esta assinatura.
+   */
+  isWithinBusinessWindow: (now: Date, timeZone?: string | null) => boolean;
   /**
    * Resultado já calculado (I/O feito por quem chama, ver `evaluateRateLimitForUpcomingTouch`
    * em `application/rateLimitService.ts`) de `decideRateLimitBlock` para o toque candidato desta
@@ -248,7 +286,7 @@ export function decideCadenceAction(
     return { type: 'wait', reason: 'delay-not-elapsed', nextEligibleAt: earliestEligible };
   }
 
-  if (!ctx.isWithinBusinessWindow(now)) {
+  if (!ctx.isWithinBusinessWindow(now, ctx.leadTimeZone)) {
     return { type: 'wait', reason: 'outside-business-window' };
   }
 

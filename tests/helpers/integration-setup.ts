@@ -152,6 +152,17 @@ async function deleteOrganizationsAsOwner(args?: {
       for (const table of RESTRICT_FK_TABLES) {
         await client.query(`DELETE FROM "${table}" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
       }
+      // Activity.organizationId e Activity/TimelineEvent.leadId são ON DELETE RESTRICT
+      // (schema.prisma): a cascata Organization→Lead não consegue removê-los e o DELETE
+      // final falha com FK violation (23503). TimelineEvent não tem organizationId —
+      // resolve via leadId dos Leads do tenant.
+      await client
+        .query(
+          `DELETE FROM "TimelineEvent" WHERE "leadId" IN (SELECT id FROM "Lead" WHERE "organizationId" = $1)`,
+          [orgId],
+        )
+        .catch(() => {});
+      await client.query(`DELETE FROM "Activity" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
       await client.query(`DELETE FROM "user" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
     }
 

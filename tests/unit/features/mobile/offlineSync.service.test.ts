@@ -3,6 +3,7 @@ import {
   type ApiClientAdapter,
   extractEntityId,
   generateTemporaryId,
+  IDEMPOTENCY_HEADER_NAME,
   isTransientNetworkError,
   LocalStorageAdapter,
   OfflineSyncService,
@@ -208,6 +209,7 @@ describe('OfflineSyncService (Mobile / Capacitor / PWA)', () => {
         endpoint: '/api/leads',
         method: 'POST',
         body: expect.objectContaining({ name: 'Delta Logística' }),
+        headers: expect.objectContaining({ [IDEMPOTENCY_HEADER_NAME]: expect.any(String) }),
       });
 
       // 2ª chamada: atualização do lead COM ID REAL RESOLVIDO (substituiu temp_lead_...)
@@ -215,6 +217,7 @@ describe('OfflineSyncService (Mobile / Capacitor / PWA)', () => {
         endpoint: `/api/leads/${realLeadId}`,
         method: 'PUT',
         body: expect.objectContaining({ status: 'Qualificação' }),
+        headers: expect.objectContaining({ [IDEMPOTENCY_HEADER_NAME]: expect.any(String) }),
       });
 
       // 3ª chamada: criação da nota COM ID REAL RESOLVIDO na rota e no payload
@@ -225,6 +228,7 @@ describe('OfflineSyncService (Mobile / Capacitor / PWA)', () => {
           content: 'Frotas de 50 caminhões',
           author: 'Consultor Carlos',
         }),
+        headers: expect.objectContaining({ [IDEMPOTENCY_HEADER_NAME]: expect.any(String) }),
       });
 
       // Fila fica limpa após sincronização com sucesso

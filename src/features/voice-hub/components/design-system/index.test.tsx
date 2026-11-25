@@ -5,6 +5,20 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Button, Input, EmptyState, Modal, Switch, Tabs, Card } from './index.js';
 
+function Harness() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button type="button" onClick={() => setOpen(true)}>
+        Abrir
+      </button>
+      <Modal isOpen={open} onClose={() => setOpen(false)} title="Detalhes">
+        <p>Conteúdo do modal</p>
+      </Modal>
+    </>
+  );
+}
+
 describe('design-system primitives', () => {
   describe('Button', () => {
     it('renders its label and fires onClick when clicked', async () => {
@@ -252,20 +266,6 @@ describe('design-system primitives', () => {
 
     it('moves focus into the dialog on open and restores it to the trigger on close', async () => {
       const user = userEvent.setup();
-
-      function Harness() {
-        const [open, setOpen] = useState(false);
-        return (
-          <>
-            <button type="button" onClick={() => setOpen(true)}>
-              Abrir
-            </button>
-            <Modal isOpen={open} onClose={() => setOpen(false)} title="Detalhes">
-              <p>Conteúdo do modal</p>
-            </Modal>
-          </>
-        );
-      }
 
       render(<Harness />);
       const trigger = screen.getByRole('button', { name: 'Abrir' });

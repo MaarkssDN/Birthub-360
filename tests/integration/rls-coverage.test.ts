@@ -179,7 +179,8 @@ describe('Row Level Security (RLS) - Cobertura e Isolamento Semântico no Banco 
     // +1 REMED-04: RebalanceApproval (144 -> 145)
     // PR #216: +PublicLeadConsent (145 -> 146); cadência multicanal: +MultichannelCadenceEnrollment (146 -> 147)
     // DSR público (handoff 21→01): +DataSubjectRequest (147 -> 148)
-    expect(tenantScopedCount).toBe(148);
+    // SwarmAuditLog (agente/11-12-swarm-audit-log): +SwarmAuditLog (148 -> 149)
+    expect(tenantScopedCount).toBe(149);
     expect(globalCatalogCount).toBe(14);
     expect(systemInternalCount).toBe(1);
   });
