@@ -78,7 +78,9 @@ externalCrmRoutes.post('/', express.json(), async (req: Request, res: Response) 
     logger.error({ err, organizationId }, 'Erro ao criar conexão de CRM externo');
     // Não devolve err.message: providers embutem o body cru da resposta do CRM na mensagem,
     // que pode conter PII do registro ou detalhes de auth (auditoria 2026-11-15, P2-07).
-    return res.status(400).send({ error: 'Não foi possível criar a conexão. Verifique os dados e tente novamente.' });
+    return res
+      .status(400)
+      .send({ error: 'Não foi possível criar a conexão. Verifique os dados e tente novamente.' });
   }
 });
 
