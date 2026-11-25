@@ -14,6 +14,7 @@ import { DailyClosingProvider } from './contexts/DailyClosingContext.js';
 import { ExperienceModeProvider } from './contexts/ExperienceModeContext.js';
 import { ThemeProvider } from './contexts/ThemeContext.js';
 import { I18nProvider } from './i18n/index.js';
+import { isDesignV2Enabled, DESIGN_V2_FLAGS } from './config/feature-flags.js';
 
 const SetupWizard = lazy(() =>
   import('./features/onboarding/components/SetupWizard.js').then((m) => ({
@@ -52,6 +53,15 @@ const Landing360 = lazy(() =>
   import('./features/landing/pages/Landing360.js').then((m) => ({ default: m.Landing360 })),
 );
 
+// Landing v2 premium (Agente 36, Onda ONDA-DESIGN-PREMIUM) — adotada atrás de
+// design.newLanding nas rotas de marketing (/ e /welcome). /login permanece
+// na v1 porque a V2 não contém formulário de autenticação.
+const Landing360V2 = lazy(() =>
+  import('./features/landing/v2/Landing360V2.js').then((m) => ({
+    default: m.Landing360V2,
+  })),
+);
+
 const LandingInnovative = lazy(() =>
   import('./features/voice-hub/pages/LandingInnovative.js').then((m) => ({ default: m.default })),
 );
@@ -63,6 +73,7 @@ const PublicBookingPage = lazy(() =>
 );
 
 export default function App() {
+  const landingV2 = isDesignV2Enabled(DESIGN_V2_FLAGS.NEW_LANDING);
   return (
     // reducedMotion="user" faz o framer-motion respeitar prefers-reduced-motion do SO/navegador,
     // complementando o @media (prefers-reduced-motion: reduce) já aplicado às animações CSS puras
@@ -115,8 +126,11 @@ export default function App() {
                             </ProtectedRoute>
                           }
                         />
-                        <Route path="/" element={<Landing360 />} />
-                        <Route path="/welcome" element={<Landing360 initialScreen="intro" />} />
+                        <Route path="/" element={landingV2 ? <Landing360V2 /> : <Landing360 />} />
+                        <Route
+                          path="/welcome"
+                          element={landingV2 ? <Landing360V2 /> : <Landing360 initialScreen="intro" />}
+                        />
                         <Route path="/landing-new" element={<LandingInnovative />} />
                         <Route path="/privacy" element={<PrivacyPolicy />} />
                         <Route path="/terms" element={<TermsOfUse />} />
