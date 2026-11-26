@@ -1,7 +1,18 @@
 import { logger } from '../../../../lib/logger.js';
 import type { DailyPlanItemOrigin } from '../../../../shared/contracts/dailyPlan.contract.js';
+import {
+  assertDailyPlanItemAccess,
+  assertTimelineEntityType,
+  type DailyPlanUserContext,
+} from './dailyPlanAuthz.js';
 import { callBitrix, getConnectionWebhookUrl } from './client.js';
-import { parseDate, resolvePlanConnection, toPlanDate, toPlanTime } from './dailyPlan.service.js';
+import {
+  normalizeDailyPlanItemId,
+  parseDate,
+  resolvePlanConnection,
+  toPlanDate,
+  toPlanTime,
+} from './dailyPlan.service.js';
 import { getBitrixUsers } from './deals.js';
 
 /**
@@ -26,6 +37,7 @@ function formatBitrixCommentDate(value: string | undefined): string {
  */
 export async function fetchDailyPlanItemNotes(
   organizationId: string,
+  user: DailyPlanUserContext,
   itemType: DailyPlanItemOrigin,
   itemId: string,
   entityType?: string,
@@ -37,7 +49,23 @@ export async function fetchDailyPlanItemNotes(
   if (!connection) return [];
 
   const webhookUrl = await getConnectionWebhookUrl(organizationId, connection.id);
-  const rawId = itemId.replace(/^(bitrix_task_|bitrix_act_|bitrix_lead_)/, '');
+  // Mesma normalização do write path: rejeita prefixo de outro itemType (bitrix_lead_9 lido
+  // como BITRIX_TASK viraria task 9 — IDOR entre tipos de entidade).
+  const rawId = normalizeDailyPlanItemId(itemType, itemId);
+
+  // Autorização de LEITURA também (IDOR): sem isto qualquer usuário da org lia os comentários
+  // de tarefa/atividade/lead de qualquer colega — o itemId é enumerável. Fora do try/catch
+  // abaixo de propósito: 403/404 de autorização precisam propagar, não virar lista vazia
+  // silenciosa. entityType também passa pela allowlist (vai direto para crm.timeline.comment.list).
+  assertTimelineEntityType(entityType);
+  await assertDailyPlanItemAccess(
+    organizationId,
+    connection.id,
+    webhookUrl,
+    user,
+    itemType,
+    rawId,
+  );
 
   try {
     if (itemType === 'BITRIX_TASK') {
@@ -56,8 +84,11 @@ export async function fetchDailyPlanItemNotes(
     }
 
     // BITRIX_ACTIVITY / BITRIX_LEAD — timeline do lead/negócio/contato/empresa vinculado.
-    const finalEntityType = entityType || (itemType === 'BITRIX_LEAD' ? 'lead' : undefined);
-    const finalEntityId = entityId || rawId;
+    // BITRIX_LEAD: o item É o próprio lead — ignora entityType/entityId do cliente (mesmo
+    // motivo do write path em addDailyPlanItemNote).
+    const finalEntityType =
+      itemType === 'BITRIX_LEAD' ? 'lead' : entityType || undefined;
+    const finalEntityId = itemType === 'BITRIX_LEAD' ? rawId : entityId || rawId;
     if (!finalEntityType) return [];
 
     const [payload, users] = await Promise.all([

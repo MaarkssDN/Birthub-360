@@ -20,6 +20,15 @@ import {
  */
 const router = Router();
 
+/** Origens válidas de item do plano — `itemType` chega como string do body/query e era repassado
+ * aos services sem validação (um tipo desconhecido podia contornar a checagem de posse Bitrix). */
+const DAILY_PLAN_ITEM_TYPES = new Set([
+  'LOCAL_ACTIVITY',
+  'BITRIX_TASK',
+  'BITRIX_ACTIVITY',
+  'BITRIX_LEAD',
+]);
+
 router.get(
   '/daily-plan',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -102,7 +111,7 @@ router.post(
   '/daily-plan/note',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { organizationId, id: userId } = (req as AuthRequest).user;
+      const { organizationId, id: userId, email, role } = (req as AuthRequest).user;
       const { itemType, itemId, note, entityType, entityId } = req.body;
       if (!itemType || !itemId || !note) {
         res.status(400).json({
@@ -111,9 +120,13 @@ router.post(
         });
         return;
       }
+      if (!DAILY_PLAN_ITEM_TYPES.has(String(itemType))) {
+        res.status(400).json({ success: false, error: 'itemType inválido.' });
+        return;
+      }
       const result = await addDailyPlanItemNote(
         organizationId,
-        userId,
+        { id: userId, email, role },
         itemType,
         itemId,
         note,
@@ -131,14 +144,19 @@ router.get(
   '/daily-plan/notes',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { organizationId } = (req as AuthRequest).user;
+      const { organizationId, id: userId, email, role } = (req as AuthRequest).user;
       const { itemType, itemId, entityType, entityId } = req.query;
       if (!itemType || !itemId) {
         res.status(400).json({ success: false, error: 'itemType e itemId são obrigatórios.' });
         return;
       }
+      if (!DAILY_PLAN_ITEM_TYPES.has(String(itemType))) {
+        res.status(400).json({ success: false, error: 'itemType inválido.' });
+        return;
+      }
       const notes = await fetchDailyPlanItemNotes(
         organizationId,
+        { id: userId, email, role },
         itemType as DailyPlanItemOrigin,
         String(itemId),
         entityType ? String(entityType) : undefined,

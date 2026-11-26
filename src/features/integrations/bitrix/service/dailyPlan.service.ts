@@ -17,6 +17,11 @@ import {
   crmEntityTypeFromOwnerTypeId,
   resolveCrmEnrichment,
 } from './dailyPlanEnrichment.service.js';
+import {
+  assertDailyPlanItemAccess,
+  assertTimelineEntityType,
+  type DailyPlanUserContext,
+} from './dailyPlanAuthz.js';
 import { getBitrixUsers } from './deals.js';
 import { resolveOwnBitrixUserId } from './userMapping.js';
 
@@ -650,7 +655,7 @@ const DAILY_PLAN_ITEM_PREFIX: Record<DailyPlanItemOrigin, string> = {
  * `bitrix_lead_9` enviado como `BITRIX_TASK` não pode virar "task 9" (o strip antigo removia
  * qualquer prefixo conhecido, o que era uma porta de IDOR entre tipos de entidade).
  */
-function normalizeDailyPlanItemId(itemType: DailyPlanItemOrigin, itemId: string): string {
+export function normalizeDailyPlanItemId(itemType: DailyPlanItemOrigin, itemId: string): string {
   const trimmed = itemId.trim();
   const expected = DAILY_PLAN_ITEM_PREFIX[itemType];
   if (expected && trimmed.startsWith(expected)) return trimmed.slice(expected.length);
@@ -839,7 +844,7 @@ export async function completeDailyPlanItem(
  */
 export async function addDailyPlanItemNote(
   organizationId: string,
-  _userId: string,
+  user: DailyPlanUserContext,
   itemType: DailyPlanItemOrigin,
   itemId: string,
   noteText: string,
@@ -850,12 +855,21 @@ export async function addDailyPlanItemNote(
   entityId?: string,
 ): Promise<{ success: boolean; message: string }> {
   if (!noteText.trim()) throw new AppError('A observação não pode ser vazia.', 400);
+  // entityType/entityId vêm do cliente e vão direto para crm.timeline.comment.* — allowlist
+  // impede postar comentário em entidade arbitrária do portal (ver dailyPlanAuthz.ts).
+  assertTimelineEntityType(entityType);
+  const rawId = normalizeDailyPlanItemId(itemType, itemId);
 
   const connection = await resolvePlanConnection(organizationId);
 
   if (itemType === 'LOCAL_ACTIVITY') {
-    const rawId = itemId.replace(/^local_/, '');
-    const act = await prisma.activity.findUnique({ where: { id: rawId, organizationId } });
+    // Mesmo critério estrito do POS4 em completeDailyPlanItem: a atividade só existe no plano
+    // de quem é `owner` — anotar atividade de colega do mesmo tenant é negado aqui (404, sem
+    // vazar existência), não só no update.
+    const act = await prisma.activity.findFirst({
+      where: { id: rawId, organizationId, owner: user.id },
+      select: { id: true, observations: true },
+    });
     if (!act) throw new AppError('Atividade local não encontrada.', 404);
 
     const updatedObs = act.observations
@@ -874,7 +888,18 @@ export async function addDailyPlanItemNote(
   }
 
   const webhookUrl = await getConnectionWebhookUrl(organizationId, connection.id);
-  const rawId = itemId.replace(/^(bitrix_task_|bitrix_act_|bitrix_lead_)/, '');
+
+  // Mesma autorização do complete (IDOR intra-portal — ver dailyPlanAuthz.ts): nota/comentário
+  // também é mutação, e itemId é enumerável. ADMIN/GESTOR passa direto; demais papéis precisam
+  // ser responsável/criador do item no Bitrix.
+  await assertDailyPlanItemAccess(
+    organizationId,
+    connection.id,
+    webhookUrl,
+    user,
+    itemType,
+    rawId,
+  );
 
   if (itemType === 'BITRIX_TASK') {
     await callBitrix(webhookUrl, 'task.commentitem.add', {
@@ -888,10 +913,15 @@ export async function addDailyPlanItemNote(
   }
 
   if (itemType === 'BITRIX_ACTIVITY' || itemType === 'BITRIX_LEAD') {
+    // BITRIX_LEAD: o item É o próprio lead — o comentário vai sempre para a timeline dele
+    // (entityType/entityId do cliente são ignorados nesse caso; sem isso, um item autorizado
+    // ainda poderia desviar o comentário para outra entidade do portal).
+    const finalEntityType = itemType === 'BITRIX_LEAD' ? 'lead' : entityType || 'lead';
+    const finalEntityId = itemType === 'BITRIX_LEAD' ? rawId : entityId || rawId;
     await callBitrix(webhookUrl, 'crm.timeline.comment.add', {
       fields: {
-        ENTITY_ID: entityId || rawId,
-        ENTITY_TYPE: entityType || 'lead',
+        ENTITY_ID: finalEntityId,
+        ENTITY_TYPE: finalEntityType,
         COMMENT: noteText,
       },
     });
@@ -923,6 +953,15 @@ export async function createDailyPlanActivity(
   const connection = await resolvePlanConnection(organizationId);
 
   if (input.leadId) {
+    // Tenancy: o leadId vem do body do cliente — sem este filtro, uma Activity podia ser criada
+    // apontando para Lead de OUTRA organização e o plano (`fetchUserDailyPlan` inclui
+    // act.lead.contact/company) vazaria nome/telefone/e-mail do lead alheio na UI.
+    const lead = await prisma.lead.findFirst({
+      where: { id: input.leadId, organizationId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!lead) throw new AppError('Lead não encontrado nesta organização.', 404);
+
     const actType =
       input.channel === 'MEETING'
         ? 'Reuniao'
