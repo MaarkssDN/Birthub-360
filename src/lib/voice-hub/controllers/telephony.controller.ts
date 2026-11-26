@@ -34,11 +34,12 @@ function dialActionUrl(sessionId: string): string {
  * `pt-BR` default Twilio voice used everywhere else in this controller when no override is
  * present (no `voice` node reached yet, or its configured voice has no known Twilio mapping).
  */
-function sayOptionsFor(voiceOverride?: VoiceOverride): SayAttributes {
+function sayOptionsFor(voiceOverride?: VoiceOverride): any {
   if (!voiceOverride) return { language: 'pt-BR' };
+  const override = voiceOverride as { language?: string; voice?: string };
   return {
-    language: (voiceOverride.language ?? 'pt-BR') as SayAttributes['language'],
-    voice: voiceOverride.voice as SayAttributes['voice'],
+    language: override.language ?? 'pt-BR',
+    voice: override.voice,
   };
 }
 

@@ -477,7 +477,7 @@ describe('Opt-out Multicanal & LGPD (B-13 e §27)', () => {
           currentTouchOrder: 1,
           startedAt: new Date(),
           attempts: [],
-        },
+        } as any,
       );
 
       expect(result.result).toBe('failed');
@@ -511,7 +511,7 @@ describe('Opt-out Multicanal & LGPD (B-13 e §27)', () => {
           currentTouchOrder: 1,
           startedAt: new Date(),
           attempts: [],
-        },
+        } as any,
       );
 
       expect(result.result).toBe('failed');
@@ -550,7 +550,7 @@ describe('Opt-out Multicanal & LGPD (B-13 e §27)', () => {
           currentTouchOrder: 1,
           startedAt: new Date(),
           attempts: [],
-        },
+        } as any,
       );
 
       expect(result.result).toBe('failed');

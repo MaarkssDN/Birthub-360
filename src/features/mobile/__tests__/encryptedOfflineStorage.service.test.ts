@@ -113,7 +113,7 @@ describe('OfflineSyncService com storage criptografado', () => {
   function makeService(storageKey = 'test_enc_queue') {
     return new OfflineSyncService({
       storage: new EncryptedStorageAdapter({ cryptoKey: key, baseStorage: base }),
-      apiClient: { request: async () => ({}) },
+      apiClient: { request: async <T>() => ({}) as T },
       autoSync: false,
       storageKey,
       idMapKey: `${storageKey}_ids`,

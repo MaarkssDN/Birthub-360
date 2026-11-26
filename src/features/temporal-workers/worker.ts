@@ -14,7 +14,7 @@ async function run() {
     activities,
     taskQueue: 'prospecting-queue',
     interceptors: {
-      activityInbound: [(ctx) => createTenantActivityInboundInterceptor(ctx)],
+      activityInbound: [(ctx: any) => createTenantActivityInboundInterceptor(ctx)],
     },
   });
 

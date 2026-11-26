@@ -16,14 +16,14 @@ import type {
   RequirementStatus,
   RequirementEvaluation,
   UnknownHardFilterPolicy,
-} from '../src/types.js';
+} from '../types.js';
 
 export type {
   RequirementType,
   RequirementStatus,
   UnknownHardFilterPolicy,
   RequirementEvaluation,
-} from '../src/types.js';
+} from '../types.js';
 
 // Política para quando um HARD_FILTER não pode ser confirmado nem negado
 // (nenhum provider disponível informou o dado observado):

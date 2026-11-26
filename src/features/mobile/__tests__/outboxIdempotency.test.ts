@@ -40,7 +40,7 @@ describe('Mobile Edge AI — idempotencyKey nos produtores do DomainEventMesh (h
         knownObjections: [],
         revOpsRisks: [],
         recommendedTalkingPoints: [],
-      },
+      } as any,
     });
 
   const seedGeofence = () =>
@@ -52,7 +52,7 @@ describe('Mobile Edge AI — idempotencyKey nos produtores do DomainEventMesh (h
         longitude: -46.6333,
         radiusMeters: 300,
         active: true,
-      },
+      } as any,
     });
 
   it('getVisitBriefing repetido para o mesmo briefing não duplica OFFLINE_BRIEFING_ACCESSED', async () => {

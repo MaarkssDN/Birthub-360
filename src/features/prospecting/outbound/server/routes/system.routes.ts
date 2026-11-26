@@ -66,7 +66,7 @@ systemRouter.get('/providers/health', async (_req: Request, res: Response) => {
 // processo (ver server/observability.ts) - um Search-ID de uma busca antiga
 // ou de outra instância do servidor pode não estar mais disponível.
 systemRouter.get('/search-runs/:searchId', async (req: Request, res: Response) => {
-  const { searchId } = req.params;
+  const { searchId } = req.params as { searchId: string };
   const run = getSearchRun(searchId);
   // Escopo de tenant (parecer 24 PR #323): o SearchRun contém query, candidatos
   // e dados de leads — PII de prospecção. Sem vínculo company↔searchId, um
@@ -192,7 +192,7 @@ systemRouter.post('/db/query', requireAdmin, async (req: Request, res: Response)
 // Dedicated Public CNPJ Lookup (BrasilAPI / Minha Receita)
 systemRouter.get('/cnpj/:cnpj', async (req: Request, res: Response) => {
   try {
-    const { cnpj } = req.params;
+    const { cnpj } = req.params as { cnpj: string };
     const data = await fetchCnpjPublicData(cnpj);
     if (!data) {
       return res.status(404).json({ error: 'CNPJ não localizado na base pública ou inválido.' });

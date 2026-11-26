@@ -110,7 +110,11 @@ describe('CadenceExecutionPort (Integração Swarm ↔ Cadência)', () => {
       dispatcher: mockDispatcher,
       taskPort: mockTaskPort,
       isWithinBusinessWindow: options?.isWithinBusinessWindow,
-      notificationListeners: [(notif) => notifications.push(notif)],
+      notificationListeners: [
+        (notif) => {
+          notifications.push(notif);
+        },
+      ],
     });
 
     return {

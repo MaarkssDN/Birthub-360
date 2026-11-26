@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  reconcileOfflineFieldLevelMerge,
-  type VersionedEntitySnapshot,
-} from '../sync.js';
+import { reconcileOfflineFieldLevelMerge, type VersionedEntitySnapshot } from '../sync.js';
 
 /**
  * Onda 4 — Agente 85 (Bóris): cobertura do resolvedor de conflitos offline-first
@@ -55,7 +52,10 @@ describe('[85 · Bóris] reconcileOfflineFieldLevelMerge — conflitos e isolame
     type Fields = { status: string; score: number };
     const base = snapshot<Fields>({ status: 'open', score: 1 }, { status: 100, score: 100 });
     const local = snapshot<Fields>({ status: 'won-local', score: 1 }, { status: 500, score: 100 });
-    const remote = snapshot<Fields>({ status: 'lost-remote', score: 1 }, { status: 200, score: 100 });
+    const remote = snapshot<Fields>(
+      { status: 'lost-remote', score: 1 },
+      { status: 200, score: 100 },
+    );
 
     const merged = reconcileOfflineFieldLevelMerge({ base, local, remote });
 
@@ -134,9 +134,9 @@ describe('[85 · Bóris] reconcileOfflineFieldLevelMerge — conflitos e isolame
 
     // Base de OUTRO tenant
     const wrongTenantBase = snapshot<Fields>({ v: 'X' }, { v: 100 }, { tenantId: 'tenant-b' });
-    expect(() =>
-      reconcileOfflineFieldLevelMerge({ base: wrongTenantBase, local, remote }),
-    ).toThrow(/tenants ou IDs distintos/);
+    expect(() => reconcileOfflineFieldLevelMerge({ base: wrongTenantBase, local, remote })).toThrow(
+      /tenants ou IDs distintos/,
+    );
   });
 
   it('rejeita merge entre tenants ou IDs distintos (isolamento multi-conta)', () => {
@@ -149,9 +149,9 @@ describe('[85 · Bóris] reconcileOfflineFieldLevelMerge — conflitos e isolame
     expect(() =>
       reconcileOfflineFieldLevelMerge({ base, local, remote: remoteOtherTenant }),
     ).toThrow(/tenants ou IDs distintos/);
-    expect(() =>
-      reconcileOfflineFieldLevelMerge({ base, local, remote: remoteOtherId }),
-    ).toThrow(/tenants ou IDs distintos/);
+    expect(() => reconcileOfflineFieldLevelMerge({ base, local, remote: remoteOtherId })).toThrow(
+      /tenants ou IDs distintos/,
+    );
   });
 
   it('valores idênticos alterados nos dois lados convergem sem conflito', () => {

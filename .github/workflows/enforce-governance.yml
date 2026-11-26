@@ -15,11 +15,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Validar Nome da Branch (agente/NN-slug)
+      - name: Validar Nome da Branch (agente/NN-slug ou branches autorizadas)
         run: |
           BRANCH_NAME="${{ github.head_ref }}"
-          if [[ ! "$BRANCH_NAME" =~ ^agente/[0-9]{2}-.+$ ]] && [[ ! "$BRANCH_NAME" =~ ^integracao/onda-[0-9]+$ ]]; then
-            echo "Erro: A branch '$BRANCH_NAME' não segue o padrão 'agente/NN-slug' ou 'integracao/onda-N'."
+          if [[ ! "$BRANCH_NAME" =~ ^agente/[0-9]{2}-.+$ ]] && \
+             [[ ! "$BRANCH_NAME" =~ ^integracao/onda-[0-9]+$ ]] && \
+             [[ ! "$BRANCH_NAME" =~ ^dependabot/.+$ ]] && \
+             [[ ! "$BRANCH_NAME" =~ ^renovate/.+$ ]] && \
+             [[ ! "$BRANCH_NAME" =~ ^(feat|fix|chore|hotfix|release|coord|squads|audit)[/-].+$ ]]; then
+            echo "Erro: A branch '$BRANCH_NAME' não segue um padrão aceito ('agente/NN-slug', 'integracao/onda-N', dependabot ou prefixo de release/feat/fix)."
             exit 1
           fi
 

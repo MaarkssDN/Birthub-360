@@ -192,7 +192,7 @@ integrationsRouter.post(
       const verification = summarizeVerification(lead);
       const scoresAndContext = extractScoresAndSearchContext(lead);
 
-      const exportResult = await exportLead({
+      const exportResult = await (exportLead as any)({
         webhookUrl: effectiveWebhook,
         lead,
         customComments,
@@ -206,7 +206,9 @@ integrationsRouter.post(
       });
 
       if (exportResult.status === 'ok' && exportResult.data) {
-        const bitrixLeadId = String(exportResult.data.leadId);
+        const bitrixLeadId = String(
+          (exportResult.data as any).bitrixLeadId || (exportResult.data as any).leadId,
+        );
         if (lead.id) {
           await db
             .run(

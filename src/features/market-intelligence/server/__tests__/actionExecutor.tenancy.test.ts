@@ -191,7 +191,7 @@ describe('actionExecutorService.executeAction — tenancy e pré-condições', (
       id: 'seq-1',
       name: 'Sequência SDR',
       touches: [{ order: 1, channel: 'email', delayHoursFromPrevious: 0 }],
-    });
+    } as any);
     saveRun.mockRejectedValueOnce(Object.assign(new Error('dup'), { code: 'P2002' }));
     await expect(
       actionExecutorService.executeAction('rec-1', 'co-1', 'org-a'),
@@ -206,7 +206,7 @@ describe('actionExecutorService.executeAction — tenancy e pré-condições', (
       id: 'seq-1',
       name: 'Sequência SDR',
       touches: [{ order: 1, channel: 'email', delayHoursFromPrevious: 0 }],
-    });
+    } as any);
     await actionExecutorService.executeAction('rec-1', 'co-1', 'org-a');
     expect(leadFindFirst).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -226,7 +226,7 @@ describe('actionExecutorService.executeAction — tenancy e pré-condições', (
       id: 'seq-1',
       name: 'Sequência SDR',
       touches: [{ order: 1, channel: 'email', delayHoursFromPrevious: 0 }],
-    });
+    } as any);
     saveRun.mockRejectedValueOnce(new Error('db down'));
     await expect(actionExecutorService.executeAction('rec-1', 'co-1', 'org-a')).rejects.toThrow(
       'db down',
@@ -241,12 +241,12 @@ describe('actionExecutorService.executeAction — tenancy e pré-condições', (
 
   it('START_SDR_CADENCE com opt-out unificado no canal da sequência → 409, Pending, sem CadenceRun', async () => {
     store.recs = [rec({ org: 'org-a', actionType: 'START_SDR_CADENCE' })];
-    leadFindFirst.mockResolvedValue({ id: 'lead-1', contactId: 'ct-1' });
+    leadFindFirst.mockResolvedValue({ id: 'lead-1', contactId: 'ct-1' } as any);
     sequenceFindFirst.mockResolvedValue({
       id: 'seq-1',
       name: 'Sequência SDR',
       touches: [{ order: 1, channel: 'email', delayHoursFromPrevious: 0 }],
-    });
+    } as any);
     isOptedOut.mockResolvedValueOnce(true);
     await expect(
       actionExecutorService.executeAction('rec-1', 'co-1', 'org-a'),
@@ -257,18 +257,18 @@ describe('actionExecutorService.executeAction — tenancy e pré-condições', (
 
   it('START_SDR_CADENCE com flag de opt-out no contato → 409 via checkOptOutStatus', async () => {
     store.recs = [rec({ org: 'org-a', actionType: 'START_SDR_CADENCE' })];
-    leadFindFirst.mockResolvedValue({ id: 'lead-1', contactId: 'ct-1' });
+    leadFindFirst.mockResolvedValue({ id: 'lead-1', contactId: 'ct-1' } as any);
     sequenceFindFirst.mockResolvedValue({
       id: 'seq-1',
       name: 'Sequência SDR',
       touches: [{ order: 1, channel: 'whatsapp', delayHoursFromPrevious: 0 }],
-    });
+    } as any);
     checkOptOutStatus.mockResolvedValueOnce({
       blocked: true,
       allowed: false,
       code: 'OPT_OUT_SUPPRESSED',
       reason: 'Contato possui registro de opt-out no cadastro (canal: whatsapp).',
-    });
+    } as any);
     await expect(
       actionExecutorService.executeAction('rec-1', 'co-1', 'org-a'),
     ).rejects.toMatchObject({ statusCode: 409 });
@@ -284,7 +284,7 @@ describe('actionExecutorService.executeAction — tenancy e pré-condições', (
       id: 'seq-1',
       name: 'Sequência SDR',
       touches: [{ order: 1, channel: 'email', delayHoursFromPrevious: 0 }],
-    });
+    } as any);
     const out = await actionExecutorService.executeAction('rec-1', 'co-1', 'org-a');
     expect(out).toEqual({ success: true, message: 'Cadência iniciada.' });
     expect(checkOptOutStatus).not.toHaveBeenCalled();
@@ -303,7 +303,7 @@ describe('actionExecutorService.executeAction — tenancy e pré-condições', (
         { order: 2, channel: 'email', delayHoursFromPrevious: 24 },
         { order: 3, channel: 'voice', delayHoursFromPrevious: 48 },
       ],
-    });
+    } as any);
     await actionExecutorService.executeAction('rec-1', 'co-1', 'org-a');
     expect(isOptedOut).toHaveBeenCalledTimes(2);
     expect(isOptedOut).toHaveBeenCalledWith(
@@ -327,7 +327,7 @@ describe('actionExecutorService.executeAction — tenancy e pré-condições', (
       id: 'seq-1',
       name: 'Sequência quebrada',
       touches: [{ order: 1, channel: 'sms', delayHoursFromPrevious: 0 }],
-    });
+    } as any);
     await expect(
       actionExecutorService.executeAction('rec-1', 'co-1', 'org-a'),
     ).rejects.toMatchObject({ statusCode: 422 });

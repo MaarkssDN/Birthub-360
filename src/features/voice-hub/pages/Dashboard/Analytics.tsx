@@ -67,11 +67,21 @@ export default function AnalyticsPage() {
             <table className="w-full text-sm text-left">
               <thead className="bg-slate-50 text-slate-500 font-medium">
                 <tr>
-                  <th scope="col" className="p-3">Agente</th>
-                  <th scope="col" className="p-3">Chamadas</th>
-                  <th scope="col" className="p-3">Minutos</th>
-                  <th scope="col" className="p-3">Custo</th>
-                  <th scope="col" className="p-3">Score (IA)</th>
+                  <th scope="col" className="p-3">
+                    Agente
+                  </th>
+                  <th scope="col" className="p-3">
+                    Chamadas
+                  </th>
+                  <th scope="col" className="p-3">
+                    Minutos
+                  </th>
+                  <th scope="col" className="p-3">
+                    Custo
+                  </th>
+                  <th scope="col" className="p-3">
+                    Score (IA)
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">

@@ -1,11 +1,6 @@
 import { Router, type Request, type Response } from 'express';
 import { getDatabase, saveDatabase, logActivity } from '../db.js';
-import {
-  requireAuth,
-  requireManager,
-  requireTenantScope,
-  tenantCompany,
-} from '../auth.js';
+import { requireAuth, requireManager, requireTenantScope, tenantCompany } from '../auth.js';
 import { isWithinMaxLength } from '../validators.js';
 
 export const tasksRouter = Router();
@@ -80,7 +75,7 @@ function mapRows(result: { columns: string[]; values: any[][] }[]): any[] {
 // Criar tarefa para um lead
 tasksRouter.post('/leads/:id/tasks', requireAuth, async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params as { id: string };
     const { description, dueDate } = req.body;
     if (typeof description !== 'string' || !description.trim()) {
       return res.status(400).json({ error: 'Descrição da tarefa é obrigatória.' });
@@ -141,7 +136,7 @@ tasksRouter.post('/leads/:id/tasks', requireAuth, async (req: Request, res: Resp
 // Listar tarefas de um lead (mais recentes / pendentes primeiro)
 tasksRouter.get('/leads/:id/tasks', requireAuth, async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params as { id: string };
     const db = await getDatabase();
     const company = tenantCompany(req);
     // JOIN em leads para impor o escopo de company (tasks não tem coluna própria).

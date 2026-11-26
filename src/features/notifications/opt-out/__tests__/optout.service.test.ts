@@ -1,8 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import {
-  cancelPendingJobsForOptOut,
-  recordOptOutAndPurgePendingJobs,
-} from '../optout.service.js';
+import { cancelPendingJobsForOptOut, recordOptOutAndPurgePendingJobs } from '../optout.service.js';
 import type { OptOutRepository } from '../../../../shared/domain/optOut.js';
 
 /**

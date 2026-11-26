@@ -25,6 +25,7 @@ jobs:
   sonarcloud:
     name: SonarQube
     runs-on: ubuntu-latest
+    if: ${{ secrets.SONAR_TOKEN != '' }}
     timeout-minutes: 60
     # DEBT-0026: a cobertura de integração (coverage/integration/lcov.info) passa a alimentar o
     # SonarQube, então o job precisa dos mesmos serviços do build-and-test do ci.yml — sem eles

@@ -78,11 +78,11 @@ describe('streamChatCompletionWithFallback', () => {
 
   it('deve emitir chunks de fallback e tentar próximo provider quando o primeiro falha com 429', async () => {
     vi.mocked(groqProvider.isConfigured).mockReturnValue(true);
-    groqProvider.name = 'groq';
+    (groqProvider as any).name = 'groq';
     process.env.GROQ_API_KEY = 'test-groq-key';
 
     vi.mocked(openaiProvider.isConfigured).mockReturnValue(true);
-    openaiProvider.name = 'openai';
+    (openaiProvider as any).name = 'openai';
     process.env.OPENAI_API_KEY = 'test-openai-key';
 
     // Mock fetch global: primeira chamada (Groq) retorna 429, segunda (OpenAI) sucede

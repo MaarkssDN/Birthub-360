@@ -39,7 +39,7 @@ describe('Table Component (Design System Primitives)', () => {
           null,
           React.createElement(
             TableRow,
-            { 'data-state': 'selected' },
+            { 'data-state': 'selected' } as any,
             React.createElement(TableCell, null, 'Birth Hub 360'),
             React.createElement(TableCell, null, 'Ativo'),
           ),

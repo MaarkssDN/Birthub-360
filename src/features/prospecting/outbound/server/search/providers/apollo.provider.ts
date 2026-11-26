@@ -49,7 +49,7 @@ export async function enrichOrganization(
       fetch(`https://api.apollo.io/v1/organizations/enrich?domain=${encodeURIComponent(domain)}`, {
         method: 'GET',
         signal,
-        headers: { 'Content-Type': 'application/json', 'X-Api-Key': apiKey?.trim() },
+        headers: { 'Content-Type': 'application/json', 'X-Api-Key': apiKey?.trim() ?? '' },
       }),
     );
     const latencyMs = Date.now() - startedAt;
@@ -120,7 +120,7 @@ export async function searchAndMatchPeople(
       fetch('https://api.apollo.io/v1/mixed_people/api_search', {
         method: 'POST',
         signal,
-        headers: { 'Content-Type': 'application/json', 'X-Api-Key': apiKey?.trim() },
+        headers: { 'Content-Type': 'application/json', 'X-Api-Key': apiKey?.trim() ?? '' },
         body: JSON.stringify(searchBody),
       }),
     );
@@ -160,7 +160,7 @@ export async function searchAndMatchPeople(
             fetch('https://api.apollo.io/v1/people/match', {
               method: 'POST',
               signal,
-              headers: { 'Content-Type': 'application/json', 'X-Api-Key': apiKey?.trim() },
+              headers: { 'Content-Type': 'application/json', 'X-Api-Key': apiKey?.trim() ?? '' },
               body: JSON.stringify({ id: p.id }),
             }),
           );

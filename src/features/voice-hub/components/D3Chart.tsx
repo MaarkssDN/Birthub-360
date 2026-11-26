@@ -1,6 +1,8 @@
 import { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
 
+type ChartDataPoint = { date: Date; value: number };
+
 export default function LineChart() {
   const chartRef = useRef<HTMLDivElement | null>(null);
 
@@ -18,7 +20,7 @@ export default function LineChart() {
     const innerHeight = height - margin.top - margin.bottom;
 
     // Generate 30 days of deterministic, trend-based data with weekly periodicity
-    const data = Array.from({ length: 30 }, (_, i) => {
+    const data: ChartDataPoint[] = Array.from({ length: 30 }, (_, i) => {
       const date = new Date(2026, 4, 30 - 29 + i);
       const dayOfWeek = date.getDay();
       const weeklyFactor = dayOfWeek === 0 || dayOfWeek === 6 ? 12 : 38; // lower on weekends
@@ -36,12 +38,12 @@ export default function LineChart() {
 
     const x = d3
       .scaleTime()
-      .domain(d3.extent(data, (d) => d.date) as [Date, Date])
+      .domain(d3.extent(data, (d: ChartDataPoint) => d.date) as [Date, Date])
       .range([0, innerWidth]);
 
     const y = d3
       .scaleLinear()
-      .domain([0, (d3.max(data, (d) => d.value) as number) + 20])
+      .domain([0, (d3.max(data, (d: ChartDataPoint) => d.value) as number) + 20])
       .range([innerHeight, 0]);
 
     // X Axis
@@ -53,7 +55,7 @@ export default function LineChart() {
           .axisBottom(x)
           .ticks(5)
           .tickFormat(
-            d3.timeFormat('%d/%m') as (domainValue: Date | d3.NumberValue, index: number) => string,
+            d3.timeFormat('%d/%m') as (domainValue: Date | number, index: number) => string,
           ),
       )
       .attr('color', '#94a3b8');
@@ -71,9 +73,9 @@ export default function LineChart() {
 
     // Line Path generator
     const line = d3
-      .line<{ date: Date; value: number }>()
-      .x((d) => x(d.date))
-      .y((d) => y(d.value))
+      .line()
+      .x((d: ChartDataPoint) => x(d.date))
+      .y((d: ChartDataPoint) => y(d.value))
       .curve(d3.curveMonotoneX);
 
     // Add line
@@ -87,10 +89,10 @@ export default function LineChart() {
 
     // Add Area under line
     const area = d3
-      .area<{ date: Date; value: number }>()
-      .x((d) => x(d.date))
+      .area()
+      .x((d: ChartDataPoint) => x(d.date))
       .y0(innerHeight)
-      .y1((d) => y(d.value))
+      .y1((d: ChartDataPoint) => y(d.value))
       .curve(d3.curveMonotoneX);
 
     // Standard styling for gradient
@@ -124,8 +126,8 @@ export default function LineChart() {
       .enter()
       .append('circle')
       .attr('class', 'point')
-      .attr('cx', (d) => x(d.date))
-      .attr('cy', (d) => y(d.value))
+      .attr('cx', (d: ChartDataPoint) => x(d.date))
+      .attr('cy', (d: ChartDataPoint) => y(d.value))
       .attr('r', 3)
       .attr('fill', '#fff')
       .attr('stroke', '#2563eb')

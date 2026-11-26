@@ -83,11 +83,11 @@ export async function runCrawler(
     // User-Agent institucional em TODA navegação — inclui a primeira (preNavigationHooks roda
     // antes do goto), diferente de setar header só dentro do requestHandler.
     preNavigationHooks: [
-      async ({ page }) => {
+      async ({ page }: any) => {
         await page.setExtraHTTPHeaders({ 'User-Agent': userAgent });
       },
     ],
-    async requestHandler({ request, page, log }) {
+    async requestHandler({ request, page, log }: any) {
       log.info(`Processing ${request.url}...`);
       const title = await page.title();
 
@@ -96,14 +96,14 @@ export async function runCrawler(
       // Basic email extraction
       const emailMatches =
         content.match(/[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+/gi) || [];
-      const emails = [...new Set(emailMatches)];
+      const emails: string[] = [...new Set<string>(emailMatches)];
 
       // Basic social media links extraction
       const links = await page.$$eval('a', (anchors: HTMLAnchorElement[]) =>
         anchors.map((a: HTMLAnchorElement) => a.href),
       );
-      const socialMedia = [
-        ...new Set(
+      const socialMedia: string[] = [
+        ...new Set<string>(
           links.filter(
             (link: string) =>
               link.includes('linkedin.com') ||

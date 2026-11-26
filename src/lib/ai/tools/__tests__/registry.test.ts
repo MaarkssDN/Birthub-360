@@ -45,9 +45,7 @@ describe('B-08 tool calling via src/lib/ai/tools registry', () => {
     );
 
     expect(result).toEqual({ echoed: 'ok' });
-    expect(
-      toolRegistry.getAvailableTools(ctx).some((t) => t.name === toolName),
-    ).toBe(true);
+    expect(toolRegistry.getAvailableTools(ctx).some((t) => t.name === toolName)).toBe(true);
   });
 
   it('nega execução quando a tool não está em allowedTools do tenant', async () => {
@@ -98,9 +96,9 @@ describe('B-08 tool calling via src/lib/ai/tools registry', () => {
     });
 
     const ctx = baseCtx({ allowedTools: [toolName] });
-    await expect(
-      toolRegistry.executeTool('session-b08-4', toolName, {}, ctx, 50),
-    ).rejects.toThrow(ToolTimeoutError);
+    await expect(toolRegistry.executeTool('session-b08-4', toolName, {}, ctx, 50)).rejects.toThrow(
+      ToolTimeoutError,
+    );
 
     // Mesmo pedindo timeout maior que o teto, o engine nunca ultrapassa 15s.
     expect(MAX_RUNTIME_TOOL_TIMEOUT_MS).toBe(15000);

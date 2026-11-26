@@ -38,7 +38,7 @@ describe('Trivy PR gate policy', () => {
 
     const ignoreIds = (ignoreFile.vulnerabilities ?? []).map((item) => item.id).filter(Boolean);
 
-    expect(ignoreIds).toEqual(expect.arrayContaining(['GHSA-ggr8-5vv4-36mx', 'CVE-2026-40345']));
+    expect(ignoreIds).toEqual(expect.arrayContaining(['GHSA-FC5Q-39XC-VJPF', 'CVE-2026-112366']));
 
     for (const item of ignoreFile.vulnerabilities ?? []) {
       expect(item.expired_at).toBeTruthy();
@@ -46,8 +46,8 @@ describe('Trivy PR gate policy', () => {
     }
 
     const waiverDoc = readFileSync('docs/security/AUDIT_WAIVERS.md', 'utf8');
-    expect(waiverDoc).toContain('GHSA-ggr8-5vv4-36mx');
-    expect(waiverDoc).toContain('CVE-2026-40345');
+    expect(waiverDoc).toContain('GHSA-FC5Q-39XC-VJPF');
+    expect(waiverDoc).toContain('CVE-2026-112366');
   });
 
   it('keeps the blocking PR gate from silently ignoring findings', () => {

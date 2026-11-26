@@ -103,7 +103,7 @@ describe('[42 · Lívia] KanbanBoard — sincronização, rollback e consistênc
     // O movimento otimista não pode ser apagado pelo snapshot antigo
     expect(screen.getByTestId('kanban-card-c-1').getAttribute('data-stage-id')).toBe('proposta');
 
-    resolvePersist?.();
+    (resolvePersist as (() => void) | null)?.();
     await waitFor(() => {
       expect(onPersist).toHaveBeenCalledTimes(1);
     });

@@ -59,7 +59,7 @@ const input = {
   whatsapp: '5511999999999',
   equipe: '6 a 15' as const,
   consent: true as const,
-  consentTextVersion: LANDING_DEMO_CONSENT_VERSION,
+  consentTextVersion: LANDING_DEMO_CONSENT_VERSION as typeof LANDING_DEMO_CONSENT_VERSION,
   purpose: 'agendamento_demonstracao' as const,
 };
 

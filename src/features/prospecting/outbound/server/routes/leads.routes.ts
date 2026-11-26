@@ -93,7 +93,7 @@ async function leadBelongsToCompany(db: DbHandle, id: string, company: string): 
 // Update Lead Stage directly
 leadsRouter.put('/leads/:id/stage', requireAuth, async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params as { id: string };
     const parsed = updateStageSchema.safeParse(req.body);
     if (!parsed.success) {
       return res
@@ -158,7 +158,7 @@ leadsRouter.put('/leads/:id/stage', requireAuth, async (req: Request, res: Respo
 // Update Lead Tags directly
 leadsRouter.put('/leads/:id/tags', requireAuth, async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params as { id: string };
     const { tags, userId } = req.body;
     if (!Array.isArray(tags)) {
       return res.status(400).json({ error: 'Tags deve ser um array de strings' });
@@ -195,7 +195,7 @@ leadsRouter.put('/leads/:id/tags', requireAuth, async (req: Request, res: Respon
 // Update Lead General Info
 leadsRouter.put('/leads/:id', requireAuth, async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params as { id: string };
     const {
       stage,
       tags,
@@ -301,7 +301,7 @@ leadsRouter.put('/leads/:id', requireAuth, async (req: Request, res: Response) =
 // Save Lead Comprehensive Edits directly
 leadsRouter.post('/leads/:id/save', requireAuth, async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params as { id: string };
     const leadData = req.body;
 
     const db = await getDatabase();
@@ -490,7 +490,7 @@ leadsRouter.post(
   requireAuth,
   async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
+      const { id } = req.params as { id: string };
       const { pitch, aiConfig, tone, force } = req.body;
       const db = await getDatabase();
       const company = tenantCompany(req);
@@ -626,7 +626,7 @@ leadsRouter.post(
   requireAuth,
   async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
+      const { id } = req.params as { id: string };
       const { pitch, aiConfig, force } = req.body;
       const db = await getDatabase();
       const company = tenantCompany(req);
@@ -747,7 +747,7 @@ leadsRouter.post(
   requireAuth,
   async (req: Request, res: Response) => {
     try {
-      const { id, channel } = req.params;
+      const { id, channel } = req.params as { id: string; channel: string };
       const { feedback } = req.body;
       if (!VALID_COPY_FEEDBACK.includes(feedback)) {
         return res
@@ -772,7 +772,7 @@ leadsRouter.post(
 // Refresh / Update CNPJ for a Lead
 leadsRouter.post('/leads/:id/cnpj-refresh', requireAuth, async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params as { id: string };
     const { cnpj } = req.body;
     const db = await getDatabase();
     const company = tenantCompany(req);
@@ -833,7 +833,7 @@ leadsRouter.post('/leads/:id/cnpj-refresh', requireAuth, async (req: Request, re
 // Evidence & Provenance
 leadsRouter.get('/leads/:id/evidence', requireAuth, async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params as { id: string };
     const db = await getDatabase();
     const company = tenantCompany(req);
     if (!(await leadBelongsToCompany(db, id, company))) {

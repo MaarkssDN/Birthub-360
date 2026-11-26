@@ -73,7 +73,7 @@ export async function domainSearch(
     const response = await withTimeout(
       (signal) =>
         fetch(
-          `https://api.hunter.io/v2/domain-search?domain=${encodeURIComponent(domain)}&api_key=${encodeURIComponent(apiKey?.trim())}&limit=10`,
+          `https://api.hunter.io/v2/domain-search?domain=${encodeURIComponent(domain)}&api_key=${encodeURIComponent(apiKey?.trim() ?? '')}&limit=10`,
           { signal },
         ),
       timeoutMs,
@@ -160,7 +160,7 @@ export async function verifyEmail(
     const response = await withTimeout(
       (signal) =>
         fetch(
-          `https://api.hunter.io/v2/email-verifier?email=${encodeURIComponent(email)}&api_key=${encodeURIComponent(apiKey?.trim())}`,
+          `https://api.hunter.io/v2/email-verifier?email=${encodeURIComponent(email)}&api_key=${encodeURIComponent(apiKey?.trim() ?? '')}`,
           { signal },
         ),
       timeoutMs,

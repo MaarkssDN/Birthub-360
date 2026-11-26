@@ -32,7 +32,7 @@ function makeService(cryptoKey: CryptoKey) {
       cryptoKey,
       baseStorage: new LocalStorageAdapter(),
     }),
-    apiClient: { request: async () => ({ id: 'real_lead_backend_1' }) },
+    apiClient: { request: async <T>() => ({ id: 'real_lead_backend_1' }) as T },
     autoSync: false,
     // Chaves de produção — mesmo default usado pelo singleton offlineSyncService.
     storageKey: QUEUE_KEY,

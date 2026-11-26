@@ -78,7 +78,7 @@ describe('runCrawler', () => {
     expect(typeof options.preNavigationHooks).toBe('object');
     const hooks = options.preNavigationHooks as Array<(ctx: { page: FakePage }) => Promise<void>>;
     const setHeaders = vi.fn(async () => {});
-    await hooks[0]({ page: { setExtraHTTPHeaders: setHeaders } as FakePage });
+    await hooks[0]({ page: { setExtraHTTPHeaders: setHeaders } as unknown as FakePage });
     expect(setHeaders).toHaveBeenCalledWith({
       'User-Agent': expect.stringContaining('BirthHubBot'),
     });
@@ -95,7 +95,7 @@ describe('runCrawler', () => {
       expect(options.requestHandlerTimeoutSecs).toBe(42);
       const hooks = options.preNavigationHooks as Array<(ctx: { page: FakePage }) => Promise<void>>;
       const setHeaders = vi.fn(async () => {});
-      await hooks[0]({ page: { setExtraHTTPHeaders: setHeaders } as FakePage });
+      await hooks[0]({ page: { setExtraHTTPHeaders: setHeaders } as unknown as FakePage });
       expect(setHeaders).toHaveBeenCalledWith({ 'User-Agent': 'BirthHubTestBot/9.9' });
     } finally {
       delete process.env.CRAWLEE_USER_AGENT;

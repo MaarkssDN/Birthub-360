@@ -40,7 +40,7 @@ afterEach(() => {
   for (const dir of tempDirs.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
 
-describe('scripts/db/backup-encrypted.sh --verify-crypto', () => {
+describe.skipIf(process.platform === 'win32')('scripts/db/backup-encrypted.sh --verify-crypto', () => {
   it('sai com 0 quando o round-trip AES-256 confere e limpa os arquivos temporários', () => {
     const r = runVerify();
     expect(r.status, r.stderr).toBe(0);

@@ -213,7 +213,8 @@ describe('recordOptOut + isOptedOut — matriz canal × canal', () => {
         phoneE164: null,
         leadId: `lead-${i}`,
         reason: 'Solicitação formal',
-        evidenceRef: 'msg-ref',
+        evidence: 'msg-ref',
+        requestedBy: 'user-test',
         originChannel: 'email',
       });
     }

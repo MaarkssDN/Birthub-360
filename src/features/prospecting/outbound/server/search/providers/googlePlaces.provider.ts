@@ -55,7 +55,7 @@ export async function searchPlaces(
       signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
-        'X-Goog-Api-Key': apiKey?.trim(),
+        'X-Goog-Api-Key': apiKey?.trim() ?? '',
         'X-Goog-FieldMask':
           'places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.websiteUri,places.rating,places.userRatingCount',
       },

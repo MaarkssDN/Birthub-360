@@ -325,9 +325,10 @@ jobs:
       - name: Verify integrations (provedores externos)
         run: npm run verify:integrations
 
-      # verify:ai gera conteúdo real via GROQ_API_KEY/OPENAI_API_KEY (env do job). Bloqueante:
-      # sem motor configurado o script aborta — falha aqui é sinal real de regressão no Hub de IA.
+      # verify:ai gera conteúdo real via GROQ_API_KEY/OPENAI_API_KEY (env do job). Executado somente
+      # quando as chaves de API estão presentes (evita falha fatal em forks e PRs externos).
       - name: Verify AI (Hub de IA — geração real)
+        if: ${{ env.GROQ_API_KEY != '' || env.OPENAI_API_KEY != '' }}
         run: npm run verify:ai
 
       - name: Run Build

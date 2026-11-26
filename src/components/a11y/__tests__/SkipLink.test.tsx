@@ -21,7 +21,7 @@ describe('SkipLink (WCAG 2.4.1 Bypass Blocks)', () => {
     render(
       React.createElement(
         SkipLink,
-        { targetId: 'conteudo', 'data-testid': 'skip' },
+        { targetId: 'conteudo', 'data-testid': 'skip' } as any,
         'Ir para o conteúdo',
       ),
     );

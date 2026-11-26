@@ -176,7 +176,7 @@ describe('enrichCompany — gatilho do expurgo', () => {
     const result = await enrichCompany('org-1', 'comp-1', {}, repo);
 
     // Caminho de cache: nenhuma escrita nem chamada externa, mas o expurgo rodou.
-    expect(result.cached).toBe(true);
+    expect((result as any).cached).toBe(true);
     expect(repo.updateCompany).not.toHaveBeenCalled();
     expect(repo.deleteEnrichmentLogsCreatedBefore).toHaveBeenCalledTimes(1);
     expect(repo.deleteEnrichmentLogsCreatedBefore).toHaveBeenCalledWith(expect.any(Date) as Date);

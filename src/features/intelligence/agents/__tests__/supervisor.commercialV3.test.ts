@@ -56,7 +56,9 @@ describe('SwarmOrchestrator.executeCommercialV3Specialist', () => {
     );
 
     dispatchMission.mockClear();
-    await orchestrator.executeCommercialV3Specialist('closer', 'Feche.', { organizationId: '' });
+    await orchestrator.executeCommercialV3Specialist('negociacao', 'Feche.', {
+      organizationId: '',
+    });
     expect(dispatchMission).toHaveBeenCalledWith(
       expect.objectContaining({ organizationId: 'org_default', mission: 'Feche.' }),
     );

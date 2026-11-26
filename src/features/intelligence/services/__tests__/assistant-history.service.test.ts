@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { PlaybookKey } from '../../../config/playbooks';
+import type { PlaybookKey } from '../../../../config/playbooks.js';
 import type {
   AssistantHistoryMessage,
   AssistantHistoryRepository,

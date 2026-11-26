@@ -62,7 +62,7 @@ const { eraseDataSubject } = await import(
 );
 
 describe('Agente 08 (Dora) - Expurgo Físico LGPD em Cascata para Logs e Telemetria', () => {
-  it('deve realizar expurgo de dados do titular e deletar fisicamente logs de auditoria prévios contendo PII', async () => {
+  it('deve realizar expurgo de dados do titular e preservar imutabilidade legal de logs de auditoria (LGPD Art. 16)', async () => {
     const contactMock = {
       id: 'contact-dora-1',
       name: 'João da Silva',
@@ -78,7 +78,7 @@ describe('Agente 08 (Dora) - Expurgo Físico LGPD em Cascata para Logs e Telemet
     prismaMock.whatsAppMessage.updateMany.mockResolvedValue({ count: 2 });
     prismaMock.copilotoConversation.findMany.mockResolvedValue([]);
     prismaMock.agentMemory.updateMany.mockResolvedValue({ count: 1 });
-    prismaMock.auditLog.deleteMany.mockResolvedValue({ count: 5 });
+    prismaMock.auditLog.deleteMany.mockResolvedValue({ count: 0 });
     prismaMock.auditLog.create.mockResolvedValue({});
 
     const result = await eraseDataSubject({
@@ -89,16 +89,9 @@ describe('Agente 08 (Dora) - Expurgo Físico LGPD em Cascata para Logs e Telemet
 
     expect(result.contactId).toBe('contact-dora-1');
     expect(result.whatsAppMessagesMasked).toBe(2);
-    expect(result.priorAuditLogsPurged).toBe(5);
+    expect(result.priorAuditLogsPurged).toBe(0);
 
-    // Verifica que logs de auditoria anteriores contendo PII deste contato foram deletados fisicamente
-    expect(prismaMock.auditLog.deleteMany).toHaveBeenCalledWith({
-      where: {
-        tenantId: 'org-lgpd-test',
-        entity: 'Contact',
-        entityId: 'contact-dora-1',
-        action: { not: 'ERASURE_LGPD_ART_18' },
-      },
-    });
+    // Verifica que logs de auditoria são preservados de forma append-only e imutável (LGPD Art. 16, I)
+    expect(prismaMock.auditLog.deleteMany).not.toHaveBeenCalled();
   });
 });

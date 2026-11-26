@@ -10,5 +10,5 @@ export function getOidcConfiguration(): Promise<Configuration | undefined> {
   if (!issuer || !clientId) return Promise.resolve(undefined);
 
   oidcConfiguration = discovery(new URL(issuer), clientId, process.env.OIDC_CLIENT_SECRET);
-  return oidcConfiguration;
+  return oidcConfiguration ?? Promise.resolve(undefined);
 }

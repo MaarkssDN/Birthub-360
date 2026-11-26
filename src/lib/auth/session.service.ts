@@ -73,7 +73,9 @@ export class SessionService {
     ttlSeconds: number = 7 * 24 * 3600, // 7 dias
   ): { accessToken: string; refreshToken: string; familyId: string } {
     if (!userId || !organizationId || !clientFingerprint) {
-      throw new Error('SessionService: userId, organizationId e clientFingerprint são obrigatórios.');
+      throw new Error(
+        'SessionService: userId, organizationId e clientFingerprint são obrigatórios.',
+      );
     }
     if (!Number.isFinite(ttlSeconds) || ttlSeconds <= 0) {
       throw new Error('SessionService: ttlSeconds deve ser um número positivo.');

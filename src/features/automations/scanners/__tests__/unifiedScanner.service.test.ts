@@ -14,7 +14,9 @@ describe('UnifiedScannerService (P3.3)', () => {
       acquired: false,
       runId: 'existing-run-id',
       release: vi.fn(),
-    });
+      reason: 'already_acquired',
+      renew: vi.fn(),
+    } as any);
 
     const result = await unifiedScannerService.runUnifiedScan();
 
@@ -29,7 +31,8 @@ describe('UnifiedScannerService (P3.3)', () => {
       acquired: true,
       runId: 'test-run-123',
       release: vi.fn(),
-    });
+      renew: vi.fn(),
+    } as any);
 
     vi.spyOn(stagnationScanner, 'runStagnationScan').mockResolvedValue({
       runId: 'stag-1',
@@ -66,7 +69,8 @@ describe('UnifiedScannerService (P3.3)', () => {
       acquired: true,
       runId: 'test-run-failover',
       release: vi.fn(),
-    });
+      renew: vi.fn(),
+    } as any);
 
     vi.spyOn(stagnationScanner, 'runStagnationScan').mockRejectedValue(
       new Error('DB connection drop'),

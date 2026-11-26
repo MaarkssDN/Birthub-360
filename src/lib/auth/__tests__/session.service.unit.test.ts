@@ -38,9 +38,7 @@ describe('SessionService — casos de borda (Onda 3, Agente 96)', () => {
   it('rejeita token de família já revogada mesmo com fingerprint correto', () => {
     const session = service.createSession('u1', 'org1', fp);
     service.revokeFamily(session.familyId);
-    expect(() => service.rotateRefreshToken(session.refreshToken, fp)).toThrow(
-      'Sessão revogada.',
-    );
+    expect(() => service.rotateRefreshToken(session.refreshToken, fp)).toThrow('Sessão revogada.');
   });
 
   it('fingerprint divergente NÃO consome o token — dono legítimo ainda consegue rotacionar', () => {
@@ -60,9 +58,7 @@ describe('SessionService — casos de borda (Onda 3, Agente 96)', () => {
       TokenReuseDetectedError,
     );
     expect(service.isFamilyRevoked(session.familyId)).toBe(true);
-    expect(() => service.rotateRefreshToken(rotated.refreshToken, fp)).toThrow(
-      'Sessão revogada.',
-    );
+    expect(() => service.rotateRefreshToken(rotated.refreshToken, fp)).toThrow('Sessão revogada.');
   });
 
   it('createSession valida entradas obrigatórias e ttl', () => {

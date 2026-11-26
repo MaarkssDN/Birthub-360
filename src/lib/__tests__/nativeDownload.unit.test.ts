@@ -45,7 +45,7 @@ describe('downloadBlob', () => {
     await downloadBlob(blob, 'script.py');
 
     expect(mocks.writeFile).toHaveBeenCalledTimes(1);
-    const writeArgs = mocks.writeFile.mock.calls[0]?.[0] as {
+    const writeArgs = (mocks.writeFile.mock.calls[0] as any)?.[0] as {
       path: string;
       data: string;
       directory: string;
@@ -64,7 +64,7 @@ describe('downloadBlob', () => {
   it('sanitiza o nome do arquivo no caminho nativo', async () => {
     mocks.isNativePlatform.mockReturnValue(true);
     await downloadBlob(new Blob(['x']), '../tmp/relatorio final (v2).csv');
-    const writeArgs = mocks.writeFile.mock.calls[0]?.[0] as { path: string };
+    const writeArgs = (mocks.writeFile.mock.calls[0] as any)?.[0] as { path: string };
     expect(writeArgs.path).not.toContain('/');
     expect(writeArgs.path).not.toContain('..');
     expect(writeArgs.path.endsWith('.csv')).toBe(true);

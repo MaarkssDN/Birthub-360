@@ -1,6 +1,6 @@
 import { env } from '../../../../config/env.js';
 import { GoogleGenAI } from '@google/genai';
-import type { AIConfig, Lead, DecisionMaker, OutreachCopies } from '../src/types.js';
+import type { AIConfig, Lead, DecisionMaker, OutreachCopies } from '../types.js';
 import type { EvidenceRecord } from './evidence.js';
 import {
   buildLeadEvidenceContext,
