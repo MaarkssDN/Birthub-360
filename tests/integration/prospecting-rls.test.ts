@@ -67,7 +67,9 @@ const hardDeleteOrgData = async (organizationId: string) => {
     await tx.$executeRaw`DELETE FROM "TimelineEvent" WHERE "leadId" IN (SELECT id FROM "Lead" WHERE "organizationId" = ${organizationId})`;
     await tx.$executeRaw`DELETE FROM "BitrixSyncLog" WHERE "organizationId" = ${organizationId}`;
     await tx.$executeRaw`DELETE FROM "Activity" WHERE "organizationId" = ${organizationId}`;
-    await tx.$executeRaw`DELETE FROM "AuditLog" WHERE "tenantId" = ${organizationId}`;
+    // AuditLog é append-only por trigger (migration 20261114160000_auditlog_append_only_immutability,
+    // erro 42501 em DELETE para qualquer papel) e tenantId não é FK — não bloqueia o delete da org
+    // nem precisa ser limpo: as linhas ficam isoladas por tenant no banco efêmero de teste.
     // Note não tem organizationId (só leadId/companyId/contactId, ON DELETE CASCADE) — resolve via pais.
     await tx.$executeRaw`DELETE FROM "Note" WHERE "leadId" IN (SELECT id FROM "Lead" WHERE "organizationId" = ${organizationId}) OR "companyId" IN (SELECT id FROM "Company" WHERE "organizationId" = ${organizationId}) OR "contactId" IN (SELECT id FROM "Contact" WHERE "organizationId" = ${organizationId})`;
     await tx.$executeRaw`DELETE FROM "PublicLeadConsent" WHERE "organizationId" = ${organizationId}`;
