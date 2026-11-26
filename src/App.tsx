@@ -129,7 +129,9 @@ export default function App() {
                         <Route path="/" element={landingV2 ? <Landing360V2 /> : <Landing360 />} />
                         <Route
                           path="/welcome"
-                          element={landingV2 ? <Landing360V2 /> : <Landing360 initialScreen="intro" />}
+                          element={
+                            landingV2 ? <Landing360V2 /> : <Landing360 initialScreen="intro" />
+                          }
                         />
                         <Route path="/landing-new" element={<LandingInnovative />} />
                         <Route path="/privacy" element={<PrivacyPolicy />} />

@@ -1,6 +1,6 @@
-import { Clock, RefreshCw } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/v2/Button";
+import { Clock, RefreshCw } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/v2/Button';
 
 export interface StaleDataIndicatorV2Props {
   /** Última sincronização (string formatada ou Date). */
@@ -12,8 +12,8 @@ export interface StaleDataIndicatorV2Props {
 }
 
 function formatLastUpdated(lastUpdated: string | Date): string {
-  if (typeof lastUpdated === "string") return lastUpdated;
-  return lastUpdated.toLocaleString("pt-BR");
+  if (typeof lastUpdated === 'string') return lastUpdated;
+  return lastUpdated.toLocaleString('pt-BR');
 }
 
 /**
@@ -23,7 +23,7 @@ function formatLastUpdated(lastUpdated: string | Date): string {
  */
 export function StaleDataIndicatorV2({
   lastUpdated,
-  message = "Dados em cache local — pode haver informação desatualizada.",
+  message = 'Dados em cache local — pode haver informação desatualizada.',
   onRefresh,
   isRefreshing = false,
   className,
@@ -34,8 +34,8 @@ export function StaleDataIndicatorV2({
       aria-live="polite"
       data-testid="v2-stale-indicator"
       className={cn(
-        "mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-warning-500/30 bg-warning-100 px-4 py-2.5 text-xs font-medium text-warning-700",
-        className
+        'mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-warning-500/30 bg-warning-100 px-4 py-2.5 text-xs font-medium text-warning-700',
+        className,
       )}
     >
       <div className="flex min-w-0 items-center gap-2">
@@ -59,10 +59,10 @@ export function StaleDataIndicatorV2({
           className="shrink-0"
         >
           <RefreshCw
-            className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin")}
+            className={cn('h-3.5 w-3.5', isRefreshing && 'animate-spin')}
             aria-hidden="true"
           />
-          {isRefreshing ? "Atualizando…" : "Atualizar"}
+          {isRefreshing ? 'Atualizando…' : 'Atualizar'}
         </Button>
       )}
     </div>

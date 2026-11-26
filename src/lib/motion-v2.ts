@@ -1,5 +1,5 @@
-import { useReducedMotion, type Variants } from "framer-motion";
-import { isDesignV2Enabled, DESIGN_V2_FLAGS } from "@/config/feature-flags";
+import { useReducedMotion, type Variants } from 'framer-motion';
+import { isDesignV2Enabled, DESIGN_V2_FLAGS } from '@/config/feature-flags';
 
 /**
  * Motion V2 — Agente 35 (Mia), Onda ONDA-DESIGN-PREMIUM-2026-11-24.

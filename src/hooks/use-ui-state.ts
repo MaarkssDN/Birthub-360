@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo } from 'react';
 
 /**
  * useUIState — Agente 32 (Ema), Onda ONDA-DESIGN-PREMIUM-2026-11-24.
@@ -20,7 +20,7 @@ import { useMemo } from "react";
  *   return <StaleDataIndicatorV2 ... /> + conteúdo;
  */
 
-export type UIStateKind = "loading" | "error" | "empty" | "stale" | "ready";
+export type UIStateKind = 'loading' | 'error' | 'empty' | 'stale' | 'ready';
 
 export interface UIStateInput {
   isLoading?: boolean;
@@ -47,11 +47,11 @@ const PRIORITY: Record<UIStateKind, number> = {
 
 export function useUIState(input: UIStateInput): UIState {
   return useMemo(() => {
-    let kind: UIStateKind = "ready";
-    if (input.isLoading) kind = "loading";
-    else if (input.isError) kind = "error";
-    else if (input.isEmpty) kind = "empty";
-    else if (input.isStale) kind = "stale";
+    let kind: UIStateKind = 'ready';
+    if (input.isLoading) kind = 'loading';
+    else if (input.isError) kind = 'error';
+    else if (input.isEmpty) kind = 'empty';
+    else if (input.isStale) kind = 'stale';
 
     return {
       kind,
