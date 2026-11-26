@@ -17,7 +17,11 @@
  *    (dev local em HTTP continua funcionando).
  */
 export function resolveSecureCookiesEnabled(
-  source: Pick<NodeJS.ProcessEnv, 'NODE_ENV' | 'SECURE_COOKIES' | 'BETTER_AUTH_URL'> = process.env,
+  source: {
+    NODE_ENV?: string;
+    SECURE_COOKIES?: string;
+    BETTER_AUTH_URL?: string;
+  } = process.env,
 ): boolean {
   if (source.NODE_ENV === 'production') return true;
   return (
