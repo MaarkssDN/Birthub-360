@@ -46,31 +46,6 @@ propósito por estar fora de "## Exceções ativas"):
 
 ## Exceções ativas
 
-### `src/features/landing/pages/Landing360.tsx`
-
-- **Limite excepcional:** 3500 linhas
-- **Dono:** Marks-Mah
-- **Motivo:** Nova landing page 360 integrada ao portal comercial e vitrine visual (adicionados gaveta de navegação mobile, links de conformidade, pipeline unificado, atração magnética, levitação parallax e modal de acesso); pendente de modularização de seções.
-- **Registrado em:** 2026-10-07
-- **Atualizado em:** 2026-11-10
-- **Reavaliar até:** 2026-11-30
-
-### `src/features/landing/pages/Landing360Impeccable.tsx`
-
-- **Limite excepcional:** 1050 linhas
-- **Dono:** Agente 15 — Segurança Aplicada
-- **Motivo:** o formatador do Biome no PR #220 reformatou o arquivo (384 linhas com linhas longas na main → 1021 linhas após quebras automáticas), cruzando o limite rígido de 1000 sem mudança de lógica. A exceção desbloqueia o `check:hotspots` enquanto a modularização das seções da landing fica para o dono de produto/UX; o limite excepcional é apertado (1050) para não liberar crescimento adicional.
-- **Registrado em:** 2026-11-11
-- **Reavaliar até:** 2026-11-30
-
-### `src/features/integrations/bitrix/service/extraction.ts`
-
-- **Limite excepcional:** 1100 linhas
-- **Dono:** Agente 06A — Extrações Bitrix
-- **Motivo:** Motor de extração incremental e paginação com streaming de dados Bitrix24.
-- **Registrado em:** 2026-10-08
-- **Reavaliar até:** 2026-11-30
-
 ### `src/features/commercial-intelligence/domain/CommercialIntelligence.ts`
 
 - **Limite excepcional:** 1250 linhas
@@ -83,70 +58,6 @@ propósito por estar fora de "## Exceções ativas"):
 - **Registrado em:** 2026-09-23
 - **Reavaliar até:** 2026-11-30 (mesmo checkpoint dos demais itens desta lista)
 
-### `src/features/prospecting/outbound/server/routes/leads.routes.ts`
-
-- **Limite excepcional:** 1500 linhas
-- **Dono:** Agente 05 — Prospecção
-- **Motivo:** Modularizado na campanha techdebt-2026-09-29 (extraídos leadSearch.service, formatLead, e sub-routers auth, campaigns, tasks, chat, system, integrations), reduzindo de 3614 para 1368 linhas.
-- **Registrado em:** 2026-09-29
-- **Reavaliar até:** 2026-11-30
-
-### `src/features/voice-hub/components/design-system/index.tsx`
-
-- **Limite excepcional:** 1200 linhas
-- **Dono:** Agente 12 — Voz e Telefonia
-- **Motivo:** Catálogo de componentes de design system do Voice Hub. Convertido para re-export canônico na campanha techdebt-2026-09-29 (eliminando 1060 linhas duplicadas).
-- **Registrado em:** 2026-09-28
-- **Atualizado em:** 2026-09-29 (correção de proprietário)
-- **Reavaliar até:** 2026-11-30
-
-### `src/features/intelligence/routes/intelligence.routes.ts`
-
-- **Limite excepcional:** 1100 linhas
-- **Dono:** Agente 07 — IA e Automações
-- **Motivo:** O arquivo superou o limite de 1000 linhas devido à adição contínua de rotas e integrações de IA, precisará ser fatiado em sub-rotas por domínio (agents, swarms, automations).
-- **Registrado em:** 2026-10-03
-- **Reavaliar até:** 2026-11-30
-
-### `src/features/market-intelligence/server/marketIntelligenceCompany.service.ts`
-
-- **Limite excepcional:** 1020 linhas
-- **Dono:** Agente 13 — Enxame Autônomo e Governança de Agentes de Runtime (LDR/Market Intelligence, Onda 43)
-- **Motivo:** a formatação de linhas longas no PR #741 elevou a contagem de 994 para 1016 linhas,
-  sem mudança funcional. A exceção mantém a formatação verificada e registra a modularização do
-  serviço como trabalho posterior do dono do domínio.
-- **Registrado em:** 2026-10-14
-- **Reavaliar até:** 2026-11-30
-
-### `src/lib/voice-hub/services/workflowRuntimeService.ts`
-
-- **Limite excepcional:** 1500 linhas
-- **Dono:** Agente 06 — Integrações e Telefonia
-- **Motivo:** Integração massiva e bruta da aplicação satélite Voice Hub na onda 13.
-- **Registrado em:** 2026-09-24
-- **Reavaliar até:** 2026-11-30
-
-
-### `src/features/crm/components/LeadDetailDrawer.tsx`
-
-- **Limite excepcional:** 1100 linhas
-- **Dono:** Agente 02 — Produto e UX
-- **Motivo:** O drawer de detalhes do lead reúne abas de informações da empresa, contatos, atividades, histórico e enriquecimento em um único componente coeso. Ultrapassou ligeiramente 1000 linhas (1008 linhas) ao exibir metadados avançados de enriquecimento. A exceção desbloqueia o gate enquanto os sub-painéis são extraídos para componentes filhos.
-- **Registrado em:** 2026-10-16
-- **Reavaliar até:** 2026-11-30
-
-### `src/features/landing/components/pillars/PillarRegistry.tsx`
-
-- **Limite excepcional:** 1450 linhas
-- **Dono:** Agente 02 — Produto e UX / Agente 03 — Design e Acessibilidade
-- **Motivo:** Registro central dos 8 pilares editoriais oficiais do Birth Hub 360°, incluindo metadados, métricas e visualizadores operacionais de interface renderizáveis tanto em Dark Mode quanto em Light Mode com alta fidelidade e acessibilidade WCAG 2.2 AA. Reduzido de 1773 para 1609 linhas na Onda 1 (`HubComercialViewer.tsx`) e agora para 1402 linhas na Onda 2 com a extração cirúrgica de `MercadoViewer.tsx` e `OrquestracaoViewer.tsx` (em `src/features/landing/components/pillars/viewers/`). A modularização progressiva dos demais 5 visualizadores levará o arquivo abaixo de 700 linhas, eliminando o hotspot definitivamente.
-- **Registrado em:** 2026-11-07
-- **Atualizado em:** 2026-11-10
-- **Reavaliar até:** 2026-11-30
-
-
-
-
 ## Débito conhecido, abaixo do limite de falha (sem exceção necessária)
 
 Arquivos na faixa de aviso (701–1000 linhas) no momento em que este gate foi criado — não
@@ -157,7 +68,9 @@ requerem exceção porque não quebram o gate, só ficam registrados aqui para n
 
 - `src/features/market-intelligence/server/accountIntelligence.service.ts` (857 linhas)
 - `src/features/intelligence/components/SwarmDashboard.tsx` (modularizado em 2026-11-10: 933 linhas, meta < 1000 atingida)
-- `src/features/crm/components/LeadDetailDrawer.tsx` (726 linhas)
+- `src/features/crm/components/LeadDetailDrawer.tsx` (refatorado em 2026-11-24 e recuperado na consolidação em 2026-11-25: 534 linhas após extração de header, seções de empresa/contato, BANT, notas e Bitrix24 para componentes filhos — abaixo do limite de aviso, removido da lista)
+- `src/features/integrations/bitrix/service/extraction.ts` (803 linhas — modularizado em 2026-11-25 na onda consolidação-20261124: paginação extraída para `extractionPagination.ts` e checkpoint incremental para `extractionCheckpoint.ts`; exceção de hotspot removida)
+- `src/features/prospecting/outbound/server/routes/leads.routes.ts` (795 linhas — exceção removida em 2026-11-24 após extração de `POST /prospect` para `prospect.routes.ts`, handoff 40→43)
 - `src/components/CrmBoard.tsx` (modularizado em 2026-11-12: 886 linhas + `CrmBoardToolbar.tsx`; nova extração em 2026-11-15 para `useCrmBoardBatchActions`/`useCrmBoardUrlParams` em `src/hooks/` — 687 linhas, abaixo do limite de aviso)
 
 Se qualquer um desses cruzar 1000 linhas num PR futuro sem uma exceção registrada acima, o gate
