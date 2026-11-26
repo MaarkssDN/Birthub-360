@@ -8,4 +8,4 @@ export {
   INK_V2,
   tooltipStyleV2,
   REFERENCE_V2,
-} from "./chartThemeV2";
+} from './chartThemeV2';
