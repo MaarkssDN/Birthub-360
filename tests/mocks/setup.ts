@@ -6,6 +6,14 @@ if (!process.env.CREDENTIALS_ENCRYPTION_KEY || process.env.CREDENTIALS_ENCRYPTIO
 if (!process.env.PII_BLIND_INDEX_KEY || process.env.PII_BLIND_INDEX_KEY.includes('replace-with')) {
   process.env.PII_BLIND_INDEX_KEY = Buffer.alloc(32, 1).toString('base64');
 }
+// Neutraliza REDIS_URL nos workers do Vitest: `.env`/`.env.test` definem a variável e
+// `src/lib/queue/redis.ts` criaria clientes ioredis reais (lazyConnect:false) que ficam
+// reconectando em localhost:6379 para sempre, acumulando timers/sockets no event loop do
+// worker e causando timeouts esporádicos na suíte completa. String vazia (não `delete`)
+// porque `src/config/env.ts` (`import 'dotenv/config'`) reidrata chaves ausentes de `.env`;
+// `''` é preservada pelo dotenv → `redisConfigured=false` → `lazyConnect:true` → zero conexões.
+// Alinha o ambiente com a premissa já documentada nos testes ("sem REDIS_URL o guard faz fail-open").
+process.env.REDIS_URL = '';
 // Setup global do MSW para os testes unitários (TEST-004). Registrado via `setupFiles` em
 // `vitest.unit.config.ts`. Antes disto, o mock de HTTP era ad hoc por arquivo
 // (`global.fetch = vi.fn()` / `vi.spyOn(globalThis, 'fetch')` / `vi.mock` da camada de API),
