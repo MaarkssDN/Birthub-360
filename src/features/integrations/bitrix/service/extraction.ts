@@ -3,15 +3,19 @@ import type { Prisma } from '@prisma/client';
 import { AuditService } from '../../../../lib/audit/audit.service.js';
 import { logger } from '../../../../lib/logger.js';
 import { prisma } from '../../../../lib/prisma.js';
-import { computeBackoffDelayMs, sleep } from '../../../../shared/http/retryWithBackoff.js';
 import { AppError } from '../../../../shared/middlewares/errorHandler.js';
 import { BITRIX_FIELD_MAP_VERSION } from '../bitrixFieldMap.js';
 import {
   BitrixCallAbortedError,
   BitrixDefinitiveError,
-  callBitrix,
   getConnectionWebhookUrl,
 } from './client.js';
+import {
+  applyCheckpoint,
+  type ExtractionEntityProgress,
+  findEntityCheckpoint,
+  type StoredExtractionFilters,
+} from './extractionCheckpoint.js';
 import {
   ALL_EXTRACTION_ENTITIES,
   type BitrixExtractionEntity,
@@ -29,6 +33,11 @@ import {
   writeExtractionFile,
 } from './extractionFiles.js';
 import {
+  extractEntityPages,
+  PAGE_SAFETY_CAP,
+  waitExtractionRetryBackoff,
+} from './extractionPagination.js';
+import {
   type BitrixExtractionPeriod,
   EXTRACTION_PERIODS,
   InvalidExtractionPeriodError,
@@ -40,6 +49,11 @@ import {
   bitrixExtractionPartialTotal,
   bitrixExtractionRetriesTotal,
 } from './metrics.js';
+
+// Re-export para compatibilidade: testes e consumidores existentes importam
+// `__setExtractionRetryDelayForTests` de `./extraction.js` — a implementação (e o estado de
+// delay/sleep injetável compartilhado com o retry por página) vive em `extractionPagination.ts`.
+export { __setExtractionRetryDelayForTests } from './extractionPagination.js';
 
 // ── Serviço real de Extrações Bitrix (Onda 7, Agente 06/06A) ───────────────────────────────────
 //
@@ -81,37 +95,6 @@ export interface CreateExtractionRunInput {
   };
 }
 
-interface StoredExtractionFilters {
-  period: BitrixExtractionPeriod;
-  customFrom?: string;
-  customTo?: string;
-  categoryId?: string;
-  stageId?: string;
-  assignedById?: string;
-  search?: string;
-}
-
-interface ExtractionEntityProgress {
-  entity: BitrixExtractionEntity;
-  status: 'pending' | 'running' | 'done' | 'error';
-  processed: number;
-  pagesScanned: number;
-  pagesExhausted: boolean;
-  error?: string;
-  /**
-   * Checkpoint incremental (Onda 41, gap de auditoria "full-scan sem cursor persistido") — ISO
-   * de `spec.dateField` (limite superior efetivamente usado nesta execução) gravado só quando a
-   * entidade termina com `pagesExhausted: true` e sem cancelamento. Uma extração futura para a
-   * MESMA conexão+entidade+preset de período lê este valor (ver `findEntityCheckpoint`) e
-   * começa dali em vez de reprocessar o período inteiro de novo. Nunca gravado/lido para
-   * `period: 'custom'` — período explícito do usuário sempre roda o intervalo pedido, sem
-   * checkpoint (requisito 3 do handoff).
-   */
-  checkpointTo?: string;
-  /** Presente só quando esta execução de fato retomou de um checkpoint anterior — valor ISO usado como `from` efetivo. Ausente = full-scan do período pedido (primeira vez, ou checkpoint não encontrado/aplicável). */
-  resumedFrom?: string;
-}
-
 interface ExtractionFileMeta {
   format: ExtractionFileFormat;
   /** `null` = arquivo consolidado (todas as entidades, ver JSON/XLSX abaixo). CSV é sempre por entidade. */
@@ -120,12 +103,6 @@ interface ExtractionFileMeta {
   sizeBytes: number;
   generatedAt: string;
 }
-
-// Proteção contra loop infinito (item obrigatório da spec de extração) — 500 páginas de 50
-// registros = até 25.000 registros por entidade numa única execução. Não é um teto de produto
-// (uma organização grande pode ter mais que isso), é uma rede de segurança: se atingido,
-// `pagesExhausted: false` fica registrado no progresso em vez de a extração rodar para sempre.
-const PAGE_SAFETY_CAP = 500;
 
 function resolveSelect(
   entity: BitrixExtractionEntity,
@@ -166,221 +143,6 @@ function buildFilter(
     filter.STATUS_ID = filters.stageId;
   }
   return filter;
-}
-
-interface BitrixListResponse {
-  result: Record<string, unknown>[];
-  next?: number;
-  total?: number;
-}
-
-/**
- * Quantas execuções recentes (mesma conexão, status terminal com dado utilizável) são inspecionadas
- * em busca de um checkpoint compatível. Um número pequeno é suficiente — o checkpoint que importa é
- * sempre o mais recente que bateu period+entidade; ir além disso só custaria uma leitura maior sem
- * ganho real (o histórico completo já está disponível via /extractions para auditoria manual).
- */
-const CHECKPOINT_LOOKBACK = 10;
-
-/**
- * Checkpoint incremental real (Onda 41) — antes desta mudança, `BitrixConnection.lastImportedAt`
- * existia no schema e era LIDO (`PrismaCommercialIntelligenceRepository`, métrica "última
- * sincronização") mas nunca ESCRITO por nenhum código deste repositório: puro metadado
- * informativo, não um cursor de verdade, e mesmo que fosse, é uma única data por CONEXÃO — não dá
- * pra representar 6 entidades com progresso independente (lead ≠ deal ≠ user...) num único campo.
- * Por isso o checkpoint fica em `BitrixExtractionRun.progress` (Json já existente, sem migration
- * nova), por conexão+entidade+preset de período.
- *
- * Só retoma de uma extração anterior BEM-SUCEDIDA (`status` completed/completed_partial — parcial
- * ainda conta se a ENTIDADE específica dentro dela esgotou o portal, mesmo que outra entidade da
- * mesma corrida tenha batido no teto de página) com o MESMO preset de período (`filters.period`
- * idêntico). `period: 'custom'` nunca participa — nem como origem nem como destino do lookup —
- * porque é sempre um pedido explícito do usuário (ex.: "últimos 7 dias" apontando para um intervalo
- * específico), e sobrepor isso com um cursor de uma execução anterior violaria exatamente o
- * requisito 3 do handoff (nunca sobrepor período explícito).
- */
-async function findEntityCheckpoint(
-  organizationId: string,
-  connectionId: string,
-  entity: BitrixExtractionEntity,
-  period: BitrixExtractionPeriod,
-  excludeRunId: string,
-): Promise<Date | null> {
-  if (period === 'custom') return null;
-  if (!EXTRACTION_ENTITY_SPECS[entity].dateField) return null; // ex.: user — sem campo de data, sem cursor possível
-
-  let candidates: Array<{ id: string; filters: unknown; progress: unknown }>;
-  try {
-    // `await` antes de qualquer encadeamento — se o mock/driver devolver `undefined` em vez de
-    // uma Promise (comum em teste unitário sem stub explícito para esta chamada), encadear
-    // `.catch` diretamente no retorno quebraria com "Cannot read properties of undefined".
-    const rows = await prisma.bitrixExtractionRun.findMany({
-      where: {
-        id: { not: excludeRunId },
-        organizationId,
-        connectionId,
-        status: { in: ['completed', 'completed_partial'] },
-        entities: { has: entity },
-      },
-      orderBy: { completedAt: 'desc' },
-      take: CHECKPOINT_LOOKBACK,
-      select: { id: true, filters: true, progress: true },
-    });
-    candidates = rows ?? [];
-  } catch (err: any) {
-    logger.warn(
-      { err, organizationId, connectionId, entity },
-      '[bitrix] Falha ao buscar checkpoint incremental anterior — seguindo com full-scan do período pedido',
-    );
-    return null;
-  }
-
-  for (const candidate of candidates) {
-    const candidateFilters = candidate.filters as Partial<StoredExtractionFilters> | null;
-    if (!candidateFilters || candidateFilters.period !== period) continue;
-
-    const progress = (candidate.progress as { entities?: ExtractionEntityProgress[] } | null)
-      ?.entities;
-    const entry = progress?.find((p) => p.entity === entity);
-    if (entry?.status !== 'done' || !entry.pagesExhausted || !entry.checkpointTo) continue;
-
-    const cursor = new Date(entry.checkpointTo);
-    if (!Number.isNaN(cursor.getTime())) return cursor;
-  }
-  return null;
-}
-
-/**
- * Combina o período pedido (`base`) com o checkpoint encontrado: nunca começa ANTES do início
- * natural do preset pedido (ex.: um checkpoint de 10 dias atrás não faz "last7days" olhar além dos
- * 7 dias — o preset continua sendo o teto de alcance), só evita reprocessar o que já foi coberto por
- * uma execução anterior dentro dessa janela. `base: null` (preset "all") vira uma janela
- * `[checkpoint, anchorTo]` — a extração completa "all" original continua intacta, mas a PRÓXIMA
- * repetição do mesmo preset "all" passa a ser incremental de verdade.
- */
-function applyCheckpoint(
-  base: PeriodRange | null,
-  checkpoint: Date | null,
-  anchorTo: Date,
-): PeriodRange | null {
-  if (!checkpoint) return base;
-  const to = base?.to ?? anchorTo;
-  const from = base && base.from.getTime() > checkpoint.getTime() ? base.from : checkpoint;
-  return { from, to };
-}
-
-let extractionBackoffDelayFn = (attempt: number) => computeBackoffDelayMs(attempt, 200, 2000);
-let extractionSleepFn = sleep;
-
-/** Configura atraso de retentativa para testes unitários — permite eliminar waits reais. */
-export function __setExtractionRetryDelayForTests(
-  delayFn?: (attempt: number) => number,
-  sleepFn?: (ms: number) => Promise<void>,
-) {
-  extractionBackoffDelayFn =
-    delayFn ?? ((attempt: number) => computeBackoffDelayMs(attempt, 200, 2000));
-  extractionSleepFn = sleepFn ?? sleep;
-}
-
-const MAX_PAGE_RETRIES = 3;
-
-async function extractEntityPages(
-  organizationId: string,
-  webhookUrl: string,
-  entity: BitrixExtractionEntity,
-  filter: Record<string, unknown>,
-  select: string[] | undefined,
-  correlationId: string,
-  onPage: (processedSoFar: number) => Promise<boolean>,
-  signal?: AbortSignal,
-): Promise<{
-  rows: Record<string, unknown>[];
-  pagesScanned: number;
-  pagesExhausted: boolean;
-  cancelled: boolean;
-}> {
-  const method = EXTRACTION_ENTITY_SPECS[entity].listMethod;
-  const rows: Record<string, unknown>[] = [];
-  let start = 0;
-  let pagesScanned = 0;
-  let pagesExhausted = false;
-  let cancelled = false;
-
-  while (pagesScanned < PAGE_SAFETY_CAP) {
-    // Cancelamento cooperativo (TAREFA-SANEAMENTO-046): abort entre páginas encerra sem nova
-    // chamada de rede — o signal também é propagado a cada `callBitrix` abaixo.
-    if (signal?.aborted) throw new BitrixCallAbortedError();
-    const params: Record<string, unknown> = { filter, start };
-    if (select) params.select = select;
-    if (entity !== 'user') params.order = { ID: 'ASC' }; // ordem estável — evita pular/duplicar registro se algo for criado/alterado entre páginas
-
-    let data: BitrixListResponse | null = null;
-    let pageAttempt = 1;
-
-    while (pageAttempt <= MAX_PAGE_RETRIES) {
-      try {
-        data = await callBitrix<BitrixListResponse>(webhookUrl, method, params, {
-          correlationId,
-          signal,
-        });
-        break;
-      } catch (err: any) {
-        // Cancelamento cooperativo propaga imediatamente — nunca retentado como falha transitória.
-        if (err instanceof BitrixCallAbortedError) throw err;
-        // Erro definitivo (401/403/filtro inválido) propaga imediatamente sem retentar
-        if (
-          err instanceof BitrixDefinitiveError ||
-          err?.statusCode === 401 ||
-          err?.statusCode === 403 ||
-          err?.statusCode === 400
-        ) {
-          throw err;
-        }
-
-        if (pageAttempt >= MAX_PAGE_RETRIES) {
-          logger.error(
-            { correlationId, entity, start, pageAttempt, maxPageAttempts: MAX_PAGE_RETRIES, err },
-            '[bitrix] Retentativas de página esgotadas na extração',
-          );
-          throw err;
-        }
-
-        const delay = extractionBackoffDelayFn(pageAttempt);
-        logger.warn(
-          {
-            correlationId,
-            entity,
-            start,
-            pageAttempt,
-            maxPageAttempts: MAX_PAGE_RETRIES,
-            delayMs: delay,
-          },
-          '[bitrix] Falha transitória ao buscar página da extração — retentando com backoff',
-        );
-        bitrixExtractionRetriesTotal.inc({ tenant: organizationId, entity });
-        await extractionSleepFn(delay);
-        pageAttempt++;
-      }
-    }
-
-    if (!data) {
-      throw new AppError(`Falha ao obter dados da página start=${start} do Bitrix24.`, 502);
-    }
-
-    rows.push(...data.result);
-    pagesScanned++;
-
-    cancelled = await onPage(rows.length);
-    if (cancelled) break;
-
-    if (data.next == null || data.result.length === 0) {
-      pagesExhausted = true;
-      break;
-    }
-    start = data.next;
-  }
-
-  return { rows, pagesScanned, pagesExhausted, cancelled };
 }
 
 async function isCancelled(organizationId: string, runId: string): Promise<boolean> {
@@ -693,7 +455,7 @@ export async function executeExtractionRun(organizationId: string, runId: string
           '[bitrix] Falha transitória na entidade durante extração — retentando entidade inteira com backoff',
         );
         bitrixExtractionRetriesTotal.inc({ tenant: organizationId, entity });
-        await extractionSleepFn(extractionBackoffDelayFn(entityAttempt));
+        await waitExtractionRetryBackoff(entityAttempt);
         entityAttempt++;
       }
     }
