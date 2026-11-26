@@ -2,7 +2,8 @@
 
 ## Dono
 
-Agente 02 — Produto e UX
+Agente 31 — Noa (Squad 30 · App Shell, Navegação e Layout). Legado: Agente 02 — Produto e UX.
+(Reconciliado em ONDA-DESIGN-PREMIUM-2026-11-24 conforme `.agents/MATRIZ_PROPRIEDADE.md`.)
 
 Este arquivo governa esta pasta e todas as subpastas.
 

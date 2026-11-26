@@ -168,7 +168,7 @@ describe('CadenceExecutionPort (Integração Swarm ↔ Cadência)', () => {
       });
     });
 
-    it('enfileira toque de E-mail para posterior agendamento quando autoExecute não é solicitado', async () => {
+    it('rejeita enqueueAction sem autoExecute com queue-unavailable — nunca retorna queued falso (POS3-44)', async () => {
       const { service, mockDispatcher, notifications } = createTestHarness({
         isWithinBusinessWindow: () => true,
       });
@@ -179,10 +179,17 @@ describe('CadenceExecutionPort (Integração Swarm ↔ Cadência)', () => {
         autoExecute: false,
       });
 
-      expect(result.accepted).toBe(true);
-      expect(result.status).toBe('queued');
+      // Não existe fila persistente de ações do Swarm: a porta deve falhar
+      // explicitamente em vez de fingir enfileiramento.
+      expect(result.accepted).toBe(false);
+      expect(result.status).toBe('rejected');
+      expect(result.rejectionReason).toBe('queue-unavailable');
+      expect(result.deliveryStatus).toBe('failed');
+      expect(result.status).not.toBe('queued');
       expect(mockDispatcher.dispatchEmail).not.toHaveBeenCalled();
-      expect(notifications).toHaveLength(0); // Não executou ainda, apenas enfileirou
+      expect(notifications).toHaveLength(1);
+      expect(notifications[0].status).toBe('failed');
+      expect(notifications[0].details?.reason).toBe('queue-unavailable');
     });
 
     it('executa toque de SDR Voice via executeAction com sucesso', async () => {

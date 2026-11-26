@@ -29,7 +29,7 @@ export interface ICrm360Repository {
     organizationId: string,
     leadId: string,
     stageId: string,
-    expectedCloseDate?: Date,
+    expectedCloseDate?: Date | string | number,
     actorUserId?: string,
   ): Promise<unknown>;
   convertLead(organizationId: string, leadId: string): Promise<unknown>;
