@@ -3,7 +3,13 @@ import type { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
 import { env } from '../../config/env.js';
 import { logger } from '../../lib/logger.js';
+import { AppError } from '../errors.js';
 import type { IObservabilityRequest } from './observability.js';
+
+// Re-exportado para preservar os imports existentes (`shared/middlewares/errorHandler.js`) —
+// a definição canônica está em `shared/errors.ts`, que não depende de `config/env` e por isso
+// pode ser importada com segurança por código que também roda no bundle do cliente.
+export { AppError };
 
 /**
  * Taxonomia estável de `code` de erro, exposta no corpo da resposta (ver checklist de contratos
@@ -51,18 +57,6 @@ export interface ApiResponse<T = unknown> {
   detail?: string;
   instance?: string;
   stack?: never; // Estritamente proibido no envelope de resposta do cliente
-}
-
-export class AppError extends Error {
-  public readonly statusCode: number;
-  public readonly details?: unknown;
-
-  constructor(message: string, statusCode: number = 400, details?: unknown) {
-    super(message);
-    this.statusCode = statusCode;
-    this.details = details;
-    Object.setPrototypeOf(this, new.target.prototype); // restore prototype chain
-  }
 }
 
 /**
