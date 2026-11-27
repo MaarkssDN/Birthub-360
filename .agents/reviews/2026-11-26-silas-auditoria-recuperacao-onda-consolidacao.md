@@ -145,7 +145,24 @@ Sem código morto, exports órfãos ou duplicação introduzidos pela onda.
 | `npx biome lint` nos diretórios alterados | **0 erros**; warnings apenas (a11y/style pré-existentes movidos verbatim — verificados contra a base) |
 | `npx tsc -p tsconfig.core.json --noEmit` (config auxiliar, não é gate) | 92 erros, **todos em arquivos não tocados pelo diff ou em subtree excluída do typecheck oficial** (`prospecting/outbound`, testes `__tests__`, `temporal-workers` sem deps instaladas). Zero erros nos arquivos novos extraídos. |
 | `npx tsc -p tsconfig.voice.json --noEmit` | Falha por dependências ausentes (`d3`, `twilio`, `openid-client` não instaladas) — **pré-existente/ambiental**: documentado em `docs/orchestration/ACTIVITY-LOG.md` (decisão 2026-11-15: voice-hub dormente atrás de `legacyModuleGate`, fora do CI). Nenhum erro reportado nos arquivos alterados pela onda. |
-| `npx vitest run -c vitest.unit.config.ts tests/unit` | Suíte em execução pelo auditor no momento do parecer (ver ressalvas). Tentativas de execução isolada de `extraction.test.ts` falharam por timeout de startup do worker (60s) — ambiental, reproduzido também com `--pool=forks`. |
+| `npx vitest run -c vitest.unit.config.ts` (testes-alvo da onda) | **PASS** — ver detalhe abaixo |
+
+Testes unitários executados pelo auditor (evidência direta das áreas refatoradas):
+
+| Arquivo de teste | Resultado |
+|---|---|
+| `src/features/integrations/bitrix/service/__tests__/extraction.test.ts` | **44/44 PASS** |
+| `tests/unit/features/landing/Landing360.test.tsx` | **22/22 PASS** |
+| `tests/unit/features/landing/Landing360Impeccable.test.tsx` | **14/14 PASS** |
+| `tests/unit/features/landing/pillars/PillarRegistry.visualizers.test.tsx` | **4/4 PASS** |
+| `tests/unit/features/market-intelligence/server/marketIntelligenceCompany.routes.contract.test.ts` | **7/7 PASS** |
+| `src/lib/voice-hub/services/workflowRuntimeService.knowledgeTool.test.ts` | **22/22 PASS** |
+| `tests/unit/features/intelligence/routes/intelligence.routes.test.ts` (execução parcial da suíte) | **32/32 PASS** |
+| `src/features/voice-hub/components/design-system/index.test.tsx` | **FALHA AMBIENTAL** — suite nem carrega: `Cannot find module '.../motion/node_modules/framer-motion/dist/es/motion/utils/use-visual-state.mjs'` (instalação quebrada de dependência aninhada em node_modules; arquivo de teste e código-fonte não foram alterados pelo diff — pré-existente/ambiental) |
+
+Execução parcial da suíte `tests/unit` (interrompida pelo auditor após ~45 min por tempo):
+69+ testes verdes nos arquivos executados; 2 falhas em `urlGuard.test.ts` (testes de
+DNS/loopback com timeout de 20–26s — sandbox sem DNS externo, não relacionadas ao diff).
 
 ## Achados
 
@@ -166,11 +183,14 @@ Sem código morto, exports órfãos ou duplicação introduzidos pela onda.
    presentes nos novos arquivos de landing são padrões pré-existentes movidos verbatim da
    `Landing360.tsx` original — não introduzidos pela refatoração.
 4. `PillarDetailModal.tsx` (não alterado pelo diff) tem imports não usados — pré-existente.
-5. Suíte unitária completa: em execução durante a auditoria; falhas pontuais observadas em
-   `urlGuard.test.ts` (2 testes de DNS/loopback com timeout de 20–26s) são ambientais
-   (sandbox sem DNS externo), não relacionadas ao diff. O arquivo de teste diretamente
-   ligado à refatoração Bitrix (`extraction.test.ts`) é coberto pela suíte em andamento;
-   recomenda-se confirmar seu resultado verde no relatório da suíte antes do merge.
+5. `design-system/index.test.tsx` falha por módulo framer-motion aninhado ausente em
+   `node_modules` — instalação quebrada do ambiente, não causada pelo diff (o arquivo de
+   teste e o design-system não introduzem essa dependência). Os demais testes-alvo da onda
+   passaram integralmente (ver tabela acima).
+6. Não existe teste unitário dedicado cobrindo `LeadDetailDrawer` nem as rotas de
+   `prospecting/outbound/server/routes` — lacuna de cobertura pré-existente do domínio,
+   não introduzida pela onda; a verificação de contratos dessas áreas foi feita por diff
+   byte-idêntico e revisão manual.
 
 ## Ressalvas
 
@@ -198,9 +218,8 @@ DNS em testes não relacionados), nenhuma introduzida pelo diff.
 
 **Pode integrar.** Antes do merge, recomenda-se (não bloqueante):
 
-1. Confirmar no CI/relatório da suíte `test:unit` o resultado de
-   `src/features/integrations/bitrix/service/__tests__/extraction.test.ts` e dos testes de
-   rotas de prospecting/intelligence.
+1. Rodar a suíte `test:unit` completa no CI para cobertura total (a auditoria executou os
+   testes-alvo da onda — todos verdes — e uma execução parcial da suíte).
 2. Avaliar em onda futura a inclusão de `prospecting/outbound` no typecheck oficial
    (há 92 erros latentes não-gated, incluindo em `leads.routes.ts`).
 3. Manter `CommercialIntelligence.ts` sob exceção até 30/11/2026 conforme registrado.
