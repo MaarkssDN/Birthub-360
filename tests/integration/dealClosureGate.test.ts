@@ -26,7 +26,7 @@ const withRlsBypass = <T>(fn: () => Promise<T>): Promise<T> =>
 const asOrg = <T>(organizationId: string, fn: () => Promise<T>): Promise<T> =>
   requestContext.run({ tenantId: organizationId }, fn);
 
-async function seedLead(status = 'Lead_Recebido') {
+async function seedLead(status = 'Lead_Recebido', funnel?: 'Lead' | 'Negocio') {
   return asOrg(ORG, async () => {
     const company = await prisma.company.create({
       data: { legalName: 'Empresa Teste', tradeName: 'Empresa Teste', organizationId: ORG },
@@ -40,6 +40,10 @@ async function seedLead(status = 'Lead_Recebido') {
         contactId: contact.id,
         organizationId: ORG,
         status: status as never,
+        // POS3-42: updateLeadStage rejeita etapa de pipeline cuja entity diverge do funil do
+        // registro — os testes do módulo CRM360 movem para etapas do funil Negócio, então o
+        // lead precisa nascer como Negócio (o default do schema é Lead).
+        ...(funnel ? { funnel: funnel as never } : {}),
       },
     });
   });
@@ -165,7 +169,7 @@ describe('CYC-007 — LeadUseCases.updateLead (edição completa)', () => {
 describe('CYC-007 — PrismaCrm360Repository.updateLeadStage (módulo CRM360)', () => {
   it('humano real: mover para a etapa "Negócios Ganhos" grava evidência real', async () => {
     await asOrg(ORG, () => ensureDefaultPipelines(ORG));
-    const lead = await seedLead();
+    const lead = await seedLead('Lead_Recebido', 'Negocio');
     const wonStage = await asOrg(ORG, () =>
       prisma.crmPipelineStage.findFirstOrThrow({
         where: { pipeline: { organizationId: ORG }, code: 'ganho' },
@@ -186,7 +190,7 @@ describe('CYC-007 — PrismaCrm360Repository.updateLeadStage (módulo CRM360)', 
 
   it('sem actorUserId: rejeitado, lead permanece na etapa original', async () => {
     await asOrg(ORG, () => ensureDefaultPipelines(ORG));
-    const lead = await seedLead();
+    const lead = await seedLead('Lead_Recebido', 'Negocio');
     const wonStage = await asOrg(ORG, () =>
       prisma.crmPipelineStage.findFirstOrThrow({
         where: { pipeline: { organizationId: ORG }, code: 'ganho' },
@@ -207,7 +211,7 @@ describe('CYC-007 — PrismaCrm360Repository.updateLeadStage (módulo CRM360)', 
 
   it('mover para uma etapa que NÃO é "Negócios Ganhos" nunca aciona o gate', async () => {
     await asOrg(ORG, () => ensureDefaultPipelines(ORG));
-    const lead = await seedLead();
+    const lead = await seedLead('Lead_Recebido', 'Negocio');
     const openStage = await asOrg(ORG, () =>
       prisma.crmPipelineStage.findFirstOrThrow({
         where: { pipeline: { organizationId: ORG }, code: 'nova-oportunidade' },

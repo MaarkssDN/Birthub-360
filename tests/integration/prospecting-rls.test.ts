@@ -67,7 +67,11 @@ const hardDeleteOrgData = async (organizationId: string) => {
     await tx.$executeRaw`DELETE FROM "TimelineEvent" WHERE "leadId" IN (SELECT id FROM "Lead" WHERE "organizationId" = ${organizationId})`;
     await tx.$executeRaw`DELETE FROM "BitrixSyncLog" WHERE "organizationId" = ${organizationId}`;
     await tx.$executeRaw`DELETE FROM "Activity" WHERE "organizationId" = ${organizationId}`;
-    await tx.$executeRaw`DELETE FROM "AuditLog" WHERE "tenantId" = ${organizationId}`;
+    // AuditLog NÃO é deletado: a migration 20261114160000_auditlog_append_only_immutability
+    // instalou trigger append-only (BEFORE DELETE FOR EACH ROW) que bloqueia qualquer DELETE —
+    // inclusive para o owner da tabela. `tenantId` é String sem FK para Organization, então as
+    // linhas residuais não impedem o organization.deleteMany do afterEach e ficam confinadas
+    // aos tenants dedicados deste arquivo (ORG_A/ORG_B).
     // Note não tem organizationId (só leadId/companyId/contactId, ON DELETE CASCADE) — resolve via pais.
     await tx.$executeRaw`DELETE FROM "Note" WHERE "leadId" IN (SELECT id FROM "Lead" WHERE "organizationId" = ${organizationId}) OR "companyId" IN (SELECT id FROM "Company" WHERE "organizationId" = ${organizationId}) OR "contactId" IN (SELECT id FROM "Contact" WHERE "organizationId" = ${organizationId})`;
     await tx.$executeRaw`DELETE FROM "PublicLeadConsent" WHERE "organizationId" = ${organizationId}`;

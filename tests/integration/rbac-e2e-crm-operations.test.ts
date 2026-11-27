@@ -52,7 +52,7 @@ async function createLead(organizationId: string): Promise<{ id: string }> {
  * de src/features/crm360/services/crm360.service.ts, que nenhuma rota da aplicação usa (removida
  * na Sprint 05/Onda 17, DATA-004, por ser um segundo conjunto de LEAD_STAGES/DEAL_STAGES mantido
  * manualmente em paralelo ao real, sem nenhum import fora de si mesma). */
-async function firstDealStageId(organizationId: string): Promise<string> {
+async function firstStageId(organizationId: string, entity: 'Lead' | 'Negocio'): Promise<string> {
   return withTenant(organizationId, async () => {
     const { PrismaCrm360Repository } =
       await import('../../src/features/crm360/infra/PrismaCrm360Repository');
@@ -62,13 +62,18 @@ async function firstDealStageId(organizationId: string): Promise<string> {
     const pipelines = await new PrismaCrm360Repository(new StripeChargeAdapter()).getPipelines(
       organizationId,
     );
-    const dealPipeline = pipelines.find((p) => p.entity === 'Negocio');
-    const stage = dealPipeline?.stages[0];
+    const pipeline = pipelines.find((p) => p.entity === entity);
+    const stage = pipeline?.stages[0];
     if (!stage)
-      throw new Error('Pipeline de Negócio sem etapa inicial — setup do teste está errado.');
+      throw new Error(`Pipeline ${entity} sem etapa inicial — setup do teste está errado.`);
     return stage.id;
   });
 }
+
+// POS3-42-STAGE-TRANSITIONS: updateLeadStage rejeita etapa cuja entity diverge do funil do
+// registro — LeadFactory cria registros funnel=Lead, então o move real usa etapa do pipeline Lead.
+const firstDealStageId = (organizationId: string) => firstStageId(organizationId, 'Negocio');
+const firstLeadStageId = (organizationId: string) => firstStageId(organizationId, 'Lead');
 
 describe('RBAC ponta-a-ponta — operações do CRM (Etapa 02)', () => {
   let app: Express;
@@ -111,7 +116,7 @@ describe('RBAC ponta-a-ponta — operações do CRM (Etapa 02)', () => {
   describe('PUT /api/crm/records/:id/stage (mover lead entre estágios)', () => {
     it('SDR (writeRoles) no próprio tenant: move de verdade (200)', async () => {
       const lead = await createLead(vendedorA.organizationId);
-      const stageId = await firstDealStageId(vendedorA.organizationId);
+      const stageId = await firstLeadStageId(vendedorA.organizationId);
 
       const res = await request(app)
         .put(`/api/crm/records/${lead.id}/stage`)
