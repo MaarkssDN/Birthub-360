@@ -34,12 +34,14 @@ export type DesignV2Flag = (typeof DESIGN_V2_FLAGS)[keyof typeof DESIGN_V2_FLAGS
  * @returns boolean indicating if the flag is enabled
  */
 export function isDesignV2Enabled(flag: DesignV2Flag): boolean {
-  // In development, enable all v2 features by default
-  if (import.meta.env.DEV) {
-    return true;
-  }
-
-  // In production, check localStorage or environment variables
+  // Flags v2 são opt-in explícito em TODOS os ambientes. O atalho anterior
+  // (`import.meta.env.DEV → true`) vazava para CI/E2E: o Vite 6 deriva
+  // import.meta.env.DEV de `process.env.NODE_ENV === 'production'`, então um
+  // `vite build` com NODE_ENV=test (todos os workflows de teste) compilava
+  // DEV=true — e o middleware Vite de testes sem dist também é DEV — fazendo
+  // Landing360V2 e a navegação v2 renderizarem nas suítes que homologam a v1
+  // (phase05-homologation, regressão visual). Em dev local, opt-in via console:
+  // localStorage.setItem('design.newLanding', 'true').
   const enabled = localStorage.getItem(flag);
   return enabled === 'true';
 }
