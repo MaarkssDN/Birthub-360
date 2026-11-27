@@ -1,7 +1,7 @@
-import { Inbox } from "lucide-react";
-import type React from "react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/v2/Button";
+import { Inbox } from 'lucide-react';
+import type React from 'react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/v2/Button';
 
 export interface EmptyStateV2Props {
   title: string;
@@ -32,8 +32,8 @@ export const EmptyStateV2: React.FC<EmptyStateV2Props> = ({
       aria-live="polite"
       data-testid="v2-empty-state"
       className={cn(
-        "flex flex-col items-center justify-center rounded-xl border border-dashed border-border-strong bg-card p-8 text-center",
-        className
+        'flex flex-col items-center justify-center rounded-xl border border-dashed border-border-strong bg-card p-8 text-center',
+        className,
       )}
     >
       <div
@@ -42,9 +42,7 @@ export const EmptyStateV2: React.FC<EmptyStateV2Props> = ({
       >
         {icon ?? <Inbox className="h-5 w-5" strokeWidth={1.5} />}
       </div>
-      <h3 className="font-display text-base font-semibold text-card-foreground">
-        {title}
-      </h3>
+      <h3 className="font-display text-base font-semibold text-card-foreground">{title}</h3>
       <p className="mt-1 max-w-md text-sm text-muted-foreground">{description}</p>
       {actionLabel && onAction && (
         <Button

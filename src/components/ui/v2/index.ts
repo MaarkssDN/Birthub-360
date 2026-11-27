@@ -1,4 +1,4 @@
-export { Button, buttonVariants, type ButtonProps } from "./Button";
+export { Button, buttonVariants, type ButtonProps } from './Button';
 export {
   Card,
   CardHeader,
@@ -7,9 +7,9 @@ export {
   CardDescription,
   CardContent,
   type CardProps,
-} from "./Card";
-export { Input, inputVariants, type InputProps } from "./Input";
-export { Badge, badgeVariants, type BadgeProps } from "./Badge";
+} from './Card';
+export { Input, inputVariants, type InputProps } from './Input';
+export { Badge, badgeVariants, type BadgeProps } from './Badge';
 export {
   Dialog,
   DialogPortal,
@@ -21,4 +21,4 @@ export {
   DialogFooter,
   DialogTitle,
   DialogDescription,
-} from "./Dialog";
+} from './Dialog';

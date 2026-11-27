@@ -34,10 +34,7 @@ import { LeadDetailDrawerBantSection } from './LeadDetailDrawerBantSection.js';
 import { LeadDetailDrawerBitrixSection } from './LeadDetailDrawerBitrixSection.js';
 import { LeadDetailDrawerHeader } from './LeadDetailDrawerHeader.js';
 import { LeadDetailDrawerNotesSection } from './LeadDetailDrawerNotesSection.js';
-import {
-  LeadCompanySection,
-  LeadContactSection,
-} from './LeadDetailDrawerProfileSections.js';
+import { LeadCompanySection, LeadContactSection } from './LeadDetailDrawerProfileSections.js';
 
 // TimelineEvent.type já vem do backend (PrismaLeadRepository.ts) restrito a estes 6 valores —
 // rótulo em português pra exibição; qualquer valor fora da lista cai no fallback (o próprio type).

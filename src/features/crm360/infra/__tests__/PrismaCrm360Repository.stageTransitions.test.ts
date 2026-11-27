@@ -155,12 +155,7 @@ describe('PrismaCrm360Repository.updateLeadStage — transições válidas', () 
         }),
       }),
     );
-    expect(recordStageTransitionMock).toHaveBeenCalledWith(
-      ORG,
-      LEAD_ID,
-      stage,
-      'pipe-deal',
-    );
+    expect(recordStageTransitionMock).toHaveBeenCalledWith(ORG, LEAD_ID, stage, 'pipe-deal');
     expect(result).toMatchObject({ status: 'Proposta Enviada' });
   });
 
@@ -189,9 +184,7 @@ describe('PrismaCrm360Repository.updateLeadStage — transições válidas', () 
     const closeDate = new Date('2026-12-31T00:00:00.000Z');
     prismaMock.crmPipelineStage.findFirstOrThrow.mockResolvedValue(stage);
     prismaMock.lead.findFirstOrThrow.mockResolvedValue(makePreviousLead());
-    prismaMock.lead.update.mockResolvedValue(
-      makeUpdatedLead({ expectedCloseAt: closeDate }),
-    );
+    prismaMock.lead.update.mockResolvedValue(makeUpdatedLead({ expectedCloseAt: closeDate }));
 
     await makeRepo().updateLeadStage(ORG, LEAD_ID, stage.id, closeDate, 'user-1');
 
@@ -216,9 +209,9 @@ describe('PrismaCrm360Repository.updateLeadStage — transições inválidas', (
     prismaMock.crmPipelineStage.findFirstOrThrow.mockResolvedValue(stage);
     prismaMock.lead.findFirstOrThrow.mockResolvedValue(makePreviousLead());
 
-    await expect(
-      makeRepo().updateLeadStage(ORG, LEAD_ID, stage.id),
-    ).rejects.toMatchObject({ statusCode: 400 });
+    await expect(makeRepo().updateLeadStage(ORG, LEAD_ID, stage.id)).rejects.toMatchObject({
+      statusCode: 400,
+    });
     expect(prismaMock.lead.update).not.toHaveBeenCalled();
     expect(recordStageTransitionMock).not.toHaveBeenCalled();
   });
@@ -230,9 +223,9 @@ describe('PrismaCrm360Repository.updateLeadStage — transições inválidas', (
       makePreviousLead({ funnel: LeadFunnel.Lead, status: LeadStatus.Reuniao_Agendada }),
     );
 
-    await expect(
-      makeRepo().updateLeadStage(ORG, LEAD_ID, stage.id),
-    ).rejects.toMatchObject({ statusCode: 400 });
+    await expect(makeRepo().updateLeadStage(ORG, LEAD_ID, stage.id)).rejects.toMatchObject({
+      statusCode: 400,
+    });
     expect(prismaMock.lead.update).not.toHaveBeenCalled();
   });
 
@@ -241,9 +234,9 @@ describe('PrismaCrm360Repository.updateLeadStage — transições inválidas', (
     prismaMock.crmPipelineStage.findFirstOrThrow.mockResolvedValue(stage);
     prismaMock.lead.findFirstOrThrow.mockResolvedValue(makePreviousLead());
 
-    await expect(
-      makeRepo().updateLeadStage(ORG, LEAD_ID, stage.id),
-    ).rejects.toMatchObject({ statusCode: 400 });
+    await expect(makeRepo().updateLeadStage(ORG, LEAD_ID, stage.id)).rejects.toMatchObject({
+      statusCode: 400,
+    });
     expect(prismaMock.lead.update).not.toHaveBeenCalled();
   });
 
@@ -265,9 +258,7 @@ describe('PrismaCrm360Repository.updateLeadStage — transições inválidas', (
     prismaMock.crmPipelineStage.findFirstOrThrow.mockResolvedValue(makeStage());
     prismaMock.lead.findFirstOrThrow.mockRejectedValue(new Error('not found'));
 
-    await expect(makeRepo().updateLeadStage(ORG, 'outro', 'stage-x')).rejects.toThrow(
-      'not found',
-    );
+    await expect(makeRepo().updateLeadStage(ORG, 'outro', 'stage-x')).rejects.toThrow('not found');
     expect(prismaMock.lead.update).not.toHaveBeenCalled();
   });
 });

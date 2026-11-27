@@ -1,6 +1,6 @@
-import type { ReactNode } from "react";
-import { motion } from "framer-motion";
-import { motionV2Reveal, useMotionV2 } from "@/lib/motion-v2";
+import type { ReactNode } from 'react';
+import { motion } from 'framer-motion';
+import { motionV2Reveal, useMotionV2 } from '@/lib/motion-v2';
 
 interface RevealProps {
   children: ReactNode;
@@ -22,12 +22,7 @@ export function Reveal({ children, className, disabled = false }: RevealProps) {
   }
 
   return (
-    <motion.div
-      className={className}
-      variants={motionV2Reveal}
-      initial="hidden"
-      animate="show"
-    >
+    <motion.div className={className} variants={motionV2Reveal} initial="hidden" animate="show">
       {children}
     </motion.div>
   );

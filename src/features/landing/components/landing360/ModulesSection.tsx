@@ -46,8 +46,7 @@ export function ModulesSection({ onOpenModal }: ModulesSectionProps) {
                 pillar.bg
                   ? { backgroundImage: `url('${pillar.bg}')` }
                   : {
-                      background:
-                        'linear-gradient(140deg, var(--a, #00D4FF), var(--b, #3B82F6))',
+                      background: 'linear-gradient(140deg, var(--a, #00D4FF), var(--b, #3B82F6))',
                     }
               }
               aria-hidden="true"

@@ -28,7 +28,8 @@ export function AiSection({ onOpenModal }: AiEcosystemSectionProps) {
           </h2>
           <p className="text-slate-400 text-base mb-6">
             O copiloto analisa o estágio de cada negociação, o histórico das interações e as
-            objeções recorrentes para apoiar sua equipe durante a negociação com supervisão contínua.
+            objeções recorrentes para apoiar sua equipe durante a negociação com supervisão
+            contínua.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-6">
             <div className="p-4 rounded-2xl border border-cyan-500/20 bg-slate-900 b360-dark-card dark:bg-[#0B1A2E]/80">

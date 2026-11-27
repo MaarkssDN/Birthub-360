@@ -115,8 +115,8 @@ export function ProblemSection({ isProblemIntersecting }: ProblemSectionProps) {
             <div className="b360-problem-row">
               <span className="b360-label-flag cyan">Solução Birth Hub</span>
               <p>
-                Orquestração automática de follow-ups com regras de SLA configuráveis e
-                recomendação da Próxima Melhor Ação (NBA).
+                Orquestração automática de follow-ups com regras de SLA configuráveis e recomendação
+                da Próxima Melhor Ação (NBA).
               </p>
             </div>
           </div>

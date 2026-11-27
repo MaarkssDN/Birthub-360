@@ -1,10 +1,10 @@
-import { Check } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { cn } from "@/lib/utils";
+import { Check } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { cn } from '@/lib/utils';
 import {
   buildOnboardingStorageKey,
   type OnboardingChecklistStep,
-} from "@/features/onboarding/ui/Checklist";
+} from '@/features/onboarding/ui/Checklist';
 
 export interface OnboardingChecklistV2Props {
   tenantId: string;
@@ -29,7 +29,7 @@ export function OnboardingChecklistV2({
   tenantId,
   userId,
   steps,
-  title = "Primeiros passos",
+  title = 'Primeiros passos',
   className,
 }: OnboardingChecklistV2Props) {
   const storageKey = buildOnboardingStorageKey(tenantId, userId);
@@ -39,7 +39,7 @@ export function OnboardingChecklistV2({
       const raw = globalThis.localStorage?.getItem(storageKey);
       if (!raw) return [];
       const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === "string") : [];
+      return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : [];
     } catch {
       return [];
     }
@@ -68,10 +68,7 @@ export function OnboardingChecklistV2({
     <section
       data-testid="v2-onboarding-checklist"
       aria-labelledby="v2-onboarding-title"
-      className={cn(
-        "rounded-xl border border-border-default bg-card p-5",
-        className
-      )}
+      className={cn('rounded-xl border border-border-default bg-card p-5', className)}
     >
       <div className="flex items-center justify-between gap-4">
         <h3
@@ -107,9 +104,9 @@ export function OnboardingChecklistV2({
             <li key={step.id}>
               <label
                 className={cn(
-                  "flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-sm transition-colors",
-                  "hover:bg-offwhite-100",
-                  checked ? "text-muted-foreground" : "text-card-foreground"
+                  'flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-sm transition-colors',
+                  'hover:bg-offwhite-100',
+                  checked ? 'text-muted-foreground' : 'text-card-foreground',
                 )}
               >
                 <input
@@ -122,18 +119,16 @@ export function OnboardingChecklistV2({
                 <span
                   aria-hidden="true"
                   className={cn(
-                    "grid h-5 w-5 shrink-0 place-items-center rounded-md border transition-colors",
-                    "peer-focus-visible:ring-2 peer-focus-visible:ring-gold-500 peer-focus-visible:ring-offset-2",
+                    'grid h-5 w-5 shrink-0 place-items-center rounded-md border transition-colors',
+                    'peer-focus-visible:ring-2 peer-focus-visible:ring-gold-500 peer-focus-visible:ring-offset-2',
                     checked
-                      ? "border-gold-500 bg-gold-500 text-navy-900"
-                      : "border-border-strong bg-transparent"
+                      ? 'border-gold-500 bg-gold-500 text-navy-900'
+                      : 'border-border-strong bg-transparent',
                   )}
                 >
                   {checked && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
                 </span>
-                <span className={cn(checked && "line-through opacity-70")}>
-                  {step.label}
-                </span>
+                <span className={cn(checked && 'line-through opacity-70')}>{step.label}</span>
               </label>
             </li>
           );

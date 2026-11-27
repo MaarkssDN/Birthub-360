@@ -5,25 +5,25 @@
 
 export const DESIGN_V2_FLAGS = {
   /** Novos design tokens (cores, tipografia, espaçamento) */
-  NEW_TOKENS: "design.newTokens",
+  NEW_TOKENS: 'design.newTokens',
   /** Novos componentes UI v2 */
-  NEW_COMPONENTS: "design.newComponents",
+  NEW_COMPONENTS: 'design.newComponents',
   /** Nova navegação e layout */
-  NEW_NAVIGATION: "design.newNavigation",
+  NEW_NAVIGATION: 'design.newNavigation',
   /** Novos estados de UI */
-  NEW_UI_STATES: "design.newUIStates",
+  NEW_UI_STATES: 'design.newUIStates',
   /** Novas landing pages */
-  NEW_LANDING: "design.newLanding",
+  NEW_LANDING: 'design.newLanding',
   /** Novo onboarding */
-  NEW_ONBOARDING: "design.newOnboarding",
+  NEW_ONBOARDING: 'design.newOnboarding',
   /** Novos dashboards */
-  NEW_DASHBOARDS: "design.newDashboards",
+  NEW_DASHBOARDS: 'design.newDashboards',
   /** Novo sistema de motion v2 */
-  NEW_MOTION: "design.newMotion",
+  NEW_MOTION: 'design.newMotion',
   /** Novos assets de marca */
-  NEW_BRAND_ASSETS: "design.newBrandAssets",
+  NEW_BRAND_ASSETS: 'design.newBrandAssets',
   /** Flag global para design v2 */
-  V2_ENABLED: "design.v2Enabled",
+  V2_ENABLED: 'design.v2Enabled',
 } as const;
 
 export type DesignV2Flag = (typeof DESIGN_V2_FLAGS)[keyof typeof DESIGN_V2_FLAGS];
@@ -41,7 +41,7 @@ export function isDesignV2Enabled(flag: DesignV2Flag): boolean {
 
   // In production, check localStorage or environment variables
   const enabled = localStorage.getItem(flag);
-  return enabled === "true";
+  return enabled === 'true';
 }
 
 /**

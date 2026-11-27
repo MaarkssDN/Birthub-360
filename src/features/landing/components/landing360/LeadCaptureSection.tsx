@@ -1,10 +1,7 @@
 import { CheckCircle2, Clock, Lock } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
-import {
-  type HeroVariant,
-  trackLeadFormSubmitted,
-} from '@/lib/analytics/conversionTelemetry';
+import { type HeroVariant, trackLeadFormSubmitted } from '@/lib/analytics/conversionTelemetry';
 import { SoundFX } from '@/lib/soundEffects';
 import {
   LANDING_DEMO_CONSENT_PURPOSE,
@@ -296,9 +293,7 @@ export function LeadCaptureSection({ abVariant }: LeadCaptureSectionProps) {
                     <input
                       type="checkbox"
                       checked={leadForm.consent}
-                      onChange={(e) =>
-                        setLeadForm({ ...leadForm, consent: e.target.checked })
-                      }
+                      onChange={(e) => setLeadForm({ ...leadForm, consent: e.target.checked })}
                       required
                       className="mt-0.5 rounded border-slate-700 text-[#00D4FF] focus:ring-[#00D4FF]"
                     />

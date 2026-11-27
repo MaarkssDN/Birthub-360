@@ -1,5 +1,5 @@
-import type React from "react";
-import { cn } from "@/lib/utils";
+import type React from 'react';
+import { cn } from '@/lib/utils';
 
 export interface LoadingStateV2Props {
   /** Rótulo anunciado por leitores de tela (role="status" + aria-live). */
@@ -8,7 +8,7 @@ export interface LoadingStateV2Props {
    * `spinner` — indicador discreto inline (usa .motion-v2-spinner);
    * `skeleton` — placeholder estrutural em `skeleton` custom ou default.
    */
-  variant?: "spinner" | "skeleton";
+  variant?: 'spinner' | 'skeleton';
   skeleton?: React.ReactNode;
   className?: string;
 }
@@ -16,11 +16,8 @@ export interface LoadingStateV2Props {
 function DefaultSkeletonV2() {
   return (
     <div className="w-full space-y-3" aria-hidden="true">
-      {["w-1/3", "w-full", "w-5/6", "w-2/3"].map((w) => (
-        <div
-          key={w}
-          className={cn("h-4 animate-pulse rounded bg-offwhite-200", w)}
-        />
+      {['w-1/3', 'w-full', 'w-5/6', 'w-2/3'].map((w) => (
+        <div key={w} className={cn('h-4 animate-pulse rounded bg-offwhite-200', w)} />
       ))}
     </div>
   );
@@ -32,8 +29,8 @@ function DefaultSkeletonV2() {
  * prefers-reduced-motion via motion-v2.css).
  */
 export function LoadingStateV2({
-  label = "Carregando…",
-  variant = "spinner",
+  label = 'Carregando…',
+  variant = 'spinner',
   skeleton,
   className,
 }: LoadingStateV2Props) {
@@ -43,9 +40,9 @@ export function LoadingStateV2({
       aria-live="polite"
       aria-busy="true"
       data-testid="v2-loading-state"
-      className={cn("w-full", className)}
+      className={cn('w-full', className)}
     >
-      {variant === "spinner" ? (
+      {variant === 'spinner' ? (
         <div className="flex items-center gap-2 text-muted-foreground">
           <span
             aria-hidden="true"

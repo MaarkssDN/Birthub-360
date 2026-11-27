@@ -8,11 +8,7 @@ import type { Lead, DecisionMaker } from '../../types.js';
 import { validateChangedLeadFields, upsertMessageWithVersioning } from '../utils/formatLead.js';
 import { z } from 'zod';
 import { prospectRouter } from './prospect.routes.js';
-import {
-  heavyAiLimiter,
-  leadBelongsToCompany,
-  LEAD_COMPANY_CLAUSE,
-} from './leads.shared.js';
+import { heavyAiLimiter, leadBelongsToCompany, LEAD_COMPANY_CLAUSE } from './leads.shared.js';
 
 const updateStageSchema = z.object({
   stage: z.string().min(1, 'Stage é obrigatório'),
@@ -787,7 +783,6 @@ leadsRouter.get('/leads/:id/evidence', requireAuth, async (req: Request, res: Re
     res.status(500).json({ error: err.message });
   }
 });
-
 
 // Prospecting Pipeline — handler extraído para prospect.routes.ts (handoff 40→43).
 // Montado aqui para preservar requireTenantScope (leadsRouter.use acima) e a

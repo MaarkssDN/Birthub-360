@@ -357,9 +357,7 @@ export function Landing360({
         {/* Footer Institucional + Sticky Action Bar + Dock A/B (FooterSection) */}
         <Landing360Footer
           abVariant={abVariant}
-          showStickyBar={
-            showScrollTop && viewMode === 'public' && activeScreen === 'intro'
-          }
+          showStickyBar={showScrollTop && viewMode === 'public' && activeScreen === 'intro'}
           onGoToLogin={handleGoToLogin}
           onSwitchAbVariant={handleSwitchAbVariant}
           onOpenModal={handleOpenModal}

@@ -1,4 +1,14 @@
-import { ArrowRight, Building2, Bot, Database, GitBranch, LineChart, Sparkles, Target, Workflow } from 'lucide-react';
+import {
+  ArrowRight,
+  Building2,
+  Bot,
+  Database,
+  GitBranch,
+  LineChart,
+  Sparkles,
+  Target,
+  Workflow,
+} from 'lucide-react';
 
 /** Arquitetura da Plataforma — sistema operacional comercial. */
 export function PlatformSection() {
@@ -18,8 +28,8 @@ export function PlatformSection() {
           <h3>Dados e conectividade Multi-CRM</h3>
           <p>
             Conexões via APIs abertas e webhooks mantêm os conectores em produção (Bitrix24,
-            WhatsApp Official API, VoiceHub e Webhooks/REST) sincronizados sem duplicação;
-            HubSpot, Salesforce e Pipedrive seguem em homologação.
+            WhatsApp Official API, VoiceHub e Webhooks/REST) sincronizados sem duplicação; HubSpot,
+            Salesforce e Pipedrive seguem em homologação.
           </p>
           <div className="b360-platform-badge">
             <span className="w-1.5 h-1.5 rounded-full bg-[#00D4FF] animate-pulse" />
@@ -145,8 +155,8 @@ export function FlowSection() {
           </div>
           <h3>Apoio com IA</h3>
           <p>
-            Histórico contextual, matriz de objeções e copiloto orientam as abordagens e reuniões
-            de negociação.
+            Histórico contextual, matriz de objeções e copiloto orientam as abordagens e reuniões de
+            negociação.
           </p>
           <div className="b360-flow-kpi">NBA contextual</div>
         </div>
