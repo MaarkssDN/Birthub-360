@@ -177,6 +177,14 @@ export async function fetchWithRetry(
   init: RequestInit,
   options: RetryOptions = {},
 ): Promise<Response> {
+  // Defesa em profundidade (CodeQL js/request-forgery): mesmo que um chamador futuro
+  // esqueça de validar, nenhuma URL fornecida por usuário pode chegar ao fetch() sem
+  // passar pela política de SSRF — a mesma validacao ja aplicada nos call sites.
+  const safety = isUrlSafeForOutboundWebhook(url);
+  if (!safety.safe) {
+    throw new Error(`URL de destino rejeitada por política de segurança: ${safety.reason}`);
+  }
+
   const attempts = Math.max(1, options.attempts ?? 3);
   const baseDelayMs = options.baseDelayMs ?? 300;
 
