@@ -249,7 +249,7 @@ prospectRouter.post(
         });
       } else {
         console.warn(
-          `Nenhum vendedor ativo cadastrado para a marca "${effectiveCompany}" — leads serão salvos sem atribuição automática.`,
+          `Nenhum vendedor ativo cadastrado para a marca ${JSON.stringify(effectiveCompany)} — leads serão salvos sem atribuição automática.`,
         );
       }
 
@@ -345,7 +345,7 @@ prospectRouter.post(
         if (hasEnrichmentBudget(budgetTracker)) {
           const apolloTitlesKeyPart =
             decisionMakerTitles && decisionMakerTitles.length > 0
-              ? [...decisionMakerTitles].sort().join(',')
+              ? [...decisionMakerTitles].sort((a, b) => a.localeCompare(b)).join(',')
               : '';
           const apolloCacheKey = `apollo:${cleanDomainForCache(leadItem.domain) || leadItem.name.toLowerCase()}:${decisionMakerRole || ''}:${apolloTitlesKeyPart}`;
           const apolloWasCached = hasFreshCacheEntry(apolloCacheKey);
