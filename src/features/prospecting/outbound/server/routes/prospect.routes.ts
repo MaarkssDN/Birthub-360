@@ -248,8 +248,12 @@ prospectRouter.post(
           }
         });
       } else {
+        // Sanitização explícita de quebras de linha (CodeQL js/log-injection):
+        // JSON.stringify escapa aspas mas não é reconhecido como barreira —
+        // remove terminadores de linha do valor controlado pelo usuário.
+        const companyForLog = String(effectiveCompany ?? '').replace(/[\n\r\u2028\u2029]/g, ' ');
         console.warn(
-          `Nenhum vendedor ativo cadastrado para a marca ${JSON.stringify(effectiveCompany)} — leads serão salvos sem atribuição automática.`,
+          `Nenhum vendedor ativo cadastrado para a marca ${JSON.stringify(companyForLog)} — leads serão salvos sem atribuição automática.`,
         );
       }
 
