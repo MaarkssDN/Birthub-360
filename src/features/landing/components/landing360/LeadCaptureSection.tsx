@@ -271,9 +271,9 @@ export function LeadCaptureSection({ abVariant }: LeadCaptureSectionProps) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono text-slate-300 mb-1.5">
+                  <p className="block text-xs font-mono text-slate-300 mb-1.5">
                     Tamanho da Equipe Comercial
-                  </label>
+                  </p>
                   <div className="b360-team-chips">
                     {['1 a 5', '6 a 15', '16 a 50', '50+'].map((sz) => (
                       <button
