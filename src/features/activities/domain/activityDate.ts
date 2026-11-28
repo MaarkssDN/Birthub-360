@@ -1,4 +1,4 @@
-import { AppError } from '../../../shared/middlewares/errorHandler.js';
+import { AppError } from '../../../shared/errors.js';
 
 /**
  * Utilitário de datas civis vs. instantes para Atividades comerciais.

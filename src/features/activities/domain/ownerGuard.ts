@@ -1,4 +1,4 @@
-import { AppError } from '../../../shared/middlewares/errorHandler.js';
+import { AppError } from '../../../shared/errors.js';
 
 /**
  * `Activity.owner` é texto livre (não FK para `User`) de propósito — o formulário humano

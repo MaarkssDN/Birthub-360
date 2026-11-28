@@ -282,22 +282,25 @@ describe('CRM360 — updateLeadStage (PUT /api/crm/records/:id/stage)', () => {
     expect(open[0].stageName).toBe('Etapa Custom Qualificada');
   });
 
-  it('cross-entity: mover para etapa do funil de Leads muda o funnel para Lead (contrato: entity da etapa manda)', async () => {
+  it('cross-entity: mover registro do funil Negócio para etapa do funil Leads é rejeitado (POS3-42)', async () => {
+    // O contrato mudou com a guarda POS3-42-STAGE-TRANSITIONS (commit 6069e6ae31): mover um
+    // Negócio para etapa de pipeline Lead (ou vice-versa) era o bug que fazia o registro
+    // "sumir" do funil de origem mantendo dados comerciais — agora é 400 e nada é escrito.
     const lead = await seedDealLead(ORG);
     const leadStage = await stageByCode(ORG, 'qualificacao-sdr', 'Lead');
 
-    await asOrg(ORG, () =>
-      crm360Repository.updateLeadStage(ORG, lead.id, leadStage.id, undefined, 'u'),
-    );
+    await expect(
+      asOrg(ORG, () =>
+        crm360Repository.updateLeadStage(ORG, lead.id, leadStage.id, undefined, 'u'),
+      ),
+    ).rejects.toThrow(/Transição de estágio inválida/);
 
     const persisted = await asOrg(ORG, () =>
       prisma.lead.findUniqueOrThrow({ where: { id: lead.id } }),
     );
-    expect(persisted.funnel).toBe(LeadFunnel.Lead);
-    expect(persisted.pipelineId).toBe(leadStage.pipelineId);
-    expect(persisted.pipelineStageId).toBe(leadStage.id);
-    expect(persisted.status).toBe(LeadStatus.Qualificacao_SDR);
-    expect(persisted.closedAt).toBeNull();
+    expect(persisted.funnel).toBe(LeadFunnel.Negocio);
+    expect(persisted.pipelineStageId).not.toBe(leadStage.id);
+    expect(persisted.status).not.toBe(LeadStatus.Qualificacao_SDR);
   });
 
   it('etapa de perda fecha o negócio (closedAt) e reabertura limpa closedAt', async () => {

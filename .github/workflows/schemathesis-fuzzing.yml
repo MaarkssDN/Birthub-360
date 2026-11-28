@@ -111,7 +111,9 @@ jobs:
         run: npm ci
 
       - name: Install Schemathesis
-        run: pip install schemathesis
+        # Pinado: releases 4.x removeram --junit-xml; --report junit é o sucessor.
+        # Mesma versão já pinada em api-schema-fuzz.yml.
+        run: pip install "schemathesis==4.33.4"
 
       - name: Bootstrap papel NOSUPERUSER do banco
         env:
@@ -162,7 +164,8 @@ jobs:
             --max-examples $EXAMPLES \
             --workers 2 \
             --header "Authorization: Bearer ci-test-token" \
-            --junit-xml schemathesis-results.xml
+            --report junit \
+            --report-junit-path schemathesis-results.xml
 
       - name: Stop Express API Server
         if: always()

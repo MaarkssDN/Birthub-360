@@ -133,9 +133,12 @@ export async function findLeads(opts: {
   const excludeDomains = opts.excludeDomains || new Set<string>();
   const excludeNames = opts.excludeNames || new Set<string>();
 
+  // Os quantificadores são limitados/não-ambíguos de propósito: `.*?` livre criava
+  // backtracking polinomial (CodeQL js/polynomial-redos) sobre query controlada pelo
+  // usuário — cada ocorrência de "com"/"(" podia varrer a string inteira.
   const placesQuery = query
-    .replace(/\(.*?\)/g, '')
-    .replace(/com\s.*?colaboradores/gi, '')
+    .replace(/\([^()]*\)/g, '')
+    .replace(/com\s.{0,200}?colaboradores/gi, '')
     .replace(/\s+/g, ' ')
     .trim();
 

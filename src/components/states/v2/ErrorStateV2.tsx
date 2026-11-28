@@ -1,6 +1,6 @@
-import { AlertTriangle, RefreshCw } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/v2/Button";
+import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/v2/Button';
 
 export interface ErrorStateV2Props {
   title: string;
@@ -12,7 +12,7 @@ export interface ErrorStateV2Props {
    * `panel` — bloco centralizado; `compact` — faixa inline para erros
    * parciais dentro de um card/seção que continua exibindo o restante.
    */
-  variant?: "panel" | "compact";
+  variant?: 'panel' | 'compact';
   className?: string;
 }
 
@@ -24,18 +24,18 @@ export function ErrorStateV2({
   title,
   message,
   onRetry,
-  retryLabel = "Tentar novamente",
-  variant = "panel",
+  retryLabel = 'Tentar novamente',
+  variant = 'panel',
   className,
 }: ErrorStateV2Props) {
-  if (variant === "compact") {
+  if (variant === 'compact') {
     return (
       <div
         role="alert"
         data-testid="v2-error-state"
         className={cn(
-          "flex flex-wrap items-center justify-between gap-3 rounded-xl border border-danger-500/30 bg-danger-100 px-4 py-3 text-xs text-danger-700",
-          className
+          'flex flex-wrap items-center justify-between gap-3 rounded-xl border border-danger-500/30 bg-danger-100 px-4 py-3 text-xs text-danger-700',
+          className,
         )}
       >
         <div className="flex min-w-0 items-center gap-2">
@@ -46,12 +46,7 @@ export function ErrorStateV2({
           </div>
         </div>
         {onRetry && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onRetry}
-            className="shrink-0"
-          >
+          <Button variant="outline" size="sm" onClick={onRetry} className="shrink-0">
             <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
             {retryLabel}
           </Button>
@@ -65,8 +60,8 @@ export function ErrorStateV2({
       role="alert"
       data-testid="v2-error-state"
       className={cn(
-        "flex flex-col items-center justify-center rounded-xl border border-danger-500/30 bg-danger-100 p-8 text-center",
-        className
+        'flex flex-col items-center justify-center rounded-xl border border-danger-500/30 bg-danger-100 p-8 text-center',
+        className,
       )}
     >
       <div
@@ -75,20 +70,10 @@ export function ErrorStateV2({
       >
         <AlertTriangle className="h-5 w-5" strokeWidth={1.5} />
       </div>
-      <h3 className="font-display text-base font-semibold text-danger-700">
-        {title}
-      </h3>
-      {message && (
-        <p className="mt-1 max-w-md text-sm text-danger-700/80">{message}</p>
-      )}
+      <h3 className="font-display text-base font-semibold text-danger-700">{title}</h3>
+      {message && <p className="mt-1 max-w-md text-sm text-danger-700/80">{message}</p>}
       {onRetry && (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={onRetry}
-          className="mt-4"
-        >
+        <Button type="button" variant="outline" size="sm" onClick={onRetry} className="mt-4">
           <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
           {retryLabel}
         </Button>

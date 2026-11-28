@@ -345,6 +345,12 @@ jobs:
 
       - name: Run Build
         if: ${{ !cancelled() }}
+        env:
+          # O job inteiro roda com NODE_ENV=test, mas o bundle do Vite deve ser o de
+          # produção: o Vite 6 deriva import.meta.env.DEV/PROD de
+          # process.env.NODE_ENV === 'production' — sem este override o "build de
+          # produção" do CI saía com DEV=true (React dev, flags v2 ligadas).
+          NODE_ENV: production
         run: npm run build
 
       - name: Smoke test do build de produção (/health/live, /health/ready, /health/version)
