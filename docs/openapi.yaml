@@ -393,6 +393,7 @@ paths:
       responses:
         '200':
           description: OK
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /commercial-agent/workspace:
     get:
@@ -401,6 +402,7 @@ paths:
       responses:
         '200':
           description: OK
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /commercial-agent/mission/{id}/trace:
     get:
@@ -421,6 +423,7 @@ paths:
                 properties:
                   success: { type: boolean }
                   data: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /commercial-agent/nba/{id}/execute:
     post:
@@ -450,6 +453,7 @@ paths:
                 properties:
                   success: { type: boolean }
                   message: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /commercial-agent/nba/{id}/feedback:
     post:
@@ -478,6 +482,7 @@ paths:
                 type: object
                 properties:
                   success: { type: boolean }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/commercial-v3/agents:
     get:
@@ -850,6 +855,7 @@ paths:
         numérico é fabricado quando o dado não existe.
       responses:
         '200': { description: Relatório de qualidade de dados agregado do tenant autenticado }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   # ─────────────── Account Intelligence (mount: /api/market-intelligence) ───────────────
   # Fonte: src/features/market-intelligence/server/accountIntelligence.routes.ts (+ .schemas.ts,
@@ -1094,6 +1100,7 @@ paths:
                     type: boolean
                   data:
                     type: object
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /mesa-tratamento/lead/{id}/register:
     parameters:
@@ -1141,6 +1148,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           description: Campo obrigatório ausente, ou Bitrix24 não conectado
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           description: Lead não pertence ao usuário (CLOSER/SDR)
         '404':
@@ -1173,6 +1181,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           description: bitrixUserId ausente, lead sem vínculo Bitrix, ou usuário Bitrix não encontrado
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           description: Papel insuficiente (só ADMIN/GESTOR)
         '404':
@@ -1204,6 +1213,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           description: Comentário vazio, ou lead sem vínculo Bitrix
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           description: Papel insuficiente (só ADMIN/GESTOR)
         '404':
@@ -1233,6 +1243,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           description: Papel insuficiente (só ADMIN/GESTOR)
         '404':
@@ -1264,6 +1275,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           description: Duração do bloco de foco inválida
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /mesa-tratamento/dashboard:
     get:
@@ -1288,6 +1300,7 @@ paths:
                     type: boolean
                   data:
                     type: object
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   # ───────────────────────────── Auth (better-auth) ─────────────────────────────
   /auth/sign-up/email:
@@ -1309,7 +1322,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/AuthSessionResponse'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: >-
+            Erro de validação do Better Auth — formato próprio da lib
+            (`{code, message}`), não o envelope `{success, error}` do restante da API
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: string }
+                  message: { type: string }
         '429':
           $ref: '#/components/responses/TooManyRequests'
 
@@ -1331,6 +1353,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthSessionResponse'
+        '400':
+          description: >-
+            Erro de validação do Better Auth — formato próprio da lib
+            (`{code, message}`), não o envelope `{success, error}` do restante da API
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: string }
+                  message: { type: string }
         '401':
           description: Credenciais inválidas
         '429':
@@ -1340,18 +1373,30 @@ paths:
     get:
       tags: [Auth]
       summary: Retorna a sessão atual (via cookie), se houver
+      security: []
+      description: >-
+        Endpoint público por design do Better Auth: sem cookie de sessão válido
+        responde `200` com corpo `null` (não `401`) — é o mecanismo que o cliente
+        usa para descobrir se há sessão. Com sessão, devolve o objeto de sessão.
       responses:
         '200':
           description: Sessão ativa ou `null`
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthSessionResponse'
+                description: Sessão ativa (formato Better Auth) ou `null` quando não há sessão válida
+                anyOf:
+                  - $ref: '#/components/schemas/AuthSessionResponse'
+                  - enum: [null]
 
   /auth/sign-out:
     post:
       tags: [Auth]
       summary: Encerra a sessão atual
+      security: []
+      description: >-
+        Endpoint público por design do Better Auth: sign-out sem sessão é no-op
+        idempotente e responde `200` — não exige credencial prévia.
       responses:
         '200':
           description: Sessão encerrada
@@ -1396,12 +1441,19 @@ paths:
           application/json:
             schema:
               type: object
+              anyOf:
+                - required: [domain]
+                - required: [email]
               properties:
                 domain:
                   type: string
+                  minLength: 4
+                  pattern: '^[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)+$'
                   example: empresa.com.br
                 email:
                   type: string
+                  format: email
+                  pattern: '^[^@\s]+@[^@\s]+\.[^@\s]+$'
                   example: usuario@empresa.com.br
       responses:
         '200':
@@ -1447,6 +1499,7 @@ paths:
                 properties:
                   success:
                     type: boolean
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /auth-extra/sessions:
     get:
@@ -1486,6 +1539,7 @@ paths:
                           format: date-time
                         current:
                           type: boolean
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /auth-extra/sessions/revoke-others:
     post:
@@ -1503,6 +1557,7 @@ paths:
                     type: boolean
                   revoked:
                     type: integer
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /auth-extra/sessions/{id}:
     parameters:
@@ -1529,6 +1584,7 @@ paths:
                     type: boolean
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -1550,6 +1606,7 @@ paths:
                     type: array
                     items:
                       type: object
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [API Keys]
       summary: Cria uma API key para o tenant
@@ -1595,6 +1652,7 @@ paths:
                     type: string
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /api-keys/{id}:
     parameters:
@@ -1616,6 +1674,7 @@ paths:
                 properties:
                   success:
                     type: boolean
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -1631,6 +1690,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CompanyListResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [Companies]
       summary: Cria uma empresa
@@ -1649,6 +1709,7 @@ paths:
                 $ref: '#/components/schemas/CompanyResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /companies/{id}:
     parameters:
@@ -1663,6 +1724,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CompanyResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           $ref: '#/components/responses/NotFound'
     put:
@@ -1683,6 +1745,7 @@ paths:
                 $ref: '#/components/schemas/CompanyResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           $ref: '#/components/responses/NotFound'
     delete:
@@ -1691,6 +1754,7 @@ paths:
       responses:
         '204':
           description: Removida
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -1709,6 +1773,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CompanyResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   # Catálogo global de inteligência de CNPJ (LDR) — path real usado por
   # LdrAccountIntelligence.tsx/CompanyBranchesView.tsx, montado em
@@ -1757,6 +1822,7 @@ paths:
           description: Página de empresas do catálogo, metadados de paginação e proveniência do snapshot
         '400':
           description: 'Filtro inválido (ex.: CNPJ com tamanho diferente de 14 ou 8 dígitos, UF inválida)'
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /companies/market-intelligence/{cnpj}/intelligence:
     parameters:
       - name: cnpj
@@ -1776,6 +1842,7 @@ paths:
             decisionMakers, economicGroup, crm, nextBestAction, provenance
         '400':
           description: CNPJ com formato inválido
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: CNPJ ausente do snapshot publicado
   /companies/market-intelligence/{cnpj}/approve-to-pipeline:
@@ -1792,6 +1859,7 @@ paths:
           description: 'Empresa e Lead aprovados/reaproveitados (idempotente por CNPJ+organização)'
         '400':
           description: CNPJ com formato inválido
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: CNPJ ausente do catálogo de inteligência
         '403':
@@ -1820,6 +1888,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ContactListResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [Contacts]
       summary: Cria um contato
@@ -1838,6 +1907,7 @@ paths:
                 $ref: '#/components/schemas/ContactResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /contacts/{id}:
     parameters:
@@ -1852,6 +1922,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ContactResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           $ref: '#/components/responses/NotFound'
     put:
@@ -1870,12 +1941,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ContactResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
     delete:
       tags: [Contacts]
       summary: Remove um contato (somente ADMIN/GESTOR)
       responses:
         '204':
           description: Removido
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -1892,6 +1965,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   # ───────────────────────────── Leads ─────────────────────────────
   /leads:
@@ -1905,6 +1979,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LeadListResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [Leads]
       summary: Cria um lead
@@ -1921,6 +1996,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LeadResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /leads/export/csv:
     get:
@@ -1936,6 +2012,7 @@ paths:
               schema:
                 type: string
                 format: binary
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -1955,6 +2032,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -1990,6 +2068,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           description: leadIds ou updates ausente/inválido
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /leads/{id}:
     parameters:
@@ -2004,6 +2083,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LeadResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           $ref: '#/components/responses/NotFound'
     put:
@@ -2022,12 +2102,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LeadResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
     delete:
       tags: [Leads]
       summary: Remove um lead (somente ADMIN/GESTOR)
       responses:
         '204':
           description: Removido
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -2044,6 +2126,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LeadResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /leads/{leadId}/notes:
     parameters:
@@ -2061,6 +2144,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NoteListResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [Notes]
       summary: Cria uma nota no lead
@@ -2077,6 +2161,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NoteResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /leads/{leadId}/notes/{noteId}:
     parameters:
@@ -2094,6 +2179,7 @@ paths:
       responses:
         '204':
           description: Removida
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /companies/dedup/preview:
     get:
@@ -2131,6 +2217,7 @@ paths:
                                   cnpj: { type: string, nullable: true }
                                   enrichmentStatus: { type: string }
                                   createdAt: { type: string, format: date-time }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -2156,6 +2243,7 @@ paths:
                     properties:
                       merged: { type: integer }
                       groups: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -2170,6 +2258,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LeadDedupPreviewResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /leads/dedup/merge:
     post:
@@ -2184,6 +2273,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LeadDedupMergeResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /leads/{leadId}/attachments:
     parameters:
@@ -2201,6 +2291,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AttachmentListResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [Attachments]
       summary: Registra o anexo após o upload direto ao storage ter sido concluído
@@ -2217,6 +2308,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AttachmentResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /leads/{leadId}/attachments/upload-url:
     parameters:
@@ -2240,6 +2332,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AttachmentUploadUrlResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /leads/{leadId}/attachments/{attachmentId}/download-url:
     parameters:
@@ -2261,6 +2354,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AttachmentDownloadUrlResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /leads/{leadId}/attachments/{attachmentId}:
     parameters:
@@ -2278,6 +2372,7 @@ paths:
       responses:
         '204':
           description: Removido
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   # ───────────────────────────── Activities ─────────────────────────────
   /activities:
@@ -2317,6 +2412,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ActivityListResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [Activities]
       summary: Cria uma atividade
@@ -2333,6 +2429,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ActivityResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /activities/{id}:
     parameters:
@@ -2353,12 +2450,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ActivityResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
     delete:
       tags: [Activities]
       summary: Remove uma atividade
       responses:
         '204':
           description: Removida
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /activities/templates:
     get:
@@ -2373,6 +2472,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /activities/feed.ics:
     get:
@@ -2392,6 +2492,7 @@ paths:
           content:
             text/calendar:
               schema: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /activities/{id}/snooze:
     parameters:
@@ -2415,6 +2516,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   # ───────────────────────────── Calendar & Booking ─────────────────────────────
   /calendar/booking-links:
@@ -2430,6 +2532,7 @@ paths:
                 type: array
                 items:
                   type: object
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [Activities]
       summary: Cria um novo link público de agendamento
@@ -2452,6 +2555,7 @@ paths:
       responses:
         '201':
           description: Link criado
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /calendar/booking-links/{id}:
     parameters:
@@ -2479,6 +2583,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: Link não encontrado ou sem permissão
     delete:
@@ -2487,6 +2592,7 @@ paths:
       responses:
         '200':
           description: Removido
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /calendar/book/{slug}:
     parameters:
@@ -2505,6 +2611,7 @@ paths:
       responses:
         '200':
           description: Detalhes do link de agendamento
+        '404': { $ref: '#/components/responses/NotFound' }
     post:
       tags: [Activities]
       security: []
@@ -2536,6 +2643,7 @@ paths:
       responses:
         '201':
           description: Reunião agendada com sucesso
+        '404': { $ref: '#/components/responses/NotFound' }
 
   /public/demo-leads:
     post:
@@ -2575,14 +2683,19 @@ paths:
                 email:
                   type: string
                   format: email
+                  maxLength: 320
+                  pattern: '^(?!\.)(?!.*\.\.)([A-Za-z0-9_''+\-.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$'
                 whatsapp:
                   type: string
+                  maxLength: 40
+                  pattern: '^(?=[\d\s()+-]{8,20}$)(?=(?:\D*\d){10,13}\D*$)[\d\s()+-]+$'
                   description: Opcional. Telefone brasileiro com DDD, com ou sem máscara, com ou sem DDI 55
                 equipe:
                   type: string
                   enum: ['1 a 5', '6 a 15', '16 a 50', '50+']
                 consent:
                   type: boolean
+                  enum: [true]
                   description: Deve ser true (opt-in afirmativo; o servidor rejeita false/omitido)
                 consentTextVersion:
                   type: string
@@ -2690,15 +2803,28 @@ paths:
                   type: string
                   format: email
                   maxLength: 160
+                  pattern: '^(?!\.)(?!.*\.\.)([A-Za-z0-9_''+\-.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$'
                 whatsapp:
                   type: string
+                  minLength: 8
+                  maxLength: 20
+                  pattern: '^(?=[\d\s()+-]{8,20}$)(?=(?:\D*\d){10,13}\D*$)[\d\s()+-]+$'
                   description: Telefone com DDD; máscara opcional. Dígitos finais devem totalizar 10-13.
                 equipe:
                   type: string
                   enum: ['1 a 5', '6 a 15', '16 a 50', '50+']
                 consent:
                   type: boolean
+                  enum: [true]
                   description: Deve ser true (opt-in afirmativo; o servidor rejeita false/omitido)
+                empresa:
+                  type: string
+                  maxLength: 160
+                  description: Opcional. Nome da empresa
+                mensagem:
+                  type: string
+                  maxLength: 2000
+                  description: Opcional. Mensagem livre do lead
                 website:
                   type: string
                   description: Honeypot anti-abuso — deve ser omitido ou string vazia
@@ -2771,6 +2897,7 @@ paths:
                   type: string
                   format: email
                   maxLength: 160
+                  pattern: '^(?!\.)(?!.*\.\.)([A-Za-z0-9_''+\-.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$'
                 rightType:
                   type: string
                   enum: [ACCESS, PORTABILITY, CORRECTION, ERASURE, CONSENT_REVOCATION, SHARING_INFO]
@@ -2814,8 +2941,12 @@ paths:
               properties:
                 protocol:
                   type: string
+                  minLength: 4
+                  maxLength: 64
                 token:
                   type: string
+                  minLength: 10
+                  maxLength: 200
       responses:
         '200':
           description: Direito verificado e processado
@@ -2894,6 +3025,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /prospecting/discover:
     post:
@@ -2915,6 +3047,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /prospecting/providers:
     get:
@@ -2927,6 +3060,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /prospecting/providers/test:
     post:
@@ -2939,6 +3073,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -2976,6 +3111,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /prospecting/enrich-cnpj:
     post:
@@ -2999,6 +3135,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /prospecting/enrich:
     post:
@@ -3018,6 +3155,7 @@ paths:
       responses:
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '501':
           description: Scraper (Crawlee) ainda não implementado
           content:
@@ -3057,6 +3195,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /prospecting/reject:
     post:
@@ -3079,6 +3218,7 @@ paths:
                 type: object
                 properties:
                   success: { type: boolean, example: true }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /prospecting/companies/{id}/enrich-cascade:
     parameters:
@@ -3113,6 +3253,7 @@ paths:
                   success: { type: boolean, example: true }
                   message: { type: string }
                   jobId: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /prospecting/saved-searches:
     get:
@@ -3127,6 +3268,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [Prospecting]
       summary: >-
@@ -3152,6 +3294,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           description: name ausente
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /prospecting/saved-searches/{id}:
     parameters:
@@ -3171,6 +3314,7 @@ paths:
                 properties:
                   success: { type: boolean, example: true }
                   message: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /prospecting/saved-searches/{id}/run:
     parameters:
@@ -3187,6 +3331,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: Busca salva não encontrada
 
@@ -3213,6 +3358,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: Execução de busca não encontrada (ou pertence a outro tenant)
 
@@ -3239,6 +3385,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /prospecting/icebreaker:
     post:
@@ -3268,6 +3415,7 @@ paths:
                       icebreaker: { type: string }
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /prospecting/tools/status:
     get:
@@ -3280,6 +3428,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /prospecting/tools/google-places:
     post:
@@ -3301,6 +3450,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /prospecting/tools/apollo:
     post:
@@ -3322,6 +3472,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /prospecting/tools/hunter:
     post:
@@ -3346,6 +3497,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /prospecting/tools/hunter/verify-email:
     post:
@@ -3370,6 +3522,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /prospecting/tools/github:
     post:
@@ -3394,6 +3547,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /prospecting/tools/github/profile:
     post:
@@ -3417,6 +3571,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /prospecting/tools/news:
     post:
@@ -3440,6 +3595,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /prospecting/tools/youtube:
     post:
@@ -3463,6 +3619,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   # ───────────────────────────── Intelligence ─────────────────────────────
   /intelligence/chatbook/history:
@@ -3485,6 +3642,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           description: brand ausente ou inválido
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/telemetry/groq:
     get:
@@ -3547,6 +3705,7 @@ paths:
                 type: string
         '400':
           description: brandKey ausente
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/studio:
     post:
@@ -3573,6 +3732,7 @@ paths:
                 type: object
                 properties:
                   result: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/roleplay/finish:
     post:
@@ -3639,6 +3799,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           description: corpo da requisição inválido (transcript vazio, enum fora do domínio, etc.)
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/roleplay/history:
     get:
@@ -3660,6 +3821,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           description: brand ausente ou inválido
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence:
     post:
@@ -3691,6 +3853,7 @@ paths:
                   result: { type: string }
         '400':
           description: Ferramenta inválida ou concorrente ausente
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/qualify:
     post:
@@ -3720,6 +3883,7 @@ paths:
                   jobId: { type: string }
         '400':
           description: leadId ausente
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/agents/sdr/qualify:
     post:
@@ -3739,6 +3903,7 @@ paths:
           description: Agente iniciado em background
         '400':
           description: leadId ausente
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/search:
     get:
@@ -3763,6 +3928,7 @@ paths:
                   results: { type: array, items: { type: object } }
         '400':
           description: Query ausente ou longa demais
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/pending:
     get:
@@ -3776,6 +3942,7 @@ paths:
               schema:
                 type: array
                 items: { $ref: '#/components/schemas/AIPendingAction' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/pending/{id}/approve:
     parameters:
@@ -3790,6 +3957,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -3802,6 +3970,7 @@ paths:
       responses:
         '204':
           description: Descartada
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -3826,6 +3995,7 @@ paths:
                       actions:
                         type: array
                         items: { $ref: '#/components/schemas/AIPendingAction' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/pending/{id}/outcome:
     parameters:
@@ -3858,6 +4028,7 @@ paths:
                     type: object
                     properties:
                       action: { $ref: '#/components/schemas/AIPendingAction' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: Ação executada não encontrada para este id
         '409':
@@ -3874,6 +4045,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
     put:
       tags: [Intelligence]
       summary: >-
@@ -3907,6 +4079,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -3933,6 +4106,7 @@ paths:
                 type: object
                 properties:
                   result: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/report/stream:
     post:
@@ -3957,6 +4131,7 @@ paths:
             text/event-stream:
               schema:
                 type: string
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/toolkit/execute:
     post:
@@ -4004,6 +4179,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           description: Função desconhecida ou aridade de argumentos incorreta
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/tools/custom:
     get:
@@ -4028,6 +4204,7 @@ paths:
                         category: { type: string }
                         prompt: { type: string }
                         createdAt: { type: string, format: date-time }
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [Intelligence]
       summary: Cadastra uma nova ferramenta personalizada de IA na organização
@@ -4054,6 +4231,7 @@ paths:
                   data: { type: object }
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/tools/custom/{id}:
     delete:
@@ -4073,6 +4251,7 @@ paths:
                 type: object
                 properties:
                   success: { type: boolean, example: true }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/observability/agents:
     get:
@@ -4091,6 +4270,7 @@ paths:
                     type: array
                     items:
                       type: object
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/observability/logs:
     get:
@@ -4109,6 +4289,7 @@ paths:
                     type: array
                     items:
                       type: object
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   # ─────────────────── Intelligence Suite (catálogo de 16 ações de IA) ───────────────────
   # Montado em intelligence.routes.ts (`router.use('/suite', aiSuiteRouter)`), restrito a
@@ -4126,6 +4307,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/suite/decision-committee:
     post:
@@ -4147,6 +4329,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/suite/bitrix-hygiene:
     post:
@@ -4164,6 +4347,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/suite/cadence-step:
     post:
@@ -4181,6 +4365,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/suite/roleplay/turn:
     post:
@@ -4198,6 +4383,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/suite/roleplay/evaluate:
     post:
@@ -4219,6 +4405,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/suite/proposal/generate:
     post:
@@ -4236,6 +4423,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/suite/next-best-action:
     post:
@@ -4253,6 +4441,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/suite/churn/predict:
     post:
@@ -4270,6 +4459,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/suite/lead-router/match:
     post:
@@ -4293,6 +4483,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/suite/knowledge/copilot:
     post:
@@ -4319,6 +4510,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           description: 'question ausente ou fora do tamanho permitido (3–2000 caracteres)'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/suite/meeting/synthesize:
     post:
@@ -4336,6 +4528,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/suite/mesa/triage:
     post:
@@ -4353,6 +4546,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/suite/coaching/report:
     post:
@@ -4370,6 +4564,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/suite/playbook/generate-chapter:
     post:
@@ -4387,6 +4582,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/suite/lgpd/sanitize:
     post:
@@ -4407,6 +4603,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/suite/predictive/lead-score:
     post:
@@ -4428,6 +4625,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/suite/predictive/next-best-action:
     post:
@@ -4454,6 +4652,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   # ───────────────────────────── Agent (copiloto/voz/swarm) ─────────────────────────────
   /agent/characters:
@@ -4586,6 +4785,8 @@ paths:
               schema:
                 type: string
                 format: binary
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/swarm/mission:
     post:
@@ -4604,6 +4805,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/swarm/stream:
     post:
@@ -4622,21 +4824,15 @@ paths:
             text/event-stream:
               schema:
                 type: string
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/swarm/learn:
     post:
       tags: [Agent]
       summary: Roda o agente de aprendizado contínuo, refletindo sobre ações recentes do usuário
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [userId, organizationId]
-              properties:
-                userId: { type: string }
-                organizationId: { type: string }
+      description: >-
+        Não lê corpo da requisição — `userId`/`organizationId` são resolvidos da sessão
+        autenticada no servidor (o corpo é ignorado pelo handler).
       responses:
         '200':
           description: Diretrizes aprendidas
@@ -4647,6 +4843,7 @@ paths:
                 properties:
                   success: { type: boolean }
                   learnedGuidelines: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/swarm/learn/history:
     get:
@@ -4678,6 +4875,7 @@ paths:
                             guidelines: { type: string }
                             createdAt: { type: string, format: date-time }
                             metrics: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/swarm/learn/rollback:
     post:
@@ -4712,6 +4910,7 @@ paths:
                       guidelines: { type: string }
         '400':
           description: 'Corpo inválido (`targetVersion` ausente ou menor que 1)'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: Versão pedida não existe no histórico deste perfil
           content:
@@ -4763,6 +4962,7 @@ paths:
                 properties:
                   success: { type: boolean }
                   error: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/swarm/learn/reject:
     post:
@@ -4804,6 +5004,7 @@ paths:
                 properties:
                   success: { type: boolean }
                   error: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/swarm/slo:
     get:
@@ -4825,6 +5026,7 @@ paths:
               schema: { type: object }
         '400':
           description: 'Query inválida (`days` fora do intervalo 1-90)'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/evaluation-metrics:
     get:
@@ -4845,6 +5047,7 @@ paths:
               schema: { type: object }
         '400':
           description: 'Query inválida (`days` fora do intervalo 1-90)'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/circuit-breaker/state:
     get:
@@ -4860,6 +5063,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/learning-heatmap:
     get:
@@ -4875,6 +5079,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/model-benchmark:
     get:
@@ -4890,6 +5095,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '500':
           description: >-
             Comportamento atual e determinístico: falha sempre. `getFullSwarmModelBenchmark` consulta `AILog` filtrando por `modelName` e selecionando `success`, `costUsd`, `promptTokens` e `completionTokens`, campos que não existem no modelo (ele tem `tokens`, `cost`, `latencyMs` e `model`), o que lança PrismaClientValidationError antes de qualquer retorno.
@@ -4940,6 +5146,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '500':
           description: >-
             Comportamento atual e determinístico: falha sempre. Depois da validação do corpo (que responde 400), `predictMissionSuccess` chama primeiro `getHistoricalMissionData`, que seleciona `success` e `costUsd` em `AILog`, campos inexistentes no modelo (ele tem `cost` e `tokens`), o que lança PrismaClientValidationError.
@@ -4964,6 +5171,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '500':
           description: >-
             Comportamento atual e determinístico: falha sempre. `checkAgentHealthAndCreateAlerts` chama `calculateAgentHealthMetrics` para o primeiro papel (SDR), que seleciona `success` e `costUsd` em `AILog`, campos inexistentes no modelo (ele tem `cost` e `tokens`); a PrismaClientValidationError ocorre antes de qualquer alerta ser criado.
@@ -4997,6 +5205,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '500':
           description: >-
             Comportamento atual e determinístico: falha sempre. `listPromptExperiments` chama `prisma.promptExperiment.findMany`, mas não existe model `PromptExperiment` em `prisma/schema.prisma`; o client não tem esse delegate e a chamada lança TypeError (Cannot read properties of undefined (reading 'findMany')).
@@ -5031,6 +5240,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '500':
           description: >-
             Comportamento atual e determinístico: falha sempre. Depois da consulta (válida) a `AgentMemory`, `getSwarmRealtimeStatus` seleciona `costUsd` e `success` em `AILog`, campos inexistentes no modelo (ele tem `cost` e `tokens`), o que lança PrismaClientValidationError. Mesmo corrigido isso, a consulta seguinte filtra `AgentMemory` por `status: 'Running'`, valor fora do enum `AgentMemoryStatus` (só `Completed` e `Failed`), e também falharia.
@@ -5072,6 +5282,7 @@ paths:
                     properties:
                       logs: { type: array, items: { type: object } }
                       total: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '500':
           description: >-
             Comportamento atual e determinístico: falha sempre. `getSwarmAuditLogs` chama `prisma.swarmAuditLog.findMany`/`count`, mas não existe model `SwarmAuditLog` em `prisma/schema.prisma`; o client não tem esse delegate e a chamada lança TypeError (Cannot read properties of undefined (reading 'findMany')).
@@ -5113,6 +5324,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/cost-analysis:
     get:
@@ -5138,6 +5350,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '500':
           description: >-
             Comportamento atual e determinístico: falha sempre. `analyzeAgentCosts` seleciona `costUsd`, `promptTokens` e `completionTokens` em `AILog`, campos que não existem no modelo (ele tem `cost` e `tokens`), o que lança PrismaClientValidationError. Este service não usa o valor 'Running'.
@@ -5163,6 +5376,7 @@ paths:
                 properties:
                   summary: { type: object }
                   toolUseValidation: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/commercial-cell:
     get:
@@ -5177,6 +5391,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/commercial-cell/revenue-intelligence/run:
     post:
@@ -5205,6 +5420,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/commercial-cell/contract-signature/run:
     post:
@@ -5240,6 +5457,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/commercial-cell/churn-retention/run:
     post:
@@ -5277,6 +5496,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   # ─── Célula Comercial — agentes conectados na onda 6 (AIAGENT-004) ───
   # Montados via `router.use(commercialCellRoutes)` SEM path em agent.routes.ts — o Passe 2 do
@@ -5305,6 +5526,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '500':
           description: Contexto de organização (tenant) não inicializado na requisição
 
@@ -5335,6 +5558,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/commercial-cell/manager-commercial/run:
     post:
@@ -5363,6 +5588,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/commercial-cell/executive-director/run:
     post:
@@ -5391,6 +5618,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/commercial-cell/bitrix-guardian/run:
     post:
@@ -5420,6 +5648,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   # ─── Ecossistema Universal de Agentes (universalEcosystem.routes.ts) ───
   # Mesmo mount sem path (`router.use(universalEcosystemRoutes)` em agent.routes.ts).
@@ -5436,6 +5666,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/ecosystem/connectors/{provider}:
     put:
@@ -5466,6 +5697,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -5485,6 +5717,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/ecosystem/catalog:
     get:
@@ -5499,6 +5732,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/ecosystem/standalone-run:
     post:
@@ -5540,6 +5774,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/ecosystem/office/generate:
     post:
@@ -5602,6 +5837,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/ecosystem/playbooks:
     get:
@@ -5614,6 +5850,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/ecosystem/playbooks/{playbookId}/run:
     post:
@@ -5642,6 +5879,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent/ecosystem/events/ingest:
     post:
@@ -5694,6 +5932,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   # ───────────────────────────── Prompts ─────────────────────────────
   /prompts:
@@ -5707,6 +5946,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [Prompts]
       summary: Cria um novo prompt override (somente ADMIN/GESTOR)
@@ -5728,6 +5968,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -5753,6 +5994,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -5808,6 +6050,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /analytics/dashboard:
     get:
@@ -5824,6 +6067,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /analytics/sales-summary:
     get:
@@ -5839,6 +6083,7 @@ paths:
                 properties:
                   success: { type: boolean, example: true }
                   data: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /analytics/cohort:
     get:
@@ -5871,6 +6116,7 @@ paths:
                             total: { type: integer, example: 200 }
                             month1: { type: integer, example: 90 }
                             month2: { type: integer, example: 80 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /analytics/export/csv:
     get:
@@ -5888,6 +6134,7 @@ paths:
           content:
             text/csv:
               schema: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /analytics/productivity-heatmap:
     get:
@@ -5922,6 +6169,7 @@ paths:
                         messages: { type: integer, example: 2 }
                         tasks: { type: integer, example: 2 }
                         conversions: { type: integer, example: 1 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /analytics/realtime-cockpit:
     get:
@@ -5959,6 +6207,7 @@ paths:
                           benchmarkValue: { type: number, example: 30 }
                           currentValue: { type: number, example: 37.5 }
                       lastUpdated: { type: string, format: date-time, example: '2026-11-03T14:00:00.000Z' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /analytics/unified-timeline:
     get:
@@ -6021,6 +6270,7 @@ paths:
                       page: { type: integer }
                       limit: { type: integer }
                       totalPages: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /analytics/unified-timeline/export:
     get:
@@ -6045,6 +6295,7 @@ paths:
           content:
             text/csv:
               schema: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   # ───────────────────────────── Knowledge ─────────────────────────────
   /knowledge:
@@ -6058,6 +6309,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [Knowledge]
       summary: Ingesta um documento a partir de texto colado
@@ -6078,6 +6330,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /knowledge/{id}:
     parameters:
@@ -6092,6 +6345,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           $ref: '#/components/responses/NotFound'
     put:
@@ -6113,6 +6367,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           $ref: '#/components/responses/NotFound'
     delete:
@@ -6123,6 +6378,7 @@ paths:
       responses:
         '204':
           description: Removido
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -6152,6 +6408,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /knowledge/search:
     post:
@@ -6174,6 +6431,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /knowledge/{id}/reembed:
     parameters:
@@ -6188,6 +6446,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /knowledge/editor-assist:
     post:
@@ -6216,6 +6475,7 @@ paths:
                 properties:
                   success: { type: boolean, example: true }
                   result: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /knowledge/generate-faq:
     post:
@@ -6239,6 +6499,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: Documento não encontrado
 
@@ -6265,6 +6526,7 @@ paths:
                     properties:
                       items: { type: array, items: { type: object } }
                       unread: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /notifications/{id}/read:
     parameters:
@@ -6279,6 +6541,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -6299,6 +6562,7 @@ paths:
                     type: object
                     properties:
                       count: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /notifications/{id}:
     parameters:
@@ -6309,6 +6573,7 @@ paths:
       responses:
         '204':
           description: Removida
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -6336,6 +6601,7 @@ paths:
                         description: { type: string }
                         enabled: { type: boolean }
                         isOverridden: { type: boolean }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /feature-flags/{key}:
     parameters:
@@ -6365,6 +6631,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -6380,6 +6647,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -6428,6 +6696,7 @@ paths:
                       status: { type: string, example: OPEN }
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '429':
           $ref: '#/components/responses/TooManyRequests'
     get:
@@ -6445,6 +6714,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -6473,6 +6743,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -6497,6 +6768,7 @@ paths:
                     properties:
                       triggers: { type: array, items: { type: string } }
                       actions: { type: array, items: { type: string } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /automations:
     get:
@@ -6509,6 +6781,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [Automations]
       summary: Cria uma automação (gatilho → ação)
@@ -6525,6 +6798,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /automations/{id}:
     parameters:
@@ -6545,6 +6819,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           $ref: '#/components/responses/NotFound'
     delete:
@@ -6553,6 +6828,7 @@ paths:
       responses:
         '204':
           description: Removida
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -6578,6 +6854,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -6615,6 +6892,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -6634,6 +6912,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /gamification/leaderboard:
     get:
@@ -6649,6 +6928,7 @@ paths:
                 properties:
                   success: { type: boolean }
                   data: { type: array, items: { type: object } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /gamification/profile:
     get:
@@ -6664,6 +6944,7 @@ paths:
                 properties:
                   success: { type: boolean }
                   data: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /gamification/coaching:
     get:
@@ -6679,6 +6960,7 @@ paths:
                 properties:
                   success: { type: boolean }
                   data: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /gamification/coaching/weekly:
     post:
@@ -6710,6 +6992,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   # ───────────────────────────── Social Selling ─────────────────────────────
   /social-selling/approach/generate:
@@ -6846,6 +7129,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [Cadence]
       summary: Registra solicitação de descadastramento (opt-out) multicanal ou global (Onda 15 / B-13)
@@ -6867,6 +7151,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /cadence/templates:
     get:
@@ -6882,6 +7167,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /cadence/templates/seed-defaults:
     post:
@@ -6956,6 +7242,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [Cadence]
       summary: >-
@@ -6993,6 +7280,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           description: Sequência inválida (ver regras de `validateSequence`)
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /cadence/sequences/from-template/{templateId}:
     parameters:
@@ -7013,6 +7301,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: Modelo de jornada não encontrado
 
@@ -7034,6 +7323,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: Sequência não encontrada nesta organização
 
@@ -7053,6 +7343,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [Cadence]
       summary: >-
@@ -7076,6 +7367,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: Lead ou sequência não encontrados nesta organização
         '409':
@@ -7095,6 +7387,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: Execução não encontrada nesta organização
 
@@ -7113,6 +7406,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: Execução não encontrada nesta organização
 
@@ -7130,6 +7424,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: Execução não encontrada nesta organização
 
@@ -7164,6 +7459,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: Lead não encontrado nesta organização
         '422':
@@ -7185,6 +7481,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /whatsapp/connect:
     post:
@@ -7200,6 +7497,7 @@ paths:
                 properties:
                   success: { type: boolean }
                   message: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /whatsapp/status:
     get:
@@ -7212,6 +7510,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /whatsapp/disconnect:
     post:
@@ -7227,6 +7526,7 @@ paths:
                 properties:
                   success: { type: boolean }
                   message: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /whatsapp/send:
     post:
@@ -7254,6 +7554,7 @@ paths:
                   message: { type: string }
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   # ───────────────────────────── Google ─────────────────────────────
   /google/auth-url:
@@ -7270,6 +7571,7 @@ paths:
                 properties:
                   success: { type: boolean }
                   url: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /google/callback:
     get:
@@ -7288,6 +7590,7 @@ paths:
           description: >-
             Redireciona para `/app?google=connected` (sucesso) ou `/app?google=error&message=...`
             (falha) — nunca um corpo JSON, mesmo em erro.
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /google/status:
     get:
@@ -7300,6 +7603,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   # ───────────────────────────── Birth Voice (SDR de voz) ─────────────────────────────
   /integrations/birth-voice/cold-call/status:
@@ -7313,6 +7617,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /integrations/birth-voice/call/{leadId}:
     parameters:
@@ -7330,6 +7635,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '422':
           description: Lead sem telefone válido
         '409':
@@ -7348,6 +7654,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [Birth Voice]
       summary: Bloqueia manualmente um número (opt-out registrado por outro canal)
@@ -7371,6 +7678,7 @@ paths:
                 type: object
                 properties:
                   success: { type: boolean }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '422':
           description: Telefone fora de um formato brasileiro discável
 
@@ -7385,6 +7693,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /integrations/birth-voice/connect:
     post:
       tags: [Birth Voice]
@@ -7401,6 +7710,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /integrations/birth-voice/connections/{connectionId}/test:
     parameters:
@@ -7420,6 +7730,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { description: Conexão não encontrada }
   /integrations/birth-voice/disconnect/{connectionId}:
@@ -7438,6 +7749,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /integrations/external-crm:
     get:
@@ -7668,6 +7980,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /integrations/birth-voice/calls/{id}:
     parameters:
       - name: id
@@ -7684,6 +7997,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { description: Chamada não encontrada }
 
   /integrations/email/messages:
@@ -7705,6 +8019,7 @@ paths:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
         '400': { description: leadId ausente }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   # ═══════════════════════════════════════════════════════════════════════════════════
   # Endpoints adicionados em 2026-08-15 (Onda 8, Agente 18) para fechar a deriva medida
@@ -7724,6 +8039,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /crm/pipelines:
     get:
@@ -7735,6 +8051,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /crm/board:
     get:
@@ -7746,6 +8063,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /crm/saved-views:
     get:
@@ -7757,6 +8075,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [Saved Views]
       summary: Salva a combinação atual de funil + filtros do Kanban como uma view nomeada
@@ -7783,6 +8102,7 @@ paths:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
         '400':
           description: Nome ou funil ausente/inválido
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '409':
           description: Já existe uma view com esse nome para este usuário
 
@@ -7795,6 +8115,7 @@ paths:
       responses:
         '204':
           description: Excluída
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -7817,6 +8138,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -7832,6 +8154,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -7845,6 +8168,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [CRM 360]
       summary: Cria um produto/serviço (ADMIN/GESTOR/VENDEDOR)
@@ -7861,6 +8185,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -7900,6 +8225,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [CRM 360]
       summary: Adiciona um item ao negócio (ADMIN/GESTOR/VENDEDOR)
@@ -7916,6 +8242,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -7935,6 +8262,7 @@ paths:
       responses:
         '204':
           description: Removido
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -7948,6 +8276,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [CRM 360]
       summary: Cria um documento vinculado a um negócio (ADMIN/GESTOR/VENDEDOR)
@@ -7964,6 +8293,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -7984,6 +8314,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -8013,6 +8344,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -8037,6 +8369,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -8052,6 +8385,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /crm/documents/{id}/request-signature:
     parameters:
@@ -8077,6 +8411,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: Documento não encontrado nesta organização
         '422':
@@ -8275,6 +8610,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [Playbook]
       summary: Cria uma pergunta de qualificação
@@ -8306,6 +8642,7 @@ paths:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /playbook/qualification-matrix/{id}:
     parameters:
@@ -8319,12 +8656,14 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
     delete:
       tags: [Playbook]
       summary: Remove uma pergunta de qualificação (somente ADMIN/GESTOR)
       responses:
         '204':
           description: Removido
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -8342,6 +8681,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [Playbook]
       summary: Cria uma objeção
@@ -8377,6 +8717,7 @@ paths:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /playbook/objection-matrix/generate-suggestions:
     post:
@@ -8413,6 +8754,7 @@ paths:
                     type: object
                     properties:
                       emptyReason: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /playbook/living-playbook/generate-suggestions:
     post:
@@ -8452,6 +8794,7 @@ paths:
                     type: object
                     properties:
                       emptyReason: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -8479,6 +8822,7 @@ paths:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -8494,12 +8838,14 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
     delete:
       tags: [Playbook]
       summary: Remove uma objeção (somente ADMIN/GESTOR)
       responses:
         '204':
           description: Removido
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -8517,6 +8863,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /commercial-intelligence/pipeline-creation:
     get:
@@ -8529,6 +8876,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /commercial-intelligence/performance:
     get:
@@ -8541,6 +8889,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /commercial-intelligence/aging:
     get:
@@ -8553,6 +8902,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /commercial-intelligence/losses:
     get:
@@ -8565,6 +8915,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /commercial-intelligence/leading-indicators:
     get:
@@ -8577,6 +8928,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /commercial-intelligence/alerts:
     get:
@@ -8589,6 +8941,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /commercial-intelligence/crm-quality:
     get:
@@ -8601,6 +8954,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   # F4 (handoff 00→04): endpoint dedicado do relatório "Saúde da Sincronização Bitrix24" —
   # antes só existia composto em `crmQuality.bitrixSync`, sem rota própria. Sem filtro comercial
@@ -8616,6 +8970,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   # Revenue Oracle / rebalanceamento (REMED-03/04) — predictive.routes.ts (createPredictiveRoutes),
   # montado em commercialIntelligence.routes.ts sob /predictive. Herda authenticateToken +
@@ -8684,6 +9039,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/RebalanceApprovalEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
         '401': { description: Não autenticado }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
@@ -8708,6 +9064,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /commercial-intelligence/deals/{leadId}/forecast:
     parameters:
@@ -8725,6 +9082,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /commercial-intelligence/metrics-dictionary:
     get:
@@ -8739,6 +9097,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /commercial-intelligence/filter-options:
     get:
@@ -8753,6 +9112,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /commercial-intelligence/trends:
     get:
@@ -8784,6 +9144,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /commercial-intelligence/export:
     get:
@@ -8810,6 +9171,7 @@ paths:
             text/csv: { schema: { type: string } }
             application/json: { schema: { type: string } }
             text/html: { schema: { type: string } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /commercial-intelligence/health-score:
     get:
@@ -8822,6 +9184,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /commercial-intelligence/forecast-accuracy:
     get:
@@ -8834,6 +9197,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /commercial-intelligence/forecast-calibration:
     get:
@@ -8847,6 +9211,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /commercial-intelligence/funnel-bottlenecks:
     get:
@@ -8860,6 +9225,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /commercial-intelligence/seller-benchmark:
     get:
@@ -8873,6 +9239,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /commercial-intelligence/hiring-scenario:
     get:
@@ -8892,6 +9259,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /commercial-intelligence/channel-attribution:
     get:
@@ -8905,6 +9273,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /commercial-intelligence/close-date-intelligence:
     get:
@@ -8917,6 +9286,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /commercial-intelligence/journey:
     get:
@@ -8929,6 +9299,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /commercial-intelligence/goals:
     get:
@@ -8941,6 +9312,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
     put:
       tags: [Comercial Inteligente]
@@ -8957,6 +9329,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /commercial-intelligence/ai/loss-reason-analysis:
     post:
@@ -8982,6 +9355,7 @@ paths:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
         '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
   /commercial-intelligence/ai/mentor-playbook:
@@ -8998,6 +9372,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
   /commercial-intelligence/ai/deal-risk-scan:
@@ -9024,6 +9399,7 @@ paths:
                       alertsCreated: { type: integer }
                       skippedCooldown: { type: integer }
                       errors: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
   /commercial-intelligence/ai/executive-summary:
@@ -9039,6 +9415,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
   /commercial-intelligence/ai/bitrix-note:
@@ -9054,6 +9431,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
 
@@ -9075,6 +9453,7 @@ paths:
           content:
             application/json:
               schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /lgpd/titular/{contactId}:
     parameters:
@@ -9098,6 +9477,7 @@ paths:
                 properties:
                   message: { type: string }
                   result: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -9122,6 +9502,7 @@ paths:
                 properties:
                   success: { type: boolean, example: true }
                   logs: { type: array, items: { type: object } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -9148,6 +9529,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CadenceOptOutCheckResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /lgpd/opt-out:
     post:
@@ -9179,6 +9561,7 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -9202,6 +9585,7 @@ paths:
                     type: object
                     properties:
                       owners: { type: array, items: { type: object } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /team:
     get:
@@ -9213,6 +9597,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
     post:
@@ -9247,6 +9632,7 @@ paths:
                       tempPassword: { type: string }
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -9274,6 +9660,7 @@ paths:
                 properties:
                   success: { type: boolean }
                   data: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /team/{memberId}/role:
     put:
@@ -9303,6 +9690,7 @@ paths:
                 properties:
                   success: { type: boolean }
                   data: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /team/{id}/reset-password:
     parameters:
@@ -9325,6 +9713,7 @@ paths:
                     properties:
                       member: { type: object }
                       tempPassword: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -9347,6 +9736,7 @@ paths:
                     type: object
                     properties:
                       member: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -9366,6 +9756,7 @@ paths:
                 properties:
                   success: { type: boolean }
                   message: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -9389,6 +9780,7 @@ paths:
                     type: object
                     properties:
                       grantedModules: { type: array, items: { type: string } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /module-access:
     get:
@@ -9402,6 +9794,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -9426,6 +9819,7 @@ paths:
               schema: { type: object, properties: { success: { type: boolean } } }
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -9439,6 +9833,7 @@ paths:
           content:
             application/json:
               schema: { type: object, properties: { success: { type: boolean } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -9458,6 +9853,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /job-roles/{id}:
     parameters:
@@ -9474,6 +9870,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: Cargo não encontrado
 
@@ -9492,6 +9889,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: Cargo não encontrado
 
@@ -9505,6 +9903,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -9533,6 +9932,7 @@ paths:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -9557,6 +9957,7 @@ paths:
           content:
             application/json:
               schema: { type: object, properties: { success: { type: boolean } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -9581,6 +9982,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agents/{id}:
     parameters:
@@ -9597,6 +9999,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: Agente não encontrado
 
@@ -9615,6 +10018,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: Agente não encontrado
 
@@ -9633,6 +10037,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: Cargo não encontrado
 
@@ -9652,6 +10057,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /capabilities/check:
     post:
@@ -9680,6 +10086,7 @@ paths:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   # ─────────────────── Agent Runtime Genérico (PROMPT 4) ───────────────────
   /agents/{agentCode}/run:
@@ -9719,6 +10126,7 @@ paths:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           description: Execução negada pelo Capability & Permission Engine
 
@@ -9737,6 +10145,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: Capability não encontrada
 
@@ -9774,6 +10183,7 @@ paths:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '409':
           description: Ator sem JobRole primário ativo, ou sem RoleSupervisorProfile para o cargo (`NO_JOB_ROLE`/`NO_SUPERVISOR_PROFILE`)
 
@@ -9794,6 +10204,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /access-requests:
     post:
@@ -9829,6 +10240,7 @@ paths:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           description: Cargo do ator não pode solicitar acesso cruzado (`agent.request_cross_role` não concedido/negado)
         '409':
@@ -9842,6 +10254,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /access-requests/pending-approvals:
     get:
@@ -9856,6 +10269,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /access-requests/{id}/approve:
     parameters:
@@ -9885,6 +10299,8 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           description: Autoaprovação (`SELF_APPROVAL_DENIED`) ou aprovador não elegível para a categoria (`APPROVER_NOT_ELIGIBLE`)
         '404':
@@ -9912,6 +10328,8 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           description: Autoaprovação (`SELF_APPROVAL_DENIED`) ou aprovador não elegível para a categoria (`APPROVER_NOT_ELIGIBLE`)
         '404':
@@ -9934,6 +10352,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -9965,6 +10384,8 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -10036,6 +10457,7 @@ paths:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: fromAgent/toAgent/fromRole/toRole/requestedCapability/parentHandoffId desconhecido ou inativo
         '409':
@@ -10054,6 +10476,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent-bus/pending:
     get:
@@ -10067,6 +10490,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent-bus/{id}:
     parameters:
@@ -10083,6 +10507,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -10107,6 +10532,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -10142,6 +10568,8 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -10177,6 +10605,8 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -10201,6 +10631,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -10272,6 +10703,7 @@ paths:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: AgentExecution de origem não encontrada
         '409':
@@ -10294,6 +10726,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /memory/candidates/{id}:
     parameters:
@@ -10311,6 +10744,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -10343,6 +10777,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -10370,6 +10805,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -10393,6 +10829,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /memory/role/{code}:
     parameters:
@@ -10410,6 +10847,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /memory/organization:
     get:
@@ -10422,6 +10860,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /memory/{scope}/{id}/rollback:
     parameters:
@@ -10452,6 +10891,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -10495,6 +10935,7 @@ paths:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: targetJobRoleCode desconhecido no catálogo de cargos
     get:
@@ -10515,6 +10956,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /agent-builder/proposals/{id}:
     parameters:
@@ -10532,6 +10974,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -10559,6 +11002,8 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -10586,6 +11031,8 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -10605,6 +11052,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /bitrix/connect:
     post:
       tags: [Bitrix24]
@@ -10621,6 +11069,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /bitrix/connections/{connectionId}/test:
     parameters:
@@ -10638,6 +11087,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /bitrix/disconnect/{connectionId}:
     parameters:
@@ -10655,6 +11105,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /bitrix/connections/{connectionId}/webhook-secret:
     parameters:
@@ -10672,6 +11123,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /bitrix/connections/{connectionId}/inbound-events:
     parameters:
@@ -10694,6 +11146,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /bitrix/leads:
     get:
@@ -10706,6 +11159,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /bitrix/leads/import:
     post:
       tags: [Bitrix24]
@@ -10722,6 +11176,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /bitrix/deals:
     get:
@@ -10734,6 +11189,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /bitrix/deals/import:
     post:
       tags: [Bitrix24]
@@ -10750,6 +11206,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /bitrix/deal-pipelines:
     get:
@@ -10762,6 +11219,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /bitrix/deal-stages:
     get:
       tags: [Bitrix24]
@@ -10773,6 +11231,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /bitrix/lead-statuses:
     get:
       tags: [Bitrix24]
@@ -10784,6 +11243,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /bitrix/users:
     get:
       tags: [Bitrix24]
@@ -10795,6 +11255,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /bitrix/fields:
     get:
       tags: [Bitrix24]
@@ -10806,6 +11267,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /bitrix/daily-plan:
     get:
       tags: [Bitrix24]
@@ -10824,6 +11286,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /bitrix/daily-plan/sync:
     post:
       tags: [Bitrix24]
@@ -10842,6 +11305,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /bitrix/daily-plan/complete:
     post:
       tags: [Bitrix24]
@@ -10864,6 +11328,7 @@ paths:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
         '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /bitrix/daily-plan/note:
     post:
       tags: [Bitrix24]
@@ -10893,6 +11358,7 @@ paths:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
         '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /bitrix/daily-plan/notes:
     get:
       tags: [Bitrix24]
@@ -10925,6 +11391,7 @@ paths:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
         '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /bitrix/daily-plan/activity:
     post:
       tags: [Bitrix24]
@@ -10952,6 +11419,7 @@ paths:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
         '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /bitrix/daily-plan/closing/pending:
     get:
       tags: [Bitrix24]
@@ -10966,6 +11434,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /bitrix/daily-plan/closing:
     post:
       tags: [Bitrix24]
@@ -10991,6 +11460,7 @@ paths:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
         '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /bitrix/hub-tasks:
     get:
       tags: [Bitrix24]
@@ -11006,6 +11476,7 @@ paths:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
         '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [Bitrix24]
       summary: Cria uma nova tarefa real no Bitrix24 (`tasks.task.add`) delegada a um colega.
@@ -11027,6 +11498,7 @@ paths:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
         '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /bitrix/hub-tasks/{id}/toggle:
     parameters:
       - name: id
@@ -11055,6 +11527,7 @@ paths:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
         '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /bitrix/leads/{leadId}/comment:
     parameters:
       - name: leadId
@@ -11076,6 +11549,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /bitrix/leads/{leadId}/export:
     parameters:
@@ -11104,6 +11578,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /bitrix/leads/export-batch:
     post:
@@ -11135,6 +11610,7 @@ paths:
                       exportedCount: { type: integer }
                       skippedCount: { type: integer }
                       total: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /bitrix/sync-rules:
     get:
@@ -11147,6 +11623,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [Bitrix24]
       summary: >-
@@ -11164,6 +11641,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /bitrix/sync-rules/{id}:
     parameters:
@@ -11183,12 +11661,14 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
     delete:
       tags: [Bitrix24]
       summary: Remove uma regra de sincronização (somente ADMIN/GESTOR)
       responses:
         '204': { description: Removida }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /bitrix/sync-logs:
     get:
@@ -11209,6 +11689,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /bitrix/extractions:
     get:
       tags: [Bitrix24]
@@ -11222,6 +11703,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
     post:
       tags: [Bitrix24]
@@ -11238,6 +11720,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /bitrix/extractions/{id}:
     parameters:
@@ -11252,12 +11735,14 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
     delete:
       tags: [Bitrix24]
       summary: Remove o registro de uma extração (somente ADMIN/GESTOR)
       responses:
         '204': { description: Removida }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /bitrix/extractions/{id}/cancel:
     parameters:
@@ -11272,6 +11757,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /bitrix/extractions/{id}/retry:
     parameters:
@@ -11286,6 +11772,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /bitrix/extractions/reconcile-stuck:
     post:
@@ -11298,6 +11785,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /bitrix/extractions/{id}/download:
     parameters:
@@ -11311,6 +11799,7 @@ paths:
           content:
             application/octet-stream:
               schema: { type: string, format: binary }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
   # ───────────────────────────── 3CX ─────────────────────────────
@@ -11325,6 +11814,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /integrations/3cx/connect:
     post:
       tags: [3CX]
@@ -11341,6 +11831,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /integrations/3cx/connections/{connectionId}/test:
     parameters:
@@ -11358,6 +11849,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /integrations/3cx/disconnect/{connectionId}:
     parameters:
@@ -11375,6 +11867,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /integrations/3cx/call:
     post:
@@ -11392,6 +11885,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
   # ───────────────────────────── Copiloto IA ─────────────────────────────
@@ -11426,6 +11920,7 @@ paths:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
         '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
     get:
       tags: [Copiloto IA]
       summary: Lista conversas do tenant, filtráveis por status/lead/empresa/contato
@@ -11446,6 +11941,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /copiloto-ia/conversations/{id}:
     parameters:
@@ -11460,6 +11956,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
   /copiloto-ia/conversations/{id}/start:
@@ -11475,6 +11972,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
   /copiloto-ia/conversations/{id}/stop:
@@ -11490,6 +11988,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
   /copiloto-ia/conversations/{id}/ready:
@@ -11505,6 +12004,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
   /copiloto-ia/conversations/{id}/fail:
@@ -11520,6 +12020,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
   /copiloto-ia/conversations/{id}/cancel:
@@ -11535,6 +12036,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
   /copiloto-ia/conversations/{id}/consent:
@@ -11566,6 +12068,7 @@ paths:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
         '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
   /copiloto-ia/conversations/{id}/audio/upload-url:
@@ -11587,6 +12090,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DataEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
   /copiloto-ia/conversations/{id}/audio/complete:
@@ -11617,6 +12121,7 @@ paths:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
         '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
   /copiloto-ia/conversations/{id}/transcript-segments:
@@ -11652,6 +12157,7 @@ paths:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
         '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
   /copiloto-ia/conversations/{id}/insights:
@@ -11682,6 +12188,7 @@ paths:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
         '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
     get:
       tags: [Copiloto IA]
@@ -11693,6 +12200,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
   /copiloto-ia/conversations/{id}/crm-field-suggestions:
@@ -11723,6 +12231,7 @@ paths:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
         '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
   /copiloto-ia/crm-field-suggestions/{id}/approve:
@@ -11738,6 +12247,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
   /copiloto-ia/crm-field-suggestions/{id}/reject:
@@ -11753,6 +12263,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
   /copiloto-ia/leads/lookup:
@@ -11768,6 +12279,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /copiloto-ia/leads/search:
     get:
@@ -11793,6 +12305,7 @@ paths:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
         '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /copiloto-ia/leads/{leadId}/deal-health:
     parameters:
@@ -11810,6 +12323,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [Copiloto IA]
       summary: Registra um novo snapshot de Deal Health Score do lead
@@ -11831,6 +12345,7 @@ paths:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
         '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   # ─── Onda 6 — Coaching + Handoff ────────────────────────────────────
   /copiloto-ia/conversations/{id}/coaching:
@@ -11848,6 +12363,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
   /copiloto-ia/conversations/{id}/handoff:
@@ -11867,6 +12383,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
   # ─── Onda 4 — mapeamento de campo Bitrix + writeback (ADMIN/GESTOR) ───
@@ -11881,6 +12398,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
     post:
       tags: [Copiloto IA]
@@ -11904,6 +12422,7 @@ paths:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
         '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
   /copiloto-ia/bitrix-field-mappings/{id}:
@@ -11914,6 +12433,7 @@ paths:
       summary: Remove um mapeamento de campo — auditado explicitamente
       responses:
         '204': { description: Removido }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
@@ -11932,6 +12452,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
@@ -11953,6 +12474,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
   /copiloto-ia/leads/{leadId}/next-best-action:
@@ -11973,6 +12495,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
   # ───────────────────────────── Webhooks (corpo cru) ─────────────────────────────
@@ -12036,6 +12559,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /integrations/slack/connect:
     post:
       tags: [Slack]
@@ -12052,6 +12576,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /integrations/slack/disconnect/{connectionId}:
     parameters:
@@ -12069,6 +12594,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /integrations/slack/connections/{connectionId}/test:
     parameters:
@@ -12086,6 +12612,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /integrations/slack/connections/{connectionId}/message:
     parameters:
@@ -12112,6 +12639,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
   /integrations/stripe/connections:
@@ -12125,6 +12653,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /integrations/stripe/connect:
     post:
       tags: [Stripe]
@@ -12141,6 +12670,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /integrations/stripe/disconnect/{connectionId}:
     parameters:
@@ -12158,6 +12688,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /integrations/stripe/connections/{connectionId}/test:
     parameters:
@@ -12175,6 +12706,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /integrations/stripe/connections/{connectionId}/webhook-secret:
     parameters:
@@ -12205,6 +12737,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /integrations/stripe/connections/{connectionId}/charges:
     parameters:
@@ -12227,6 +12760,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /integrations/stripe/connections/{connectionId}/charges/{paymentId}:
     parameters:
@@ -12248,6 +12782,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { description: Cobrança não encontrada }
 
@@ -12262,6 +12797,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /integrations/omie/connect:
     post:
       tags: [Omie]
@@ -12278,6 +12814,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /integrations/omie/disconnect/{connectionId}:
     parameters:
@@ -12295,6 +12832,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /integrations/omie/connections/{connectionId}/test:
     parameters:
@@ -12312,6 +12850,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /integrations/omie/connections/{connectionId}/customers:
     parameters:
@@ -12334,6 +12873,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
   /webhooks/voice-result:
@@ -12468,12 +13008,29 @@ paths:
         required: true
         content:
           application/x-www-form-urlencoded:
-            schema: { type: object }
+            schema:
+              type: object
+              required: ['auth[application_token]']
+              properties:
+                auth[application_token]:
+                  type: string
+                  description: Segredo por conexão (webhookSecret) — enviado pelo Bitrix como auth[application_token]
+                event:
+                  type: string
+                  description: 'Tipo do evento (ex.: ONCRMLEADADD)'
+                ts:
+                  type: string
+                  description: Timestamp do evento (x-bitrix-timestamp ou ts) — proteção anti-replay
+                data:
+                  type: object
+                  description: Dados do evento (campos aninhados data[FIELDS][...])
       responses:
         '200':
           description: Processado
+        '400': { $ref: '#/components/responses/BadRequest' }
         '401':
           description: Segredo da conexão inválido ou conexão não encontrada
+        '404': { $ref: '#/components/responses/NotFound' }
 
   /integrations/chatwoot/webhook:
     post:
@@ -12542,6 +13099,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /leads/enrich-batch:
     post:
@@ -12563,6 +13121,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /prospecting/ocr:
     post:
@@ -12580,6 +13139,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /prospecting/cold-email:
     post:
@@ -12597,6 +13157,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/agents/sdr/status/{sessionId}:
     parameters:
@@ -12637,6 +13198,7 @@ paths:
                 properties:
                   status: { type: string, enum: [pending] }
                   sessionId: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/report/latest:
     get:
@@ -12649,6 +13211,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/report/daily-summaries:
     get:
@@ -12664,6 +13227,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/win-loss-analysis:
     post:
@@ -12680,6 +13244,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /intelligence/win-loss-analysis/latest:
     get:
@@ -12695,6 +13260,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /notifications/stream:
     get:
@@ -12709,6 +13275,7 @@ paths:
           content:
             text/event-stream:
               schema: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /events:
     get:
@@ -12723,6 +13290,7 @@ paths:
           content:
             text/event-stream:
               schema: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /automations/stagnation-scan:
     post:
@@ -12737,6 +13305,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
   /whatsapp/conversations:
@@ -12750,6 +13319,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /whatsapp/signals:
     get:
@@ -12762,6 +13332,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /google/disconnect:
     post:
@@ -12776,6 +13347,7 @@ paths:
                 type: object
                 properties:
                   success: { type: boolean }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /google/calendar/upcoming:
     get:
@@ -12788,6 +13360,7 @@ paths:
             content:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
 components:
   securitySchemes:
