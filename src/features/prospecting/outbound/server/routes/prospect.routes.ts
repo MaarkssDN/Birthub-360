@@ -1,4 +1,5 @@
 import { Router, type Request, type Response } from 'express';
+import { logger } from '../../../../../lib/logger.js';
 import { getDatabase, saveDatabase } from '../db.js';
 import { parseSearchIntent, validateSearchIntent } from '../searchIntent.js';
 import { buildRequirementsFromSearchIntent, evaluateRequirements } from '../requirementEngine.js';
@@ -248,12 +249,13 @@ prospectRouter.post(
           }
         });
       } else {
-        // Sanitização explícita de quebras de linha (CodeQL js/log-injection):
-        // JSON.stringify escapa aspas mas não é reconhecido como barreira —
-        // remove terminadores de linha do valor controlado pelo usuário.
+        // Sanitização explícita de quebras de linha + logger estruturado (pino):
+        // console.* é sink do CodeQL js/log-injection; logger.warn recebe o valor
+        // sanitizado como campo estruturado, fora da mensagem de log.
         const companyForLog = String(effectiveCompany ?? '').replace(/[\n\r\u2028\u2029]/g, ' ');
-        console.warn(
-          `Nenhum vendedor ativo cadastrado para a marca ${JSON.stringify(companyForLog)} — leads serão salvos sem atribuição automática.`,
+        logger.warn(
+          { company: companyForLog },
+          'Nenhum vendedor ativo cadastrado — leads serão salvos sem atribuição automática.',
         );
       }
 
